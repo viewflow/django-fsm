@@ -1,4 +1,19 @@
+#!/usr/bin/env python
 #-*- coding: utf-8 -*-
+
+if __name__ == '__main__':
+    from django import conf
+    from django.core import management
+
+    __name__ = 'django_fsm.tests'
+    class TestSettings(conf.UserSettingsHolder):
+        INSTALLED_APPS=('django_fsm',)
+        DATABASE_ENGINE='sqlite3'
+
+    conf.settings.configure(TestSettings(conf.global_settings))
+    management.call_command('test', 'django_fsm')
+
+
 from django.test import TestCase
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
@@ -24,7 +39,7 @@ class BlogPost(models.Model):
 class FSMFieldTest(TestCase):
     def setUp(self):
         self.model = BlogPost()
-    
+
     def test_initial_state_instatiated(self):
         self.assertEqual(self.model.state, 'new')
 
@@ -56,7 +71,7 @@ class InvalidModelTest(TestCase):
     def test_two_fsmfields_in_one_model_not_allowed(self):
         model = InvalidModel()
         self.assertRaises(TypeError, model.validate)
-    
+
 
 class Document(models.Model):
     status = FSMField(default='new')
@@ -71,4 +86,5 @@ class DocumentTest(TestCase):
         model = Document()
         model.publish()
         self.assertEqual(model.status, 'published')
+
 
