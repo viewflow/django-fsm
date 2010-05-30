@@ -20,7 +20,8 @@ else
 fi
 
 # pylint
-pylint --rcfile=$ROOT_DIR/.pylintrc django_fsm >> pylint.out || echo 'PyLint done'
+pylint --rcfile=$ROOT_DIR/.pylintrc django_fsm > pylint.out || echo 'PyLint done'
+tail -n5 pylint.out
 
 # Run tests
 python <<EOF

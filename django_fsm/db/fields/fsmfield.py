@@ -64,7 +64,7 @@ class FSMField(models.Field):
     """
     __metaclass__ = models.SubfieldBase
     
-    def __init__(self, initial_state = None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 50
         super(FSMField, self).__init__(*args, **kwargs)
 

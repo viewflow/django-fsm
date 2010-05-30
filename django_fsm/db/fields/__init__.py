@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
-from fsmfield import FSMField, transition
+from django_fsm.db.fields.fsmfield import FSMField, transition
 

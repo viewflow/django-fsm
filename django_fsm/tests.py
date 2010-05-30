@@ -1,7 +1,8 @@
 #-*- coding: utf-8 -*-
+# pylint: disable-msg=C0111
+
 from django.test import TestCase
 from django.db import models
-from django.contrib.contenttypes.models import ContentType
 
 from django_fsm.db.fields import FSMField, transition
 
@@ -48,7 +49,7 @@ class InvalidModel(models.Model):
     action = FSMField(default='no')
 
     @transition(source='new', target='no')
-    def validate():
+    def validate(self):
         pass
 
 
@@ -71,10 +72,4 @@ class DocumentTest(TestCase):
         model = Document()
         model.publish()
         self.assertEqual(model.status, 'published')
-
-
-class CoverEmptyFilesTest(TestCase):
-    def test_cover_empty_files(self):
-        import django_fsm
-        import django_fsm.models
 

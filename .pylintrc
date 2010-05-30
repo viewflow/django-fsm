@@ -2,11 +2,12 @@
 persistent=yes
 
 [MESSAGES CONTROL]
-#enable=
-#disable=
+# C0111 = Missing docstring 
+disable=
 
 [REPORTS]
 output-format=parseable
+include-ids=no
 
 [TYPECHECK]
 
