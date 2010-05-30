@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-# pylint: disable-msg=C0111
+# pylint: disable-msg=C0111, C0103, R0904
 
 from django.test import TestCase
 from django.db import models
@@ -19,7 +19,7 @@ class BlogPost(models.Model):
 
     @transition(source='new', target='removed')
     def remove(self):
-        raise Exception('No rights to delete')
+        raise Exception('No rights to delete %s' % self)
 
 
 class FSMFieldTest(TestCase):

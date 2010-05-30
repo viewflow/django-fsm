@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable-msg=W0212, R0904
 """
 State tracking functionality for django models
 """
@@ -53,6 +54,7 @@ def transition(source='*', target=None, save=False):
     """
     Method decorator for mark allowed transition
     """
+    # pylint: disable-msg=C0111
     def inner_transition(func):
         if not hasattr(func, '_django_fsm'):
             setattr(func, '_django_fsm', FSMMeta())
@@ -93,4 +95,3 @@ class FSMField(models.Field):
 
     def get_internal_type(self):
         return 'CharField'
-
