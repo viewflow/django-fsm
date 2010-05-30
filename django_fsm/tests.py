@@ -73,3 +73,8 @@ class DocumentTest(TestCase):
         self.assertEqual(model.status, 'published')
 
 
+class CoverEmptyFilesTest(TestCase):
+    def test_cover_empty_files(self):
+        import django_fsm
+        import django_fsm.models
+
