@@ -2,13 +2,13 @@
 SCRIPT_DIR=`dirname $0`
 DEST_DIR=`mktemp -t -d ci-django-fsm-XXX`
 
-cd $SCRIPT_DIR
+cd $SCRIPT_DIR/../
 
 # Setup environment
 virtualenv --no-site-packages $DEST_DIR
 source $DEST_DIR/bin/activate
 
-pip install -r environment.pip
+pip install -r tests/environment.pip
 
 # Run tests
 python <<EOF
