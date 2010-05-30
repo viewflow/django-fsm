@@ -2,13 +2,13 @@
 
 SCRIPT_DIR=`dirname $0`
 ROOT_DIR=`cd $SCRIPT_DIR/.. && pwd`
-cd $ROOT_DIR
 
 ENVSPEC=`stat -c %Y $ROOT_DIR/tests/environment.pip`
 ENVTIME=`test -d $ROOT_DIR/.ve && stat -c %Y $ROOT_DIR/.ve`
 
 set -e
 
+cd $ROOT_DIR
 if [ $ENVSPEC -gt 0$ENVTIME ]; then
     # Setup environment
     virtualenv --no-site-packages $ROOT_DIR/.ve
@@ -18,6 +18,9 @@ if [ $ENVSPEC -gt 0$ENVTIME ]; then
 else
     source $ROOT_DIR/.ve/bin/activate
 fi
+
+# pylint
+pylint --rcfile=$ROOT_DIR/.pylintrc django_fsm >> pylint.out || echo 'PyLint done'
 
 # Run tests
 python <<EOF
@@ -38,3 +41,4 @@ class TestSettings(conf.UserSettingsHolder):
 conf.settings.configure(TestSettings(conf.global_settings))
 management.call_command('test')
 EOF
+
