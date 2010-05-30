@@ -1,14 +1,22 @@
-#!/bin/bash -e
+#!/bin/bash
+
 SCRIPT_DIR=`dirname $0`
-DEST_DIR=`mktemp -t -d ci-django-fsm-XXX`
+ROOT_DIR=`cd $SCRIPT_DIR/.. && pwd`
 
-cd $SCRIPT_DIR/../
+ENVSPEC=`stat -c %Y $ROOT_DIR/tests/environment.pip`
+ENVTIME=`test -d $ROOT_DIR/.ve && stat -c %Y $ROOT_DIR/.ve`
 
-# Setup environment
-virtualenv --no-site-packages $DEST_DIR
-source $DEST_DIR/bin/activate
+set -e
 
-pip install -r tests/environment.pip
+if [ $ENVSPEC -gt 0$ENVTIME ]; then
+    # Setup environment
+    virtualenv --no-site-packages $ROOT_DIR/.ve
+    source $ROOT_DIR/.ve/bin/activate
+    pip install -r $ROOT_DIR/tests/environment.pip
+    touch $ROOT_DIR/.ve
+else
+    source $ROOT_DIR/.ve/bin/activate
+fi
 
 # Run tests
 python <<EOF
