@@ -2,6 +2,7 @@
 
 SCRIPT_DIR=`dirname $0`
 ROOT_DIR=`cd $SCRIPT_DIR/.. && pwd`
+cd $ROOT_DIR
 
 ENVSPEC=`stat -c %Y $ROOT_DIR/tests/environment.pip`
 ENVTIME=`test -d $ROOT_DIR/.ve && stat -c %Y $ROOT_DIR/.ve`
