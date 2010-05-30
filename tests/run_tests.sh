@@ -40,6 +40,6 @@ class TestSettings(conf.UserSettingsHolder):
                 '--with-xcoverage']
 
 conf.settings.configure(TestSettings(conf.global_settings))
-management.call_command('test')
+management.call_command('test', 'django_fsm')
 EOF
 

@@ -2,5 +2,5 @@
 """
 State tracking functionality for django models
 """
-from django_fsm.db.fields.fsmfield import FSMField, transition
+from django_fsm.db.fields.fsmfield import FSMField, FSMKeyField, transition
 

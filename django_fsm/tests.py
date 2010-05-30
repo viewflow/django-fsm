@@ -1,10 +1,10 @@
 #-*- coding: utf-8 -*-
-# pylint: disable-msg=C0111, C0103, R0904
+# pylint: disable=C0111, C0103, R0904
 
 from django.test import TestCase
 from django.db import models
 
-from django_fsm.db.fields import FSMField, transition
+from django_fsm.db.fields import FSMField, FSMKeyField, transition
 
 class BlogPost(models.Model):
     state = FSMField(default='new')
@@ -73,3 +73,34 @@ class DocumentTest(TestCase):
         model.publish()
         self.assertEqual(model.status, 'published')
 
+
+class BlogPostStatus(models.Model):
+    name = models.CharField(max_length=3, unique=True)
+
+    @transition(source='new', target='published')
+    def publish(self):
+        pass
+
+
+class BlogPostWithFKState(models.Model):
+    status = FSMKeyField(BlogPostStatus, default='new')
+
+    @transition(source='new', target='published')
+    def publish(self):
+        pass
+ 
+    @transition(source='published', target='hidden')
+    def hide(self):
+        pass
+
+
+class BlogPostWithFKStateTest(TestCase):
+    def setUp(self):
+        self.model = BlogPost()
+
+    def test_known_transition_should_succeed(self):
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+
+        self.model.hide()
+        self.assertEqual(self.model.state, 'hidden')

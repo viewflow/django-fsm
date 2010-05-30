@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable-msg=W0212, R0904
+# pylint: disable=W0212, R0904
 """
 State tracking functionality for django models
 """
@@ -19,7 +19,8 @@ class FSMMeta(object):
         """
         Lookup for FSMField in django model instance
         """
-        fields = [field for field in instance._meta.fields if isinstance(field, FSMField)]
+        fields = [field for field in instance._meta.fields 
+                  if isinstance(field, FSMField) or isinstance(field, FSMKeyField)]
         found = len(fields)
         if found == 0:
             raise TypeError("No FSMField found in model")
@@ -54,7 +55,7 @@ def transition(source='*', target=None, save=False):
     """
     Method decorator for mark allowed transition
     """
-    # pylint: disable-msg=C0111
+    # pylint: disable=C0111
     def inner_transition(func):
         if not hasattr(func, '_django_fsm'):
             setattr(func, '_django_fsm', FSMMeta())
@@ -84,7 +85,7 @@ def transition(source='*', target=None, save=False):
 
 class FSMField(models.Field):
     """
-    Enabels State Machine support for Django model
+    State Machine support for Django model
 
     """
     __metaclass__ = models.SubfieldBase
@@ -95,3 +96,10 @@ class FSMField(models.Field):
 
     def get_internal_type(self):
         return 'CharField'
+
+
+class FSMKeyField(models.ForeignKey):
+    """
+    State Machine support for Django model
+
+    """
