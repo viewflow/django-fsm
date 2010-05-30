@@ -3,7 +3,9 @@ persistent=yes
 
 [MESSAGES CONTROL]
 # C0111 = Missing docstring 
-disable=
+# I0011 =  # Warning locally suppressed using disable-msg
+# I0012 =  # Warning locally suppressed using disable-msg
+disable=I0011,I0012
 
 [REPORTS]
 output-format=parseable
@@ -56,6 +58,6 @@ max-branchs=12
 max-statements=50
 max-parents=7
 max-attributes=7
-min-public-methods=2
+min-public-methods=0
 max-public-methods=20
 
