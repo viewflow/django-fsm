@@ -1,19 +1,4 @@
-#!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
-if __name__ == '__main__':
-    from django import conf
-    from django.core import management
-
-    __name__ = 'django_fsm.tests'
-    class TestSettings(conf.UserSettingsHolder):
-        INSTALLED_APPS=('django_fsm',)
-        DATABASE_ENGINE='sqlite3'
-
-    conf.settings.configure(TestSettings(conf.global_settings))
-    management.call_command('test', 'django_fsm')
-
-
 from django.test import TestCase
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
