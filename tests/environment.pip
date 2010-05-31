@@ -4,4 +4,4 @@ pylint
 http://code.djangoproject.com/svn/django/tags/releases/1.2
 git+git://github.com/cmheisel/nose-xcover.git#egg=nosexcover
 git+git://github.com/jbalogh/django-nose.git#egg=django-nose
-
+hg+http://bitbucket.org/j2a/django_satprep

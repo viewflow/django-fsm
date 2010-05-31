@@ -89,7 +89,7 @@ class BlogPostWithFKState(models.Model):
     def publish(self):
         pass
  
-    @transition(source='published', target='hidden')
+    @transition(source='published', target='hidden', save=True)
     def hide(self):
         pass
 
@@ -97,6 +97,9 @@ class BlogPostWithFKState(models.Model):
 class BlogPostWithFKStateTest(TestCase):
     def setUp(self):
         self.model = BlogPost()
+        BlogPostStatus.objects.create(name="new")
+        BlogPostStatus.objects.create(name="published")
+        BlogPostStatus.objects.create(name="hidden")
 
     def test_known_transition_should_succeed(self):
         self.model.publish()
@@ -104,3 +107,7 @@ class BlogPostWithFKStateTest(TestCase):
 
         self.model.hide()
         self.assertEqual(self.model.state, 'hidden')
+
+    def test_unknow_transition_fails(self):
+        self.assertRaises(NotImplementedError, self.model.hide)
+
