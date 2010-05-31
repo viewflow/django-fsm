@@ -1,0 +1,7 @@
+*.pyc
+.coverage
+.ve
+distribute-*.tar.gz
+nosetests.xml
+coverage.xml
+pylint.out

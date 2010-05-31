@@ -30,9 +30,9 @@ from django.core import management
 
 __name__ = 'django_fsm.tests'
 class TestSettings(conf.UserSettingsHolder):
-   INSTALLED_APPS=('django_fsm',)
+   INSTALLED_APPS=('django_fsm', 'django_nose')
    DATABASE_ENGINE='sqlite3'
-   TEST_RUNNER = 'django_satprep.nose_runner.run_tests'
+   TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
    NOSE_ARGS = ['django_fsm',
                 '--with-coverage',
                 '--cover-package=django_fsm',
