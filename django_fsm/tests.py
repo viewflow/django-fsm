@@ -76,6 +76,7 @@ class DocumentTest(TestCase):
 
 class BlogPostStatus(models.Model):
     name = models.CharField(max_length=3, unique=True)
+    objects = models.Manager()
 
     @transition(source='new', target='published')
     def publish(self):
