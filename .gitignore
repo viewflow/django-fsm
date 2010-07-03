@@ -1,6 +1,8 @@
 *.pyc
 .coverage
+.cache
 .ve
+reports
 distribute-*.tar.gz
 nosetests.xml
 coverage.xml
