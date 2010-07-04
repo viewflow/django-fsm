@@ -60,7 +60,11 @@ def transition(source='*', target=None, save=False):
         if not hasattr(func, '_django_fsm'):
             setattr(func, '_django_fsm', FSMMeta())
 
-        func._django_fsm.transitions[source] = target
+        if isinstance(source, (list, tuple)):
+            for state in source:
+                func._django_fsm.transitions[state] = target
+        else:
+            func._django_fsm.transitions[source] = target
 
         @wraps(func)
         def _change_state(instance, *args, **kwargs):            
