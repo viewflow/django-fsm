@@ -25,7 +25,7 @@ class FSMMeta(object):
         if found == 0:
             raise TypeError("No FSMField found in model")
         elif found > 1:
-            raise TypeError("More than one FSMField found in model, please specify field name in transition decorator")
+            raise TypeError("More than one FSMField found in model")
         return fields[0]
 
     @staticmethod
