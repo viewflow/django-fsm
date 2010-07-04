@@ -7,5 +7,5 @@ if __name__ == "__main__":
     from django.core.management import execute_manager
 
     if len(sys.argv) == 1:
-            sys.argv.append('test')
+            sys.argv += ['test'] + list(PROJECT_APPS)
     execute_manager(settings)
