@@ -40,7 +40,7 @@ class FSMMeta(object):
         """
         Lookup is any transition exists from current model state
         """
-        return self.transitions.has_key(FSMMeta.current_state(instance))
+        return self.transitions.has_key(FSMMeta.current_state(instance)) or self.transitions.has_key('*')
 
     def to_next_state(self, instance):
         """
@@ -48,7 +48,14 @@ class FSMMeta(object):
         """
         field_name = FSMMeta._get_state_field(instance).name
         curr_state = getattr(instance, field_name)
-        setattr(instance, field_name, self.transitions[curr_state])
+        
+        next_state = None
+        try:
+            next_state = self.transitions[curr_state]
+        except KeyError:
+            next_state = self.transitions['*']
+        
+        setattr(instance, field_name, next_state)
 
 
 def transition(source='*', target=None, save=False):

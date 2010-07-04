@@ -25,6 +25,10 @@ class BlogPost(models.Model):
     def steal(self):
         pass
 
+    @transition(source='*', target='moderated')
+    def moderate(self):
+        pass
+
 
 class FSMFieldTest(TestCase):
     def setUp(self):
@@ -57,6 +61,10 @@ class FSMFieldTest(TestCase):
         self.model.hide()
         self.model.steal()
         self.assertEqual(self.model.state, 'stolen')
+
+    def test_star_shortcut_succeed(self):
+        self.model.moderate()
+        self.assertEqual(self.model.state, 'moderated')
 
 
 class InvalidModel(models.Model):
