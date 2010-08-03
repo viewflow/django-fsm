@@ -7,6 +7,16 @@ from collections import defaultdict
 from functools import wraps
 from django.db import models
 
+# South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
+try:
+    from south.modelsinspector import add_introspection_rules
+except ImportError:
+    pass
+else:
+    add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMField"])
+    add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMKeyField"])
+
+
 class FSMMeta(object):
     """
     Models methods transitions meta information
