@@ -1,0 +1,4 @@
+ipython
+ipdb
+git+git://github.com/kmmbvnr/django-hudson.git#egg=django-hudson
+

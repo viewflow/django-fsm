@@ -35,7 +35,7 @@ class FSMMeta(object):
         if found == 0:
             raise TypeError("No FSMField found in model")
         elif found > 1:
-            raise TypeError("More than one FSMField found in model, please specify field name in transition decorator")
+            raise TypeError("More than one FSMField found in model")
         return fields[0]
 
     @staticmethod
@@ -50,7 +50,7 @@ class FSMMeta(object):
         """
         Lookup is any transition exists from current model state
         """
-        return self.transitions.has_key(FSMMeta.current_state(instance))
+        return self.transitions.has_key(FSMMeta.current_state(instance)) or self.transitions.has_key('*')
 
     def to_next_state(self, instance):
         """
@@ -58,7 +58,14 @@ class FSMMeta(object):
         """
         field_name = FSMMeta._get_state_field(instance).name
         curr_state = getattr(instance, field_name)
-        setattr(instance, field_name, self.transitions[curr_state])
+        
+        next_state = None
+        try:
+            next_state = self.transitions[curr_state]
+        except KeyError:
+            next_state = self.transitions['*']
+        
+        setattr(instance, field_name, next_state)
 
 
 def transition(source='*', target=None, save=False):
@@ -70,7 +77,11 @@ def transition(source='*', target=None, save=False):
         if not hasattr(func, '_django_fsm'):
             setattr(func, '_django_fsm', FSMMeta())
 
-        func._django_fsm.transitions[source] = target
+        if isinstance(source, (list, tuple)):
+            for state in source:
+                func._django_fsm.transitions[state] = target
+        else:
+            func._django_fsm.transitions[source] = target
 
         @wraps(func)
         def _change_state(instance, *args, **kwargs):            

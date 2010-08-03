@@ -21,6 +21,14 @@ class BlogPost(models.Model):
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 
+    @transition(source=['published','hidden'], target='stolen')
+    def steal(self):
+        pass
+
+    @transition(source='*', target='moderated')
+    def moderate(self):
+        pass
+
 
 class FSMFieldTest(TestCase):
     def setUp(self):
@@ -42,6 +50,21 @@ class FSMFieldTest(TestCase):
     def test_state_non_changed_after_fail(self):
         self.assertRaises(Exception, self.model.remove)
         self.assertEqual(self.model.state, 'new')
+
+    def test_mutiple_source_support_path_1_works(self):
+        self.model.publish()
+        self.model.steal()
+        self.assertEqual(self.model.state, 'stolen')
+
+    def test_mutiple_source_support_path_2_works(self):
+        self.model.publish()
+        self.model.hide()
+        self.model.steal()
+        self.assertEqual(self.model.state, 'stolen')
+
+    def test_star_shortcut_succeed(self):
+        self.model.moderate()
+        self.assertEqual(self.model.state, 'moderated')
 
 
 class InvalidModel(models.Model):
@@ -76,6 +99,7 @@ class DocumentTest(TestCase):
 
 class BlogPostStatus(models.Model):
     name = models.CharField(max_length=3, unique=True)
+    objects = models.Manager()
 
     @transition(source='new', target='published')
     def publish(self):
