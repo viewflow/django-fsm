@@ -8,7 +8,7 @@ setup(
     author_email='kmmbvnr@gmail.com',
     url='http://github.com/kmmbvnr/djang-fsm',
     keywords = "django",
-    packages=find_packages(),
+    packages=['django_fsm', 'django_fsm.db', 'django_fsm.db.fields'],
     include_package_data=True,
     zip_safe=False,
     license='MIT License',
