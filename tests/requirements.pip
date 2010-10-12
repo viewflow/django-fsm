@@ -1,3 +1,7 @@
 django==1.2.1
 
+# tests only
+ipython
+ipdb
+git+git://github.com/kmmbvnr/django-hudson.git#egg=django-hudson
 
