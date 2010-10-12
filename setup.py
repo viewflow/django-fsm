@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-fsm',
-    version='0.1.0',
+    version='1.0.0',
     description='Django friendly finite state machine support.',
     author='Mikhail Podgurskiy',
     author_email='kmmbvnr@gmail.com',
@@ -14,7 +14,7 @@ setup(
     license='MIT License',
     platforms = ['any'],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
