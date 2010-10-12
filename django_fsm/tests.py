@@ -4,7 +4,8 @@
 from django.test import TestCase
 from django.db import models
 
-from django_fsm.db.fields import FSMField, FSMKeyField, transition
+from django_fsm.db.fields import FSMField, FSMKeyField, \
+    transition, can_proceed
 
 class BlogPost(models.Model):
     state = FSMField(default='new')
@@ -38,16 +39,20 @@ class FSMFieldTest(TestCase):
         self.assertEqual(self.model.state, 'new')
 
     def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
         self.model.publish()
         self.assertEqual(self.model.state, 'published')
 
+        self.assertTrue(can_proceed(self.model.hide))
         self.model.hide()
         self.assertEqual(self.model.state, 'hidden')
 
     def test_unknow_transition_fails(self):
+        self.assertFalse(can_proceed(self.model.hide))
         self.assertRaises(NotImplementedError, self.model.hide)
 
     def test_state_non_changed_after_fail(self):
+        self.assertTrue(can_proceed(self.model.remove))
         self.assertRaises(Exception, self.model.remove)
         self.assertEqual(self.model.state, 'new')
 
@@ -63,6 +68,7 @@ class FSMFieldTest(TestCase):
         self.assertEqual(self.model.state, 'stolen')
 
     def test_star_shortcut_succeed(self):
+        self.assertTrue(can_proceed(self.model.moderate))
         self.model.moderate()
         self.assertEqual(self.model.state, 'moderated')
 

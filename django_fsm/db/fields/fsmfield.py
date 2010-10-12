@@ -103,6 +103,16 @@ def transition(source='*', target=None, save=False):
     return inner_transition
 
 
+def can_proceed(bound_method):
+    """
+    Returns True if model in state allows to call bound_method 
+    """
+    if not hasattr(bound_method, '_django_fsm'):
+        raise NotImplementedError('%s method is not transition' % bound_method.im_func.__name__)
+
+    meta = bound_method._django_fsm
+    return meta.has_transition(bound_method.im_self)
+
 
 class FSMField(models.Field):
     """
