@@ -141,3 +141,41 @@ class BlogPostWithFKStateTest(TestCase):
     def test_unknow_transition_fails(self):
         self.assertRaises(NotImplementedError, self.model.hide)
 
+def condition_func(instance):
+    return True
+
+class BlogPostWithConditions(models.Model):
+    state = FSMField(default='new')
+
+    def model_condition(self, *args, **kwargs):
+        return True
+
+    def unmet_condition(self, *args, **kwargs):
+        return False
+
+    @transition(source='new', target='published', conditions=[condition_func, model_condition])
+    def publish(self):
+        pass
+
+    @transition(source='published', target='destroyed', conditions=[condition_func, unmet_condition])
+    def destroy(self):
+        pass
+
+class ConditionalTest(TestCase):
+    def setUp(self):
+        self.model = BlogPostWithConditions()
+
+    def test_initial_staet(self):
+        self.assertEqual(self.model.state, 'new')
+
+    def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+
+    def test_unmet_condition(self):
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+        self.assertFalse(can_proceed(self.model.destroy))
+        self.assertFalse(self.model.destroy())
+
