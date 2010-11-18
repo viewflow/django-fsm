@@ -23,6 +23,7 @@ class FSMMeta(object):
     """
     def __init__(self):
         self.transitions = defaultdict()
+        self.conditions  = defaultdict()
     
     @staticmethod
     def _get_state_field(instance):
@@ -48,9 +49,18 @@ class FSMMeta(object):
         
     def has_transition(self, instance):
         """
-        Lookup is any transition exists from current model state
+        Lookup if any transition exists from current model state
         """
         return self.transitions.has_key(FSMMeta.current_state(instance)) or self.transitions.has_key('*')
+
+    def conditions_met(self, instance):
+        """
+        Check if all conditions has been met
+        """
+        current_state = FSMMeta.current_state(instance)
+        next = self.transitions.has_key(current_state) and self.transitions[current_state] or self.transitions['*']
+
+        return all(map(lambda f: f(instance), self.conditions[next]))
 
     def to_next_state(self, instance):
         """
@@ -68,7 +78,7 @@ class FSMMeta(object):
         setattr(instance, field_name, next_state)
 
 
-def transition(source='*', target=None, save=False):
+def transition(source='*', target=None, save=False, conditions=[]):
     """
     Method decorator for mark allowed transition
     """
@@ -83,12 +93,18 @@ def transition(source='*', target=None, save=False):
         else:
             func._django_fsm.transitions[source] = target
 
+        func._django_fsm.conditions[target] = conditions
+
         @wraps(func)
         def _change_state(instance, *args, **kwargs):            
             meta = func._django_fsm
             if not meta.has_transition(instance):
                 raise NotImplementedError("Can't switch from state '%s' using method '%s'" % (FSMMeta.current_state(instance), func.func_name))
             
+            for condition in conditions:
+                if not condition(instance):
+                    return False
+
             func(instance, *args, **kwargs)
 
             meta.to_next_state(instance)
@@ -111,7 +127,7 @@ def can_proceed(bound_method):
         raise NotImplementedError('%s method is not transition' % bound_method.im_func.__name__)
 
     meta = bound_method._django_fsm
-    return meta.has_transition(bound_method.im_self)
+    return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self)
 
 
 class FSMField(models.Field):
