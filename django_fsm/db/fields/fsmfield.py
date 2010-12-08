@@ -105,11 +105,13 @@ def transition(source='*', target=None, save=False, conditions=[]):
                 if not condition(instance):
                     return False
 
-            func(instance, *args, **kwargs)
+            result = func(instance, *args, **kwargs)
 
             meta.to_next_state(instance)
             if save:
                 instance.save()
+
+            return result
         
         return _change_state
     
