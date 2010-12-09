@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.db import models
 
 from django_fsm.db.fields import FSMField, FSMKeyField, \
-    transition, can_proceed
+    TransitionNotAllowed, transition, can_proceed
 
 class BlogPost(models.Model):
     state = FSMField(default='new')
@@ -53,7 +53,7 @@ class FSMFieldTest(TestCase):
 
     def test_unknow_transition_fails(self):
         self.assertFalse(can_proceed(self.model.hide))
-        self.assertRaises(NotImplementedError, self.model.hide)
+        self.assertRaises(TransitionNotAllowed, self.model.hide)
 
     def test_state_non_changed_after_fail(self):
         self.assertTrue(can_proceed(self.model.remove))
@@ -66,7 +66,7 @@ class FSMFieldTest(TestCase):
         self.assertEqual(self.model.state, 'published')
 
     def test_unknow_null_transition_should_fail(self):
-        self.assertRaises(Exception, self.model.notify_all)
+        self.assertRaises(TransitionNotAllowed, self.model.notify_all)
         self.assertEqual(self.model.state, 'new')
 
     def test_mutiple_source_support_path_1_works(self):
@@ -152,7 +152,7 @@ class BlogPostWithFKStateTest(TestCase):
         self.assertEqual(self.model.state, 'hidden')
 
     def test_unknow_transition_fails(self):
-        self.assertRaises(NotImplementedError, self.model.hide)
+        self.assertRaises(TransitionNotAllowed, self.model.hide)
 
 def condition_func(instance):
     return True

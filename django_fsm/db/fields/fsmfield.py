@@ -17,6 +17,10 @@ else:
     add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMKeyField"])
 
 
+class TransitionNotAllowed(Exception):
+    """Raise when a transition is not allowed"""
+
+
 class FSMMeta(object):
     """
     Models methods transitions meta information
@@ -103,7 +107,7 @@ def transition(source='*', target=None, save=False, conditions=[]):
         def _change_state(instance, *args, **kwargs):            
             meta = func._django_fsm
             if not meta.has_transition(instance):
-                raise NotImplementedError("Can't switch from state '%s' using method '%s'" % (FSMMeta.current_state(instance), func.func_name))
+                raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (FSMMeta.current_state(instance), func.func_name))
             
             for condition in conditions:
                 if not condition(instance):
@@ -127,7 +131,7 @@ def can_proceed(bound_method):
     Returns True if model in state allows to call bound_method 
     """
     if not hasattr(bound_method, '_django_fsm'):
-        raise NotImplementedError('%s method is not transition' % bound_method.im_func.__name__)
+        raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
 
     meta = bound_method._django_fsm
     return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self)
