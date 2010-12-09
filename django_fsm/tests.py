@@ -14,6 +14,10 @@ class BlogPost(models.Model):
     def publish(self):
         pass
 
+    @transition(source='published')
+    def notify_all(self):
+        pass
+
     @transition(source='published', target='hidden')
     def hide(self):
         pass
@@ -54,6 +58,15 @@ class FSMFieldTest(TestCase):
     def test_state_non_changed_after_fail(self):
         self.assertTrue(can_proceed(self.model.remove))
         self.assertRaises(Exception, self.model.remove)
+        self.assertEqual(self.model.state, 'new')
+        
+    def test_allowed_null_transition_should_succeed(self):
+        self.model.publish()
+        self.model.notify_all()
+        self.assertEqual(self.model.state, 'published')
+
+    def test_unknow_null_transition_should_fail(self):
+        self.assertRaises(Exception, self.model.notify_all)
         self.assertEqual(self.model.state, 'new')
 
     def test_mutiple_source_support_path_1_works(self):

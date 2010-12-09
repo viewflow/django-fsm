@@ -75,12 +75,16 @@ class FSMMeta(object):
         except KeyError:
             next_state = self.transitions['*']
         
-        setattr(instance, field_name, next_state)
+        if next_state:
+            setattr(instance, field_name, next_state)
 
 
 def transition(source='*', target=None, save=False, conditions=[]):
     """
     Method decorator for mark allowed transition
+
+    Set target to None if current state need to be validated and not
+    changed after function call
     """
     # pylint: disable=C0111
     def inner_transition(func):
@@ -114,9 +118,6 @@ def transition(source='*', target=None, save=False, conditions=[]):
             return result
         
         return _change_state
-    
-    if not target:
-        raise ValueError("Result state not specified")
     
     return inner_transition
 
