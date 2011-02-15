@@ -1,5 +1,5 @@
 PROJECT_APPS = ('django_fsm',)
-INSTALLED_APPS = ('django_hudson',) + PROJECT_APPS
+INSTALLED_APPS = ('django_jenkins',) + PROJECT_APPS
 DATABASE_ENGINE = 'sqlite3'
 
 if __name__ == "__main__":
