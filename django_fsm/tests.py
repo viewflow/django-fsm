@@ -154,8 +154,10 @@ class BlogPostWithFKStateTest(TestCase):
     def test_unknow_transition_fails(self):
         self.assertRaises(TransitionNotAllowed, self.model.hide)
 
+
 def condition_func(instance):
     return True
+
 
 class BlogPostWithConditions(models.Model):
     state = FSMField(default='new')
@@ -174,6 +176,7 @@ class BlogPostWithConditions(models.Model):
     def destroy(self):
         pass
 
+
 class ConditionalTest(TestCase):
     def setUp(self):
         self.model = BlogPostWithConditions()
@@ -191,4 +194,36 @@ class ConditionalTest(TestCase):
         self.assertEqual(self.model.state, 'published')
         self.assertFalse(can_proceed(self.model.destroy))
         self.assertFalse(self.model.destroy())
+
+
+class BlogPostWithExplicitState(models.Model):
+    state = FSMField(default='new')
+    approvement = FSMField(default='new')
+
+    @transition(field=state, source='new', target='published')
+    def publish(self):
+        pass
+
+    @transition(field=approvement, source='new', target='approved')
+    def approve(self):
+        pass
+
+    @transition(field=approvement, source='new', target='declined')
+    def decline(self):
+        pass
+
+
+class ExplicitFSMFieldTest(TestCase):
+    def setUp(self):
+        self.model = BlogPostWithExplicitState()
+
+    def test_initial_state_instatiated(self):
+        self.assertEqual(self.model.state, 'new')
+        self.assertEqual(self.model.approvement, 'new')
+
+    def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+        self.assertEqual(self.model.approvement, 'new')
 

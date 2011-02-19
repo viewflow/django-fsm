@@ -25,43 +25,45 @@ class FSMMeta(object):
     """
     Models methods transitions meta information
     """
-    def __init__(self):
+    def __init__(self, field=None):
+        self.field = field
         self.transitions = defaultdict()
         self.conditions  = defaultdict()
     
-    @staticmethod
-    def _get_state_field(instance):
+    def _get_state_field(self, instance):
         """
         Lookup for FSMField in django model instance
         """
-        fields = [field for field in instance._meta.fields 
-                  if isinstance(field, FSMField) or isinstance(field, FSMKeyField)]
-        found = len(fields)
-        if found == 0:
-            raise TypeError("No FSMField found in model")
-        elif found > 1:
-            raise TypeError("More than one FSMField found in model")
-        return fields[0]
-
-    @staticmethod
-    def current_state(instance):
+        if self.field:
+            return self.field
+        else:
+            fields = [field for field in instance._meta.fields 
+                      if isinstance(field, FSMField) or isinstance(field, FSMKeyField)]
+            found = len(fields)
+            if found == 0:
+                raise TypeError("No FSMField found in model")
+            elif found > 1:
+                raise TypeError("More than one FSMField found in model")
+            return fields[0]
+    
+    def current_state(self, instance):
         """
         Return current state of Django model
         """
-        field_name = FSMMeta._get_state_field(instance).name
+        field_name = self._get_state_field(instance).name
         return getattr(instance, field_name)
         
     def has_transition(self, instance):
         """
         Lookup if any transition exists from current model state
         """
-        return self.transitions.has_key(FSMMeta.current_state(instance)) or self.transitions.has_key('*')
+        return self.transitions.has_key(self.current_state(instance)) or self.transitions.has_key('*')
 
     def conditions_met(self, instance):
         """
         Check if all conditions has been met
         """
-        current_state = FSMMeta.current_state(instance)
+        current_state = self.current_state(instance)
         next = self.transitions.has_key(current_state) and self.transitions[current_state] or self.transitions['*']
 
         return all(map(lambda f: f(instance), self.conditions[next]))
@@ -70,7 +72,7 @@ class FSMMeta(object):
         """
         Switch to next state
         """
-        field_name = FSMMeta._get_state_field(instance).name
+        field_name = self._get_state_field(instance).name
         curr_state = getattr(instance, field_name)
         
         next_state = None
@@ -83,7 +85,7 @@ class FSMMeta(object):
             setattr(instance, field_name, next_state)
 
 
-def transition(source='*', target=None, save=False, conditions=[]):
+def transition(field=None, source='*', target=None, save=False, conditions=[]):
     """
     Method decorator for mark allowed transition
 
@@ -93,7 +95,7 @@ def transition(source='*', target=None, save=False, conditions=[]):
     # pylint: disable=C0111
     def inner_transition(func):
         if not hasattr(func, '_django_fsm'):
-            setattr(func, '_django_fsm', FSMMeta())
+            setattr(func, '_django_fsm', FSMMeta(field=field))
 
         if isinstance(source, (list, tuple)):
             for state in source:
@@ -107,7 +109,7 @@ def transition(source='*', target=None, save=False, conditions=[]):
         def _change_state(instance, *args, **kwargs):            
             meta = func._django_fsm
             if not meta.has_transition(instance):
-                raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (FSMMeta.current_state(instance), func.func_name))
+                raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.func_name))
             
             for condition in conditions:
                 if not condition(instance):
