@@ -6,6 +6,7 @@ State tracking functionality for django models
 from collections import defaultdict
 from functools import wraps
 from django.db import models
+from django.utils.functional import curry
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
 try:
@@ -25,11 +26,14 @@ class FSMMeta(object):
     """
     Models methods transitions meta information
     """
-    def __init__(self, field=None):
+    def __init__(self, field=None):        
         self.field = field
         self.transitions = defaultdict()
         self.conditions  = defaultdict()
-    
+
+        if self.field:
+            self.field.switches.append(self)
+
     def _get_state_field(self, instance):
         """
         Lookup for FSMField in django model instance
@@ -64,9 +68,10 @@ class FSMMeta(object):
         Check if all conditions has been met
         """
         current_state = self.current_state(instance)
-        next = self.transitions.has_key(current_state) and self.transitions[current_state] or self.transitions['*']
-
-        return all(map(lambda f: f(instance), self.conditions[next]))
+        next = (current_state in self.transitions and self.transitions[current_state]) or ('*' in self.transitions and self.transitions['*'])
+        if next:
+            return all(map(lambda f: f(instance), self.conditions[next]))
+        return False
 
     def to_next_state(self, instance):
         """
@@ -139,6 +144,18 @@ def can_proceed(bound_method):
     return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self)
 
 
+def get_available_FIELD_transitions(instance, field):
+    curr_state = getattr(instance, field.name)
+    result = []
+    for switch in field.switches:
+        if switch.conditions_met(instance):
+            try:
+                result.append(switch.transitions[curr_state])
+            except KeyError:
+                result.append(switch.transitions['*'])
+    return result
+
+
 class FSMField(models.Field):
     """
     State Machine support for Django model
@@ -149,6 +166,12 @@ class FSMField(models.Field):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 50
         super(FSMField, self).__init__(*args, **kwargs)
+        self.switches = []
+
+    def contribute_to_class(self, cls, name):
+        super(FSMField,self).contribute_to_class(cls, name)
+        if self.switches:
+            setattr(cls, 'get_available_%s_transitions' % self.name, curry(get_available_FIELD_transitions, field=self))
 
     def get_internal_type(self):
         return 'CharField'
