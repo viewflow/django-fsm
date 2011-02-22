@@ -162,10 +162,10 @@ def condition_func(instance):
 class BlogPostWithConditions(models.Model):
     state = FSMField(default='new')
 
-    def model_condition(self, *args, **kwargs):
+    def model_condition(self):
         return True
 
-    def unmet_condition(self, *args, **kwargs):
+    def unmet_condition(self):
         return False
 
     @transition(source='new', target='published', conditions=[condition_func, model_condition])
