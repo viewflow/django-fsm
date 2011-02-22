@@ -193,7 +193,7 @@ class ConditionalTest(TestCase):
         self.model.publish()
         self.assertEqual(self.model.state, 'published')
         self.assertFalse(can_proceed(self.model.destroy))
-        self.assertFalse(self.model.destroy())
+        self.assertRaises(TransitionNotAllowed, self.model.destroy)
 
 
 class BlogPostWithExplicitState(models.Model):
@@ -229,5 +229,6 @@ class ExplicitFSMFieldTest(TestCase):
         self.assertEqual(self.model.state, 'published')
         self.assertEqual(self.model.approvement, 'new')
         self.assertEqual(self.model.get_available_state_transitions(), [])
-        self.assertEqual(self.model.get_available_approvement_transitions(), ['approved', 'declined'])
+        self.assertEqual([t[0] for t in self.model.get_available_approvement_transitions()], 
+                         ['approved', 'declined'])
 
