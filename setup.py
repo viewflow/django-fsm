@@ -1,9 +1,15 @@
-from setuptools import setup, find_packages
+from setuptools import setup
+
+try:
+    long_description = open('README.md').read()
+except IOError:
+    long_description = ''
 
 setup(
     name='django-fsm',
-    version='1.0.0',
+    version='1.1.0',
     description='Django friendly finite state machine support.',
+    long_description = long_description,
     author='Mikhail Podgurskiy',
     author_email='kmmbvnr@gmail.com',
     url='http://github.com/kmmbvnr/djang-fsm',

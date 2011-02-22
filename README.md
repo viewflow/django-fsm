@@ -1,7 +1,8 @@
+
 Django friendly finite state machine support
 ============================================
 
-django-fsm adds declarative states managment for django models.
+django-fsm adds declarative states management for django models.
 Instead of adding some state field to a django model, and manage it
 values by hand, you could use FSMState field and mark model methods
 with the `transition` decorator. Your method will contain the side-effects
@@ -13,7 +14,7 @@ before a transition is allowed.
 Installation
 ------------
 
-    $ python setup.py install
+    $ pip install django-fsm
 
 Or, for the latest git version
 
@@ -101,20 +102,33 @@ Use the conditions like this:
         Side effects galore
         """
 
+### get_available_FIELD_transitions
+
+You could specify FSMField explicitly in transition decorator.
+
+    class BlogPost(models.Model):
+        state = FSMField(default='new')
+
+        @transition(field=state, source='new', target='published')
+        def publish(self):
+    	    pass
+
+This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
+that returns list of (target_state, method) available from current model state
+
+### Foreign Key constraints support 
 
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
 
+Changelog
+-------
 
+django-fsm 1.1.0 2011-02-22
+    * Add support for transition conditions 
+    * Allow multiple FSMField in one model
+    * Contribute get_available_FIELD_transitions for model class
 
-
-
-
-
-
-
-
-
-
-
+django-fsm 1.0.0 2010-10-12
+    * Initial public release
