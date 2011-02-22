@@ -26,13 +26,19 @@ class FSMMeta(object):
     """
     Models methods transitions meta information
     """
-    def __init__(self, field=None):        
+    def __init__(self, field=None):
         self.field = field
         self.transitions = defaultdict()
         self.conditions  = defaultdict()
 
         if self.field:
             self.field.switches.append(self)
+
+    def add_transition(self, event, source, target, conditions=[]):
+        if source in self.transitions:
+            raise AssertionError('Duplicate transition for %s state' % source)
+        self.transitions[source] = target
+        self.conditions[source] = conditions
 
     def _get_state_field(self, instance):
         """
@@ -41,7 +47,7 @@ class FSMMeta(object):
         if self.field:
             return self.field
         else:
-            fields = [field for field in instance._meta.fields 
+            fields = [field for field in instance._meta.fields
                       if isinstance(field, FSMField) or isinstance(field, FSMKeyField)]
             found = len(fields)
             if found == 0:
@@ -49,14 +55,14 @@ class FSMMeta(object):
             elif found > 1:
                 raise TypeError("More than one FSMField found in model")
             return fields[0]
-    
+
     def current_state(self, instance):
         """
         Return current state of Django model
         """
         field_name = self._get_state_field(instance).name
         return getattr(instance, field_name)
-        
+
     def has_transition(self, instance):
         """
         Lookup if any transition exists from current model state
@@ -67,10 +73,12 @@ class FSMMeta(object):
         """
         Check if all conditions has been met
         """
-        current_state = self.current_state(instance)
-        next = (current_state in self.transitions and self.transitions[current_state]) or ('*' in self.transitions and self.transitions['*'])
-        if next:
-            return all(map(lambda f: f(instance), self.conditions[next]))
+        state = self.current_state(instance)
+        if state not in self.conditions:
+           state = '*'
+ 
+        if all(map(lambda f: f(instance), self.conditions[state])):
+                return True
         return False
 
     def to_next_state(self, instance):
@@ -79,13 +87,13 @@ class FSMMeta(object):
         """
         field_name = self._get_state_field(instance).name
         curr_state = getattr(instance, field_name)
-        
+
         next_state = None
         try:
             next_state = self.transitions[curr_state]
         except KeyError:
             next_state = self.transitions['*']
-        
+
         if next_state:
             setattr(instance, field_name, next_state)
 
@@ -98,44 +106,40 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
     changed after function call
     """
     # pylint: disable=C0111
-    def inner_transition(func):
+    def inner_transition(func):        
         if not hasattr(func, '_django_fsm'):
             setattr(func, '_django_fsm', FSMMeta(field=field))
 
+            @wraps(func)
+            def _change_state(instance, *args, **kwargs):
+                meta = func._django_fsm
+                if not (meta.has_transition(instance) and  meta.conditions_met(instance)):
+                    raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.func_name))
+
+                result = func(instance, *args, **kwargs)
+
+                meta.to_next_state(instance)
+                if save:
+                    instance.save()
+
+                return result
+        else:
+            _change_state = func
+
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.transitions[state] = target
+                func._django_fsm.add_transition(_change_state, state, target, conditions)
         else:
-            func._django_fsm.transitions[source] = target
+            func._django_fsm.add_transition(_change_state, source, target, conditions)
 
-        func._django_fsm.conditions[target] = conditions
-
-        @wraps(func)
-        def _change_state(instance, *args, **kwargs):            
-            meta = func._django_fsm
-            if not meta.has_transition(instance):
-                raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.func_name))
-            
-            for condition in conditions:
-                if not condition(instance):
-                    return False
-
-            result = func(instance, *args, **kwargs)
-
-            meta.to_next_state(instance)
-            if save:
-                instance.save()
-
-            return result
-        
         return _change_state
-    
+
     return inner_transition
 
 
 def can_proceed(bound_method):
     """
-    Returns True if model in state allows to call bound_method 
+    Returns True if model in state allows to call bound_method
     """
     if not hasattr(bound_method, '_django_fsm'):
         raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
@@ -162,7 +166,7 @@ class FSMField(models.Field):
 
     """
     __metaclass__ = models.SubfieldBase
-    
+
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 50
         super(FSMField, self).__init__(*args, **kwargs)
