@@ -31,14 +31,13 @@ class FSMMeta(object):
         self.transitions = defaultdict()
         self.conditions  = defaultdict()
 
-        if self.field:
-            self.field.switches.append(self)
-
-    def add_transition(self, event, source, target, conditions=[]):
+    def add_transition(self, source, target, conditions=[]):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for %s state' % source)
+
         self.transitions[source] = target
         self.conditions[source] = conditions
+
 
     def _get_state_field(self, instance):
         """
@@ -128,10 +127,12 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
 
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.add_transition(_change_state, state, target, conditions)
+                func._django_fsm.add_transition(state, target, conditions)
         else:
-            func._django_fsm.add_transition(_change_state, source, target, conditions)
+            func._django_fsm.add_transition(source, target, conditions)
 
+        if field:
+            field.transitions.append(_change_state)
         return _change_state
 
     return inner_transition
@@ -151,12 +152,13 @@ def can_proceed(bound_method):
 def get_available_FIELD_transitions(instance, field):
     curr_state = getattr(instance, field.name)
     result = []
-    for switch in field.switches:
-        if switch.conditions_met(instance):
+    for transition in field.transitions:
+        meta = transition._django_fsm
+        if meta.has_transition(instance) and meta.conditions_met(instance):
             try:
-                result.append(switch.transitions[curr_state])
+                result.append((meta.transitions[curr_state], transition))
             except KeyError:
-                result.append(switch.transitions['*'])
+                result.append((meta.transitions['*'], transition))
     return result
 
 
@@ -170,11 +172,11 @@ class FSMField(models.Field):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 50
         super(FSMField, self).__init__(*args, **kwargs)
-        self.switches = []
+        self.transitions = []
 
     def contribute_to_class(self, cls, name):
         super(FSMField,self).contribute_to_class(cls, name)
-        if self.switches:
+        if self.transitions:
             setattr(cls, 'get_available_%s_transitions' % self.name, curry(get_available_FIELD_transitions, field=self))
 
     def get_internal_type(self):
