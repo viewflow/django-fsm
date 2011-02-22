@@ -220,8 +220,8 @@ class ExplicitFSMFieldTest(TestCase):
     def test_initial_state_instatiated(self):
         self.assertEqual(self.model.state, 'new')
         self.assertEqual(self.model.approvement, 'new')
-        self.assertEqual(self.model.get_available_state_transitions(), ['published'])
-        self.assertEqual(self.model.get_available_approvement_transitions(), ['approved', 'declined'])
+        self.assertEqual([t[0] for t in self.model.get_available_state_transitions()], ['published'])
+        self.assertEqual([t[0] for t in self.model.get_available_approvement_transitions()], ['approved', 'declined'])
 
     def test_known_transition_should_succeed(self):
         self.assertTrue(can_proceed(self.model.publish))
