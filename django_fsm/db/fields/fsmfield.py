@@ -103,7 +103,7 @@ class FSMMeta(object):
 
 pre_transition = django.dispatch.Signal(providing_args=['instance','name','source','target'])
 transition_not_allowed = django.dispatch.Signal(providing_args=['instance','name','source'])
-post_transition = django.dispatch.Signal(providing_args=['instance','name','source','target'])
+post_transition = django.dispatch.Signal(providing_args=['instance','name','source','target','saved'])
 
 def transition(field=None, source='*', target=None, save=False, conditions=[]):
     """
@@ -133,7 +133,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
                 if save:
                     instance.save()
 
-                post_transition.send(sender=instance.__class__, instance=instance, name=func.func_name, source=source_state, target=meta.current_state(instance))
+                post_transition.send(sender=instance.__class__, instance=instance, name=func.func_name, source=source_state, target=meta.current_state(instance), saved=save)
                 return result
         else:
             _change_state = func
