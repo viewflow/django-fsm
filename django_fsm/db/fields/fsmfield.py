@@ -7,6 +7,7 @@ from collections import defaultdict
 from functools import wraps
 from django.db import models
 from django.utils.functional import curry
+import django.dispatch
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
 try:
@@ -80,6 +81,14 @@ class FSMMeta(object):
                 return True
         return False
 
+    def get_next_state(self, instance):
+        next_state = None
+        try:
+            next_state = self.transitions[curr_state]
+        except KeyError:
+            next_state = self.transitions['*']
+        return next_state
+
     def to_next_state(self, instance):
         """
         Switch to next state
@@ -87,15 +96,14 @@ class FSMMeta(object):
         field_name = self._get_state_field(instance).name
         curr_state = getattr(instance, field_name)
 
-        next_state = None
-        try:
-            next_state = self.transitions[curr_state]
-        except KeyError:
-            next_state = self.transitions['*']
+        next_state = self.get_next_state(instance)
 
         if next_state:
             setattr(instance, field_name, next_state)
 
+pre_transition = django.dispatch.Signal(providing_args=['instance','name','source','target'])
+transition_not_allowed = django.dispatch.Signal(providing_args=['instance','name','source'])
+post_transition = django.dispatch.Signal(providing_args=['instance','name','source','target'])
 
 def transition(field=None, source='*', target=None, save=False, conditions=[]):
     """
@@ -111,8 +119,12 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
 
             @wraps(func)
             def _change_state(instance, *args, **kwargs):
+                source_state = meta.current_state(instance)
+                pre_transition.send(sender=instance.__class__, instance=instance, name=func.func_name, source=source_state, target=meta.next_state(instance))
+
                 meta = func._django_fsm
-                if not (meta.has_transition(instance) and  meta.conditions_met(instance)):
+                if not (meta.has_transition(instance) and meta.conditions_met(instance)):
+                    transition_not_allowed.send(sender=instance.__class__, instance=instance, name=func.func_name, source=source_state)
                     raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.func_name))
 
                 result = func(instance, *args, **kwargs)
@@ -121,6 +133,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
                 if save:
                     instance.save()
 
+                post_transition.send(sender=instance.__class__, instance=instance, name=func.func_name, source=source_state, target=meta.current_state(instance))
                 return result
         else:
             _change_state = func
