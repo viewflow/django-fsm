@@ -121,9 +121,33 @@ that returns list of (target_state, method) available from current model state
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
+### Signals
+
+`django_fsm.signals.pre_transition` and `django_fsm.signals.pre_transition` called before 
+and after allowed transition. No signals on invalid transition call.
+
+Arguments sent with these signals:
+
+**sender**
+   The model class.
+
+**instance**
+   The actual instance being procceed
+
+**name**
+   Transition name
+
+**source**
+   Source model state
+
+**target**
+   Target model state
+
 
 Changelog
 -------
+django-fsm current
+    * Add pre_transition and post_transition signals
 
 django-fsm 1.1.0 2011-02-22
     * Add support for transition conditions 

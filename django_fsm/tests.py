@@ -4,6 +4,7 @@
 from django.test import TestCase
 from django.db import models
 
+from django_fsm.signals import pre_transition, post_transition
 from django_fsm.db.fields import FSMField, FSMKeyField, \
     TransitionNotAllowed, transition, can_proceed
 
@@ -231,4 +232,31 @@ class ExplicitFSMFieldTest(TestCase):
         self.assertEqual(self.model.get_available_state_transitions(), [])
         self.assertEqual([t[0] for t in self.model.get_available_approvement_transitions()], 
                          ['approved', 'declined'])
+
+
+class StateSignalsTests(TestCase):
+    def setUp(self):
+        self.model = BlogPost()
+        self.pre_transition_called = False
+        self.post_transition_called = False
+        pre_transition.connect(self.on_pre_transition, sender=BlogPost)
+        post_transition.connect(self.on_post_transition, sender=BlogPost)
+
+    def on_pre_transition(self, sender, instance, name, source, target, **kwargs):        
+        self.assertEqual(instance.state, source)
+        self.pre_transition_called = True
+
+    def on_post_transition(self, sender, instance, name, source, target, **kwargs):
+        self.assertEqual(instance.state, target)
+        self.post_transition_called = True
+
+    def test_signals_called_on_valid_transition(self):
+        self.model.publish()
+        self.assertTrue(self.pre_transition_called)
+        self.assertTrue(self.post_transition_called)
+
+    def test_signals_not_called_on_invalid_transition(self):
+        self.assertRaises(TransitionNotAllowed, self.model.hide)
+        self.assertFalse(self.pre_transition_called)
+        self.assertFalse(self.post_transition_called)
 

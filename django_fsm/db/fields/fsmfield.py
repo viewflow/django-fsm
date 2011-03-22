@@ -7,6 +7,7 @@ from collections import defaultdict
 from functools import wraps
 from django.db import models
 from django.utils.functional import curry
+from django_fsm.signals import pre_transition, post_transition
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
 try:
@@ -43,9 +44,7 @@ class FSMMeta(object):
         """
         Lookup for FSMField in django model instance
         """
-        if self.field:
-            return self.field
-        else:
+        if not self.field:
             fields = [field for field in instance._meta.fields
                       if isinstance(field, FSMField) or isinstance(field, FSMKeyField)]
             found = len(fields)
@@ -53,7 +52,8 @@ class FSMMeta(object):
                 raise TypeError("No FSMField found in model")
             elif found > 1:
                 raise TypeError("More than one FSMField found in model")
-            return fields[0]
+            self.field = fields[0]
+        return self.field
 
     def current_state(self, instance):
         """
@@ -61,6 +61,16 @@ class FSMMeta(object):
         """
         field_name = self._get_state_field(instance).name
         return getattr(instance, field_name)
+
+    def next_state(self, instance):
+        curr_state = self.current_state(instance)
+
+        result = None
+        try:
+            result = self.transitions[curr_state]
+        except KeyError:
+            result = self.transitions['*']
+        return result
 
     def has_transition(self, instance):
         """
@@ -85,16 +95,10 @@ class FSMMeta(object):
         Switch to next state
         """
         field_name = self._get_state_field(instance).name
-        curr_state = getattr(instance, field_name)
+        state = self.next_state(instance)
 
-        next_state = None
-        try:
-            next_state = self.transitions[curr_state]
-        except KeyError:
-            next_state = self.transitions['*']
-
-        if next_state:
-            setattr(instance, field_name, next_state)
+        if state:
+            setattr(instance, field_name, state)
 
 
 def transition(field=None, source='*', target=None, save=False, conditions=[]):
@@ -115,12 +119,26 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
                 if not (meta.has_transition(instance) and  meta.conditions_met(instance)):
                     raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.func_name))
 
+                source_state = meta.current_state(instance)
+                pre_transition.send(
+                    sender = instance.__class__,
+                    instance = instance,
+                    name = func.func_name,
+                    source = source_state,
+                    target = meta.next_state(instance))
+ 	
                 result = func(instance, *args, **kwargs)
 
                 meta.to_next_state(instance)
                 if save:
                     instance.save()
 
+                post_transition.send(
+                    sender = instance.__class__,
+                    instance = instance,
+                    name = func.func_name,
+                    source = source_state,
+                    target = meta.current_state(instance))
                 return result
         else:
             _change_state = func
