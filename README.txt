@@ -1,4 +1,4 @@
-
+============================================
 Django friendly finite state machine support
 ============================================
 
@@ -12,7 +12,7 @@ The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
 Installation
-------------
+============
 
     $ pip install django-fsm
 
@@ -22,7 +22,7 @@ Or, for the latest git version
 
 
 Usage
------
+=====
 
 Add FSMState field to you model
     from django_fsm.db.fields import FSMField, transition
@@ -102,7 +102,8 @@ Use the conditions like this:
         Side effects galore
         """
 
-### get_available_FIELD_transitions
+get_available_FIELD_transitions
+-------------------------------
 
 You could specify FSMField explicitly in transition decorator.
 
@@ -121,7 +122,8 @@ that returns list of (target_state, method) available from current model state
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
-### Signals
+Signals
+-------
 
 `django_fsm.signals.pre_transition` and `django_fsm.signals.pre_transition` called before 
 and after allowed transition. No signals on invalid transition call.
@@ -145,8 +147,9 @@ Arguments sent with these signals:
 
 
 Changelog
--------
-django-fsm current
+---------
+
+django-fsm 1.2.0 2011-03-23
     * Add pre_transition and post_transition signals
 
 django-fsm 1.1.0 2011-02-22
@@ -156,3 +159,4 @@ django-fsm 1.1.0 2011-02-22
 
 django-fsm 1.0.0 2010-10-12
     * Initial public release
+
