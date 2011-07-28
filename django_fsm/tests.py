@@ -127,7 +127,7 @@ class BlogPostStatus(models.Model):
 
 
 class BlogPostWithFKState(models.Model):
-    status = FSMKeyField(BlogPostStatus, default='new')
+    status = FSMKeyField(BlogPostStatus, default=lambda: BlogPostStatus.objects.get(name="new"))
 
     @transition(source='new', target='published')
     def publish(self):
@@ -260,3 +260,25 @@ class StateSignalsTests(TestCase):
         self.assertFalse(self.pre_transition_called)
         self.assertFalse(self.post_transition_called)
 
+
+class ProtectedAccessModel(models.Model):
+    status = FSMField(default='new', protected=True)
+
+    @transition(source='new', target='published')
+    def publish(self):
+        pass
+
+
+class TestDirectAccessModels(TestCase):
+    def test_no_direct_access(self):
+        instance = ProtectedAccessModel()
+        self.assertEqual(instance.status, 'new')
+
+        def try_change():
+            instance.status = 'change'
+
+        self.assertRaises(AttributeError, try_change)
+
+        instance.publish()
+        instance.save()
+        self.assertEqual(instance.status, 'published')

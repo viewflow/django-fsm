@@ -98,7 +98,7 @@ class FSMMeta(object):
         state = self.next_state(instance)
 
         if state:
-            setattr(instance, field_name, state)
+            instance.__dict__[field_name] = state
 
 
 def transition(field=None, source='*', target=None, save=False, conditions=[]):
@@ -180,20 +180,37 @@ def get_available_FIELD_transitions(instance, field):
     return result
 
 
+class FSMFieldDescriptor(object):
+    def __init__(self, field):
+        self.field = field
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            raise AttributeError('Can only be accessed via an instance.')
+        return obj.__dict__[self.field.name]
+
+    def __set__(self, instance, value):
+        if self.field.protected and self.field.name in instance.__dict__:
+            raise AttributeError('Direct %s modification is not allowed' % self.field.name)
+        instance.__dict__[self.field.name] = self.field.to_python(value)
+
+
 class FSMField(models.Field):
     """
     State Machine support for Django model
 
     """
-    __metaclass__ = models.SubfieldBase
+    descriptor_class = FSMFieldDescriptor
 
     def __init__(self, *args, **kwargs):
+        self.protected = kwargs.pop('protected', False)
         kwargs.setdefault('max_length', 50)
         super(FSMField, self).__init__(*args, **kwargs)
         self.transitions = []
 
     def contribute_to_class(self, cls, name):
         super(FSMField,self).contribute_to_class(cls, name)
+        setattr(cls, self.name, self.descriptor_class(self))
         if self.transitions:
             setattr(cls, 'get_available_%s_transitions' % self.name, curry(get_available_FIELD_transitions, field=self))
 
