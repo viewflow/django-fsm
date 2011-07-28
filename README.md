@@ -101,6 +101,15 @@ Use the conditions like this:
         Side effects galore
         """
 
+You could instantiate field with protected=True option, that prevents direct state field modification
+
+    class BlogPost(models.Model):
+        state = FSMField(default='new', protected=True)
+
+    model = BlogPost()
+    model.status = 'invalid' # Raises AttributeError
+
+
 ### get_available_FIELD_transitions
 
 You could specify FSMField explicitly in transition decorator.
@@ -145,6 +154,9 @@ Arguments sent with these signals:
 
 Changelog
 ---------
+
+django-fsm 1.3.0 2011-07-28
+    * Add direct field modification protection
 
 django-fsm 1.2.0 2011-03-23
     * Add pre_transition and post_transition signals
