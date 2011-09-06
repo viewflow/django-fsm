@@ -23,7 +23,7 @@ Or, for the latest git version
 Usage
 -----
 
-Add FSMState field to you model
+Add FSMState field to your model
     from django_fsm.db.fields import FSMField, transition
 
     class BlogPost(models.Model):
@@ -57,7 +57,7 @@ will be changed, but not written to the database.
         post.save()
         return redirect('/')
 
-If you use the transition decorator with the `save` argument set to `True`,
+If you are using the transition decorator with the `save` argument set to `True`,
 the new state will be written to the database
 
     @transition(source='new', target='published', save=True)
@@ -68,7 +68,7 @@ the new state will be written to the database
 
 If you require some conditions to be met before changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
-that take one argument, the model instance.  The function must return either
+that takes one argument, the model instance.  The function must return either
 `True` or `False` or a value that evaluates to `True` or `False`. If all
 functions return `True`, all conditions are considered to be met and transition
 is allowed to happen. If one of the functions return `False`, the transition
@@ -107,7 +107,7 @@ You could instantiate field with protected=True option, that prevents direct sta
         state = FSMField(default='new', protected=True)
 
     model = BlogPost()
-    model.status = 'invalid' # Raises AttributeError
+    model.state = 'invalid' # Raises AttributeError
 
 
 ### get_available_FIELD_transitions
@@ -131,8 +131,8 @@ ensure Foreign Key database integrity.
 
 ### Signals
 
-`django_fsm.signals.pre_transition` and `django_fsm.signals.pre_transition` called before 
-and after allowed transition. No signals on invalid transition call.
+`django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before 
+and after allowed transition. No signals on invalid transition are called.
 
 Arguments sent with these signals:
 
