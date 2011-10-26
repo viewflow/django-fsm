@@ -2,6 +2,7 @@
 .coverage
 .cache
 .ve
+.idea
 dist
 django_fsm.egg-info
 reports
