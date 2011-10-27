@@ -22,6 +22,9 @@ else:
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
 
+# An array of tuples (source, target) for known states
+#
+all_states = []
 
 class FSMMeta(object):
     """
@@ -34,10 +37,11 @@ class FSMMeta(object):
 
     def add_transition(self, source, target, conditions=[]):
         if source in self.transitions:
-            raise AssertionError('Duplicate transition for %s state' % source)
+            raise AssertionError('Duplicate transition for %s->%s state' % (source, target))
 
         self.transitions[source] = target
         self.conditions[source] = conditions
+        all_states.append((source, target))
 
 
     def _get_state_field(self, instance):
@@ -100,6 +104,42 @@ class FSMMeta(object):
         if state:
             instance.__dict__[field_name] = state
 
+
+def make_graph(fname):
+    """
+    Make a graph of all available FSMs and save it in a PNG file
+    
+    @param fname: The file name of the image (.png)
+    """
+    try:
+        import pydot
+    except:
+        return
+        
+    # Browse all tuples
+    #
+    nodes = {}
+    graph = pydot.Dot(graph_type='digraph')
+    uniq = []
+    for src, dest in all_states:
+        if src and not nodes.has_key(src):
+            nodes[src] = pydot.Node(src, shape = "rect")
+            graph.add_node(nodes[src])
+        if dest and not nodes.has_key(dest):
+            nodes[dest] = pydot.Node(dest, shape = "rect")
+            graph.add_node(nodes[dest])
+            
+        # Add the connection between the two nodes
+        #
+        if not src or not dest:
+            continue
+        t = "__%s__:__%s__" % (src, dest)
+        if t in uniq:
+            continue
+        uniq.append(t)
+        graph.add_edge(pydot.Edge(nodes[src], nodes[dest]))
+        
+    graph.write_png(fname)
 
 def transition(field=None, source='*', target=None, save=False, conditions=[]):
     """
