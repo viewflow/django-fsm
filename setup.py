@@ -11,7 +11,7 @@ setup(
     description='Django friendly finite state machine support.',
     author='Mikhail Podgurskiy',
     author_email='kmmbvnr@gmail.com',
-    url='http://github.com/kmmbvnr/djang-fsm',
+    url='http://github.com/kmmbvnr/django-fsm',
     keywords = "django",
     packages=['django_fsm', 'django_fsm.db', 'django_fsm.db.fields'],
     include_package_data=True,
