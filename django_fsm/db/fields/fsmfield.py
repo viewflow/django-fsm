@@ -22,6 +22,9 @@ else:
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
 
+# An array of tuples (source, target) for known states
+#
+all_states = []
 
 class FSMMeta(object):
     """
@@ -34,10 +37,11 @@ class FSMMeta(object):
 
     def add_transition(self, source, target, conditions=[]):
         if source in self.transitions:
-            raise AssertionError('Duplicate transition for %s state' % source)
+            raise AssertionError('Duplicate transition for %s->%s state' % (source, target))
 
         self.transitions[source] = target
         self.conditions[source] = conditions
+        all_states.append((source, target))
 
 
     def _get_state_field(self, instance):
@@ -99,6 +103,7 @@ class FSMMeta(object):
 
         if state:
             instance.__dict__[field_name] = state
+
 
 
 def transition(field=None, source='*', target=None, save=False, conditions=[]):

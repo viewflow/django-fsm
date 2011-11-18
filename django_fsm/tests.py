@@ -7,6 +7,7 @@ from django.db import models
 from django_fsm.signals import pre_transition, post_transition
 from django_fsm.db.fields import FSMField, FSMKeyField, \
     TransitionNotAllowed, transition, can_proceed
+from django_fsm.db.fields.fsmfield import make_graph
 
 class BlogPost(models.Model):
     state = FSMField(default='new')
@@ -34,7 +35,6 @@ class BlogPost(models.Model):
     @transition(source='*', target='moderated')
     def moderate(self):
         pass
-
 
 class FSMFieldTest(TestCase):
     def setUp(self):
@@ -282,3 +282,5 @@ class TestDirectAccessModels(TestCase):
         instance.publish()
         instance.save()
         self.assertEqual(instance.status, 'published')
+        
+
