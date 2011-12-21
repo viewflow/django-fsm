@@ -1,4 +1,4 @@
-PROJECT_APPS = ('django_fsm',)
+PROJECT_APPS = ('django_fsm', 'testapp',)
 INSTALLED_APPS = ('django_jenkins',) + PROJECT_APPS
 DATABASE_ENGINE = 'sqlite3'
 

@@ -3,6 +3,7 @@
 """
 State tracking functionality for django models
 """
+import warnings
 from collections import defaultdict
 from functools import wraps
 from django.db import models
@@ -108,6 +109,9 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
     Set target to None if current state need to be validated and not
     changed after function call
     """
+    if field is None:
+        warnings.warn("Non explicid field transition support going to be removed", DeprecationWarning, stacklevel=2)
+    
     # pylint: disable=C0111
     def inner_transition(func):        
         if not hasattr(func, '_django_fsm'):
