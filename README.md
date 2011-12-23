@@ -157,7 +157,7 @@ Arguments sent with these signals:
     Renders a graphical overview of your models states transitions
 
     # Create a dot file
-    $ ./manage.py graph_transitions -a > transitions.dot
+    $ ./manage.py graph_transitions > transitions.dot
 
     # Create a PNG image file only for specific model
     $ ./manage.py graph_transitions -o blog_transitions.png myapp.Blog
@@ -166,7 +166,7 @@ Arguments sent with these signals:
 Changelog
 ---------
 django 1.4.0 2011-12-21
-    * Add graph_transition command fro drawing state transition picture
+    * Add graph_transition command for drawing state transition picture
 
 django-fsm 1.3.0 2011-07-28
     * Add direct field modification protection
