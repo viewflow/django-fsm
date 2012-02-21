@@ -24,6 +24,7 @@ Usage
 -----
 
 Add FSMState field to your model
+
     from django_fsm.db.fields import FSMField, transition
 
     class BlogPost(models.Model):
