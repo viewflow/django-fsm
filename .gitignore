@@ -1,7 +1,8 @@
 *.pyc
 .coverage
 .cache
-.ve
+.ve2?
+.ve3?
 dist
 django_fsm.egg-info
 reports

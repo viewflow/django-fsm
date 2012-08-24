@@ -19,6 +19,8 @@ Or, for the latest git version
 
     $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
 
+Library have Python 3 support, except graph transition drawing, b/c
+pygraphviz is not ported yet.
 
 Usage
 -----

@@ -3,12 +3,17 @@
 """
 State tracking functionality for django models
 """
+import sys
 import warnings
 from collections import defaultdict
 from functools import wraps
 from django.db import models
 from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
+
+
+PY3K = sys.version_info[0] == 3
+
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
 try:
@@ -77,7 +82,7 @@ class FSMMeta(object):
         """
         Lookup if any transition exists from current model state
         """
-        return self.transitions.has_key(self.current_state(instance)) or self.transitions.has_key('*')
+        return self.current_state(instance) in self.transitions or '*' in self.transitions
 
     def conditions_met(self, instance):
         """
@@ -121,13 +126,14 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
             def _change_state(instance, *args, **kwargs):
                 meta = func._django_fsm
                 if not (meta.has_transition(instance) and  meta.conditions_met(instance)):
-                    raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.func_name))
+                    raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.__name__))
 
                 source_state = meta.current_state(instance)
+
                 pre_transition.send(
                     sender = instance.__class__,
                     instance = instance,
-                    name = func.func_name,
+                    name = func.__name__,
                     source = source_state,
                     target = meta.next_state(instance))
  	
@@ -140,7 +146,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
                 post_transition.send(
                     sender = instance.__class__,
                     instance = instance,
-                    name = func.func_name,
+                    name = func.__name__,
                     source = source_state,
                     target = meta.current_state(instance))
                 return result
@@ -168,7 +174,11 @@ def can_proceed(bound_method):
         raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
 
     meta = bound_method._django_fsm
-    return meta.has_transition(bound_method.im_self) and meta.conditions_met(bound_method.im_self)
+    if not PY3K:
+        im_self = getattr(bound_method, 'im_self', None)
+    else:
+        im_self = getattr(bound_method, '__self__', None)
+    return meta.has_transition(im_self) and meta.conditions_met(im_self)
 
 
 def get_available_FIELD_transitions(instance, field):
