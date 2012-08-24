@@ -97,6 +97,6 @@ class Command(BaseCommand):
         if options['outputfile']:
             self.render_output(dotdata, **options)
         else:
-            print dotdata
+            print(dotdata)
 
 
