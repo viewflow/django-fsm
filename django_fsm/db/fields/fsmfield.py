@@ -38,10 +38,11 @@ class FSMMeta(object):
         self.transitions = defaultdict()
         self.conditions  = defaultdict()
 
-    def add_transition(self, source, target, conditions=[]):
+    def add_transition(self, source, target, conditions=None):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for %s state' % source)
-
+        if conditions is None:
+            conditions = []
         self.transitions[source] = target
         self.conditions[source] = conditions
 
@@ -107,7 +108,7 @@ class FSMMeta(object):
             instance.__dict__[field_name] = state
 
 
-def transition(field=None, source='*', target=None, save=False, conditions=[]):
+def transition(field=None, source='*', target=None, save=False, conditions=None):
     """
     Method decorator for mark allowed transition
 
@@ -116,7 +117,10 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
     """
     if field is None:
         warnings.warn("Non explicid field transition support going to be removed", DeprecationWarning, stacklevel=2)
-    
+
+    if conditions is None:
+        conditions = []
+
     # pylint: disable=C0111
     def inner_transition(func):        
         if not hasattr(func, '_django_fsm'):
