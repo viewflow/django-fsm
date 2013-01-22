@@ -115,7 +115,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
     changed after function call
     """
     if field is None:
-        warnings.warn("Non explicid field transition support going to be removed", DeprecationWarning, stacklevel=2)
+        warnings.warn("Non explicit field transition support going to be removed", DeprecationWarning, stacklevel=2)
     
     # pylint: disable=C0111
     def inner_transition(func):        
