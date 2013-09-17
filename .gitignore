@@ -1,12 +1,5 @@
 *.pyc
-.coverage
-.cache
-.ve2?
-.ve3?
 dist
 django_fsm.egg-info
 reports
-distribute-*.tar.gz
-nosetests.xml
-coverage.xml
-pylint.out
+.tox

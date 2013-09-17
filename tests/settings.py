@@ -10,6 +10,13 @@ DATABASES = {
         }
 }
 
+JENKINS_TASKS = (
+    'django_jenkins.tasks.with_coverage',
+    'django_jenkins.tasks.run_pep8',
+    'django_jenkins.tasks.run_pyflakes',
+    'django_jenkins.tasks.django_tests',
+)
+
 if __name__ == "__main__":
     import sys, test_runner as settings
     from django.core.management import execute_manager
