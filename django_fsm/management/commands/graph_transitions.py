@@ -23,7 +23,7 @@ def generate_dot(fields):
         sources, any_targets = [], []
 
         for transition in field.transitions:            
-            for source, target in transition._django_fsm.transitions.iteritems():
+            for source, target in transition._django_fsm.transitions.items():
                 opts = field.model._meta
                 if field.model in model_graphs:
                     model_graph = model_graphs[field.model]

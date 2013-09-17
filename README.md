@@ -19,8 +19,9 @@ Or, for the latest git version
 
     $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
 
-Library have Python 3 support, except graph transition drawing, b/c
-pygraphviz is not ported yet.
+Library have full Python 3 support, for graph transition drawing
+you should install python3 compatible graphviz version
+from git+https://github.com/philipaxer/pygraphviz
 
 Usage
 -----
@@ -167,7 +168,10 @@ Arguments sent with these signals:
 
 Changelog
 ---------
-django 1.4.0 2011-12-21
+django-fsm 1.5.0 2013-09-17
+    * Python 3 compatibility
+
+django-fsm 1.4.0 2011-12-21
     * Add graph_transition command for drawing state transition picture
 
 django-fsm 1.3.0 2011-07-28
