@@ -27,47 +27,51 @@ Usage
 -----
 
 Add FSMState field to your model
-    from django_fsm.db.fields import FSMField, transition
+```python
+from django_fsm.db.fields import FSMField, transition
 
-    class BlogPost(models.Model):
-        state = FSMField(default='new')
+class BlogPost(models.Model):
+    state = FSMField(default='new')
+```
 
 
 Use the `transition` decorator to annotate model methods
-
-    @transition(source='new', target='published')
-    def publish(self):
-        """
-        This function may contain side-effects, 
-        like updating caches, notifying users, etc.
-        The return value will be discarded.
-        """
+```python
+@transition(source='new', target='published')
+def publish(self):
+    """
+    This function may contain side-effects, 
+    like updating caches, notifying users, etc.
+    The return value will be discarded.
+    """
+```
 
 `source` parameter accepts a list of states, or an individual state.
 You can use `*` for source, to allow switching to `target` from any state.
 
 If calling publish() succeeds without raising an exception, the state field
 will be changed, but not written to the database.
+```python
+from django_fsm.db.fields import can_proceed
 
-    from django_fsm.db.fields import can_proceed
+def publish_view(request, post_id):
+    post = get_object__or_404(BlogPost, pk=post_id)
+    if not can_proceed(post.publish):
+         raise Http404;
 
-    def publish_view(request, post_id):
-        post = get_object__or_404(BlogPost, pk=post_id)
-        if not can_proceed(post.publish):
-             raise Http404;
-
-        post.publish()
-        post.save()
-        return redirect('/')
-
+    post.publish()
+    post.save()
+    return redirect('/')
+```
 If you are using the transition decorator with the `save` argument set to `True`,
 the new state will be written to the database
-
-    @transition(source='new', target='published', save=True)
-    def publish(self):
-        """
-        Side effects other than changing state goes here
-        """
+```python
+@transition(source='new', target='published', save=True)
+def publish(self):
+    """
+    Side effects other than changing state goes here
+    """
+```
 
 If you require some conditions to be met before changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
@@ -78,51 +82,55 @@ is allowed to happen. If one of the functions return `False`, the transition
 will not happen. These functions should not have any side effects.
 
 You can use ordinary functions
-
-    def can_publish(instance):
-        # No publishing after 17 hours
-        if datetime.datetime.now().hour > 17:
-           return False
-        return True
+```python
+def can_publish(instance):
+    # No publishing after 17 hours
+    if datetime.datetime.now().hour > 17:
+       return False
+    return True
+```
 
 Or model methods
-
-    def can_destroy(self):
-        return self.is_under_investigation()
+```python
+def can_destroy(self):
+    return self.is_under_investigation()
+```
 
 Use the conditions like this:
+```python
+@transition(source='new', target='published', conditions=[can_publish])
+def publish(self):
+    """
+    Side effects galore
+    """
 
-    @transition(source='new', target='published', conditions=[can_publish])
-    def publish(self):
-        """
-        Side effects galore
-        """
-
-    @transition(source='*', target='destroyed', conditions=[can_destroy])
-    def destroy(self):
-        """
-        Side effects galore
-        """
+@transition(source='*', target='destroyed', conditions=[can_destroy])
+def destroy(self):
+    """
+    Side effects galore
+    """
+```
 
 You could instantiate field with protected=True option, that prevents direct state field modification
+```python
+class BlogPost(models.Model):
+    state = FSMField(default='new', protected=True)
 
-    class BlogPost(models.Model):
-        state = FSMField(default='new', protected=True)
-
-    model = BlogPost()
-    model.state = 'invalid' # Raises AttributeError
-
+model = BlogPost()
+model.state = 'invalid' # Raises AttributeError
+```
 
 ### get_available_FIELD_transitions
 
 You could specify FSMField explicitly in transition decorator.
+```python
+class BlogPost(models.Model):
+    state = FSMField(default='new')
 
-    class BlogPost(models.Model):
-        state = FSMField(default='new')
-
-        @transition(field=state, source='new', target='published')
-        def publish(self):
-    	    pass
+    @transition(field=state, source='new', target='published')
+    def publish(self):
+	    pass
+```
 
 This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
 that returns list of (target_state, method) available from current model state
