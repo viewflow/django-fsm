@@ -38,7 +38,7 @@ Use the `transition` decorator to annotate model methods
     @transition(source='new', target='published')
     def publish(self):
         """
-        This function may contain side-effects, 
+        This function may contain side-effects,
         like updating caches, notifying users, etc.
         The return value will be discarded.
         """
@@ -127,14 +127,14 @@ You could specify FSMField explicitly in transition decorator.
 This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
 that returns list of (target_state, method) available from current model state
 
-### Foreign Key constraints support 
+### Foreign Key constraints support
 
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
 ### Signals
 
-`django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before 
+`django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before
 and after allowed transition. No signals on invalid transition are called.
 
 Arguments sent with these signals:
@@ -181,7 +181,7 @@ django-fsm 1.2.0 2011-03-23
     * Add pre_transition and post_transition signals
 
 django-fsm 1.1.0 2011-02-22
-    * Add support for transition conditions 
+    * Add support for transition conditions
     * Allow multiple FSMField in one model
     * Contribute get_available_FIELD_transitions for model class
 
