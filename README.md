@@ -72,7 +72,7 @@ the new state will be written to the database
 
 If you require some conditions to be met before changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
-that takes one argument, the model instance.  The function must return either
+that take the model instance as their first argument.  The function must return either
 `True` or `False` or a value that evaluates to `True` or `False`. If all
 functions return `True`, all conditions are considered to be met and transition
 is allowed to happen. If one of the functions return `False`, the transition
@@ -104,6 +104,17 @@ Use the conditions like this:
         """
         Side effects galore
         """
+
+You can pass additional arguments to the conditions functions. You could for example pass the user
+to check for a certain permission. If you want to do that, all transition and condition functions
+must take the same additional arguments, even if you don't use them everywhere:
+
+    def can_publish(instance, user):
+        return user.has_perm('catalogue.can_publish_offer')
+
+    @transition(source='new', target='published', conditions=[can_publish])
+    def publish(self, user):
+        pass
 
 You could instantiate field with protected=True option, that prevents direct state field modification
 

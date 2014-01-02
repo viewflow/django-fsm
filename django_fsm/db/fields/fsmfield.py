@@ -83,7 +83,7 @@ class FSMMeta(object):
         """
         return self.current_state(instance) in self.transitions or '*' in self.transitions
 
-    def conditions_met(self, instance):
+    def conditions_met(self, instance, *args, **kwargs):
         """
         Check if all conditions has been met
         """
@@ -91,7 +91,7 @@ class FSMMeta(object):
         if state not in self.conditions:
             state = '*'
 
-        if all(map(lambda f: f(instance), self.conditions[state])):
+        if all(map(lambda f: f(instance, *args, **kwargs), self.conditions[state])):
                 return True
         return False
 
@@ -124,7 +124,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
             @wraps(func)
             def _change_state(instance, *args, **kwargs):
                 meta = func._django_fsm
-                if not (meta.has_transition(instance) and meta.conditions_met(instance)):
+                if not (meta.has_transition(instance) and meta.conditions_met(instance, *args, **kwargs)):
                     raise TransitionNotAllowed("Can't switch from state '%s' using method '%s'" % (meta.current_state(instance), func.__name__))
 
                 source_state = meta.current_state(instance)
@@ -165,7 +165,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
     return inner_transition
 
 
-def can_proceed(bound_method):
+def can_proceed(bound_method, *args, **kwargs):
     """
     Returns True if model in state allows to call bound_method
     """
@@ -177,15 +177,15 @@ def can_proceed(bound_method):
         im_self = getattr(bound_method, 'im_self', None)
     else:
         im_self = getattr(bound_method, '__self__', None)
-    return meta.has_transition(im_self) and meta.conditions_met(im_self)
+    return meta.has_transition(im_self) and meta.conditions_met(im_self, *args, **kwargs)
 
 
-def get_available_FIELD_transitions(instance, field):
+def get_available_FIELD_transitions(instance, field, *args, **kwargs):
     curr_state = getattr(instance, field.name)
     result = []
     for transition in field.transitions:
         meta = transition._django_fsm
-        if meta.has_transition(instance) and meta.conditions_met(instance):
+        if meta.has_transition(instance) and meta.conditions_met(instance, *args, **kwargs):
             try:
                 result.append((meta.transitions[curr_state], transition))
             except KeyError:
