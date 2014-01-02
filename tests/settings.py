@@ -18,7 +18,8 @@ JENKINS_TASKS = (
 )
 
 if __name__ == "__main__":
-    import sys, test_runner as settings
+    import sys
+    import test_runner as settings
     from django.core.management import execute_manager
 
     if len(sys.argv) == 1:

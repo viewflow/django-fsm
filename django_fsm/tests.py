@@ -8,6 +8,7 @@ from django_fsm.signals import pre_transition, post_transition
 from django_fsm.db.fields import FSMField, FSMKeyField, \
     TransitionNotAllowed, transition, can_proceed
 
+
 class BlogPost(models.Model):
     state = FSMField(default='new')
 
@@ -27,7 +28,7 @@ class BlogPost(models.Model):
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 
-    @transition(source=['published','hidden'], target='stolen')
+    @transition(source=['published', 'hidden'], target='stolen')
     def steal(self):
         pass
 
@@ -60,7 +61,7 @@ class FSMFieldTest(TestCase):
         self.assertTrue(can_proceed(self.model.remove))
         self.assertRaises(Exception, self.model.remove)
         self.assertEqual(self.model.state, 'new')
-        
+
     def test_allowed_null_transition_should_succeed(self):
         self.model.publish()
         self.model.notify_all()
@@ -132,7 +133,7 @@ class BlogPostWithFKState(models.Model):
     @transition(source='new', target='published')
     def publish(self):
         pass
- 
+
     @transition(source='published', target='hidden', save=True)
     def hide(self):
         pass
@@ -230,7 +231,7 @@ class ExplicitFSMFieldTest(TestCase):
         self.assertEqual(self.model.state, 'published')
         self.assertEqual(self.model.approvement, 'new')
         self.assertEqual(self.model.get_available_state_transitions(), [])
-        self.assertEqual([t[0] for t in self.model.get_available_approvement_transitions()], 
+        self.assertEqual([t[0] for t in self.model.get_available_approvement_transitions()],
                          ['approved', 'declined'])
 
 
@@ -242,7 +243,7 @@ class StateSignalsTests(TestCase):
         pre_transition.connect(self.on_pre_transition, sender=BlogPost)
         post_transition.connect(self.on_post_transition, sender=BlogPost)
 
-    def on_pre_transition(self, sender, instance, name, source, target, **kwargs):        
+    def on_pre_transition(self, sender, instance, name, source, target, **kwargs):
         self.assertEqual(instance.state, source)
         self.pre_transition_called = True
 
