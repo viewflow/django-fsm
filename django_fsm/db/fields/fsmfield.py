@@ -180,7 +180,7 @@ def can_proceed(bound_method, *args, **kwargs):
     return meta.has_transition(im_self) and meta.conditions_met(im_self, *args, **kwargs)
 
 
-def get_available_FIELD_transitions(instance, field, *args, **kwargs):
+def get_available_FIELD_transitions(field, instance, *args, **kwargs):
     curr_state = getattr(instance, field.name)
     result = []
     for transition in field.transitions:
@@ -225,7 +225,7 @@ class FSMField(models.Field):
         super(FSMField, self).contribute_to_class(cls, name)
         setattr(cls, self.name, self.descriptor_class(self))
         if self.transitions:
-            setattr(cls, 'get_available_%s_transitions' % self.name, curry(get_available_FIELD_transitions, field=self))
+            setattr(cls, 'get_available_%s_transitions' % self.name, curry(get_available_FIELD_transitions, self))
 
     def get_internal_type(self):
         return 'CharField'
