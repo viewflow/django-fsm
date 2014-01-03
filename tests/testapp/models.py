@@ -12,7 +12,7 @@ class Application(models.Model):
     @transition(field=state, source='new', target='draft')
     def draft(self):
         pass
-    
+
     @transition(field=state, source=['new', 'draft'], target='dept')
     def to_approvement(self):
         pass
@@ -56,7 +56,7 @@ class BlogPost(models.Model):
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 
-    @transition(field=state, source=['published','hidden'], target='stolen')
+    @transition(field=state, source=['published', 'hidden'], target='stolen')
     def steal(self):
         pass
 
