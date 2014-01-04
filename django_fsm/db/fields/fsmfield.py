@@ -49,7 +49,7 @@ class FSMMeta(object):
         """
         Lookup for FSMField in django model instance
         """
-        if not self.field:
+        if self.field is None:
             fields = [field for field in instance._meta.fields
                       if isinstance(field, FSMField) or isinstance(field, FSMKeyField)]
             found = len(fields)
@@ -58,6 +58,8 @@ class FSMMeta(object):
             elif found > 1:
                 raise TypeError("More than one FSMField found in model")
             self.field = fields[0]
+        elif isinstance(self.field, str):
+            self.field, _, _, _ = instance._meta.get_field_by_name(self.field)
         return self.field
 
     def current_state(self, instance):
@@ -159,7 +161,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
         else:
             func._django_fsm.add_transition(source, target, conditions)
 
-        if field:
+        if field and not isinstance(field, str):
             field.transitions.append(_change_state)
         return _change_state
 

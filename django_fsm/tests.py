@@ -283,3 +283,23 @@ class TestDirectAccessModels(TestCase):
         instance.publish()
         instance.save()
         self.assertEqual(instance.status, 'published')
+
+
+class StickedBlogPost(BlogPost):
+    @transition(field='state', source='published', target='sticked')
+    def stick(self):
+        pass
+
+
+class TestinheritedModel(TestCase):
+    def setUp(self):
+        self.model = StickedBlogPost()
+
+    def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+
+        self.assertTrue(can_proceed(self.model.stick))
+        self.model.stick()
+        self.assertEqual(self.model.state, 'sticked')
