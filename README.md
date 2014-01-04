@@ -169,7 +169,7 @@ Arguments sent with these signals:
 
 Changelog
 ---------
-django-fsm 1.5.1 2014-01-14
+django-fsm 1.5.1 2014-01-04
 
     * Ad-hoc support for state fields from proxy and inherited models
 
