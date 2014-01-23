@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # pylint: disable=C0111, C0103, R0904
 
 from django.test import TestCase
@@ -8,31 +8,30 @@ from django_fsm.signals import pre_transition, post_transition
 from django_fsm.db.fields import FSMField, FSMKeyField, \
     TransitionNotAllowed, transition, can_proceed
 
-
 class BlogPost(models.Model):
     state = FSMField(default='new')
 
-    @transition(source='new', target='published')
+    @transition(source='new', target='published', field=state)
     def publish(self):
         pass
 
-    @transition(source='published')
+    @transition(source='published', field=state)
     def notify_all(self):
         pass
 
-    @transition(source='published', target='hidden')
+    @transition(source='published', target='hidden', field=state)
     def hide(self):
         pass
 
-    @transition(source='new', target='removed')
+    @transition(source='new', target='removed', field=state)
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 
-    @transition(source=['published', 'hidden'], target='stolen')
+    @transition(source=['published', 'hidden'], target='stolen', field=state)
     def steal(self):
         pass
 
-    @transition(source='*', target='moderated')
+    @transition(source='*', target='moderated', field=state)
     def moderate(self):
         pass
 
@@ -88,6 +87,122 @@ class FSMFieldTest(TestCase):
         self.assertEqual(self.model.state, 'moderated')
 
 
+class DBState(models.Model):
+    id = models.CharField(primary_key=True, max_length=50)
+
+    label = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.label
+
+FK_AVAILABLE_STATES = (('new', '_NEW_'),
+                      ('published', '_PUBLISHED_'),
+                      ('hidden', '_HIDDEN_'),
+                      ('removed', '_REMOVED_'),
+                      ('stolen', '_STOLEN_'),
+                      ('moderated', '_MODERATED_'),
+                     )
+
+class FKBlogPost(models.Model):
+
+    state = FSMKeyField(DBState, default='new', protected=True,)
+
+    @transition(source='new',
+                target='published',
+                field='state')
+    def publish(self):
+        pass
+
+    @transition(source='published',
+                field='state')
+    def notify_all(self):
+        pass
+
+    @transition(source='published',
+                target='hidden',
+                field='state')
+    def hide(self):
+        pass
+
+    @transition(source='new',
+                target='removed',
+                field='state')
+    def remove(self):
+        raise Exception('No rights to delete %s' % self)
+
+    @transition(source=['published',
+                        'hidden'],
+                target='stolen',
+                field='state_id')
+    def steal(self):
+        pass
+
+    @transition(source='*',
+                target='moderated',
+                field='state')
+    def moderate(self):
+        pass
+
+
+class FSMKeyFieldTest(TestCase):
+    def setUp(self):
+        self.model = FKBlogPost()
+        self.STATES = {}
+        # Populate dbstate items
+        for item in FK_AVAILABLE_STATES:
+            state = DBState(pk=item[0], label=item[1])
+            state.save()
+            self.STATES[item[0]] = state
+
+
+    def test_initial_state_instatiated(self):
+        self.assertEqual(self.model.state, 'new',)
+
+    def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
+        self.model.publish()
+        self.assertEqual(self.model.state, self.STATES['published'])
+
+        self.assertTrue(can_proceed(self.model.hide))
+        self.model.hide()
+        self.assertEqual(self.model.state, self.STATES['hidden'])
+
+    def test_unknow_transition_fails(self):
+        self.assertFalse(can_proceed(self.model.hide))
+        self.assertRaises(TransitionNotAllowed, self.model.hide)
+
+    def test_state_non_changed_after_fail(self):
+        self.assertTrue(can_proceed(self.model.remove))
+        self.assertRaises(Exception, self.model.remove)
+        self.assertEqual(self.model.state, self.STATES['new'])
+
+    def test_allowed_null_transition_should_succeed(self):
+        self.model.publish()
+        self.model.notify_all()
+        self.assertEqual(self.model.state, self.STATES['published'])
+
+    def test_unknow_null_transition_should_fail(self):
+        self.assertRaises(TransitionNotAllowed, self.model.notify_all)
+        self.assertEqual(self.model.state, self.STATES['new'])
+
+
+    def test_mutiple_source_support_path_1_works(self):
+        self.model.publish()
+        self.model.steal()
+        self.assertEqual(self.model.state, self.STATES['stolen'])
+
+    def test_mutiple_source_support_path_2_works(self):
+        self.model.publish()
+        self.model.hide()
+        self.model.steal()
+        self.assertEqual(self.model.state, self.STATES['stolen'])
+
+    def test_star_shortcut_succeed(self):
+        self.assertTrue(can_proceed(self.model.moderate))
+        self.model.moderate()
+        self.assertEqual(self.model.state, self.STATES['moderated'])
+
+
 class InvalidModel(models.Model):
     state = FSMField(default='new')
     action = FSMField(default='no')
@@ -106,7 +221,7 @@ class InvalidModelTest(TestCase):
 class Document(models.Model):
     status = FSMField(default='new')
 
-    @transition(source='new', target='published')
+    @transition(source='new', target='published', field=status)
     def publish(self):
         pass
 

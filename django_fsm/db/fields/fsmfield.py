@@ -27,6 +27,7 @@ else:
 
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
+    pass
 
 
 class FSMMeta(object):
@@ -213,7 +214,7 @@ class FSMFieldDescriptor(object):
 
 class FSMField(models.Field):
     """
-    State Machine support for Django model
+    State Machine support for Django model as CharField
 
     """
     descriptor_class = FSMFieldDescriptor
@@ -234,8 +235,44 @@ class FSMField(models.Field):
         return 'CharField'
 
 
+class FSMKeyFieldDescriptor(object):
+    def __init__(self, field):
+        self.field = field
+        # self.m2m_field = field.
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            raise AttributeError('Can only be accessed via an instance.')
+        return obj.__dict__[self.field.attname]
+
+    def __set__(self, instance, value):
+        if self.field.protected and self.field.attname in instance.__dict__:
+            raise AttributeError('Direct %s modification is not allowed' % self.field.name)
+        instance.__dict__[self.field.attname] = self.field.to_python(value)
+
+
 class FSMKeyField(models.ForeignKey):
     """
     State Machine support for Django model
 
     """
+    descriptor_class = FSMKeyFieldDescriptor
+
+    def __init__(self, to, to_field=None, rel_class=models.ManyToOneRel,
+                 db_constraint=True, **kwargs):
+        self.protected = kwargs.pop('protected', False)
+        super(FSMKeyField, self).__init__(to,
+                                          to_field=to_field,
+                                          rel_class=rel_class,
+                                          db_constraint=db_constraint,
+                                          **kwargs)
+        self.transitions = []
+
+    def contribute_to_class(self, cls, name):
+        super(FSMKeyField, self).contribute_to_class(cls, name)
+        setattr(cls, self.name, self.descriptor_class(self))
+        if self.transitions:
+            setattr(cls, 'get_available_%s_transitions' % self.name, curry(get_available_FIELD_transitions, field=self))
+
+    def get_internal_type(self):
+        return 'ForeignKey'

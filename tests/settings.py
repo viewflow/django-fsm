@@ -7,6 +7,7 @@ DATABASE_ENGINE = 'sqlite3'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.%s' % DATABASE_ENGINE,
+        'NAME': './db_tests.sqlite'
         }
 }
 
