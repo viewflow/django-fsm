@@ -105,7 +105,7 @@ FK_AVAILABLE_STATES = (('new', '_NEW_'),
 
 class FKBlogPost(models.Model):
 
-    state = FSMKeyField(DBState, default='new', protected=True,)
+    state = FSMKeyField(DBState, default='new', protected=True)
 
     @transition(source='new',
                 target='published',
@@ -133,7 +133,7 @@ class FKBlogPost(models.Model):
     @transition(source=['published',
                         'hidden'],
                 target='stolen',
-                field='state_id')
+                field='state')
     def steal(self):
         pass
 
@@ -154,18 +154,17 @@ class FSMKeyFieldTest(TestCase):
             state.save()
             self.STATES[item[0]] = state
 
-
     def test_initial_state_instatiated(self):
         self.assertEqual(self.model.state, 'new',)
 
     def test_known_transition_should_succeed(self):
         self.assertTrue(can_proceed(self.model.publish))
         self.model.publish()
-        self.assertEqual(self.model.state, self.STATES['published'])
+        self.assertEqual(self.model.state, 'published')
 
         self.assertTrue(can_proceed(self.model.hide))
         self.model.hide()
-        self.assertEqual(self.model.state, self.STATES['hidden'])
+        self.assertEqual(self.model.state, 'hidden')
 
     def test_unknow_transition_fails(self):
         self.assertFalse(can_proceed(self.model.hide))
@@ -174,33 +173,34 @@ class FSMKeyFieldTest(TestCase):
     def test_state_non_changed_after_fail(self):
         self.assertTrue(can_proceed(self.model.remove))
         self.assertRaises(Exception, self.model.remove)
-        self.assertEqual(self.model.state, self.STATES['new'])
+        self.assertEqual(self.model.state, 'new')
 
     def test_allowed_null_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
         self.model.publish()
         self.model.notify_all()
-        self.assertEqual(self.model.state, self.STATES['published'])
+        self.assertEqual(self.model.state, 'published')
 
     def test_unknow_null_transition_should_fail(self):
         self.assertRaises(TransitionNotAllowed, self.model.notify_all)
-        self.assertEqual(self.model.state, self.STATES['new'])
+        self.assertEqual(self.model.state, 'new')
 
 
     def test_mutiple_source_support_path_1_works(self):
         self.model.publish()
         self.model.steal()
-        self.assertEqual(self.model.state, self.STATES['stolen'])
+        self.assertEqual(self.model.state, 'stolen')
 
     def test_mutiple_source_support_path_2_works(self):
         self.model.publish()
         self.model.hide()
         self.model.steal()
-        self.assertEqual(self.model.state, self.STATES['stolen'])
+        self.assertEqual(self.model.state, 'stolen')
 
     def test_star_shortcut_succeed(self):
         self.assertTrue(can_proceed(self.model.moderate))
         self.model.moderate()
-        self.assertEqual(self.model.state, self.STATES['moderated'])
+        self.assertEqual(self.model.state, 'moderated')
 
 
 class InvalidModel(models.Model):
