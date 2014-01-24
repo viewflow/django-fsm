@@ -133,6 +133,45 @@ that returns list of (target_state, method) available from current model state
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
+In your model : 
+
+    class DbState(models.Model):
+        id = models.CharField(primary_key=True, max_length=50)
+        label = models.CharField(max_length=255)
+        
+        def __unicode__(self);
+            return self.label
+
+    
+    class BlogPost(models.Model):
+        state = FSMKeyField(DbState, default='new')
+    
+        @transition(field=state, source='new', target='published')
+        def publish(self):
+            pass
+    
+In your fixtures/initial_data.json :
+
+    [...
+        {
+            "pk": "new", 
+            "model": "myapp.dbstate", 
+            "fields": {
+                "label": "_NEW_"
+            }
+        },
+        {
+            "pk": "published", 
+            "model": "myapp.dbstate", 
+            "fields": {
+                "label": "_PUBLISHED_"
+            }
+        }, ...
+    ]
+
+Note : source and target parameters in @transition decorator use pk values of DBState model
+as names, even if field "real" name is used, without _id postfix, as field parameter.
+
 ### Signals
 
 `django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before 
