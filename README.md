@@ -10,6 +10,8 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
+[![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.png?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm)
+
 Installation
 ------------
 
