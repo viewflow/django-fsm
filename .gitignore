@@ -3,7 +3,3 @@ dist
 django_fsm.egg-info
 reports
 .tox
-.project
-.pydevproject
-.settings
-tests/db_tests.sqlite
