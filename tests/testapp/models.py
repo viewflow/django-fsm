@@ -82,7 +82,7 @@ class BlogPost(models.Model):
     """
     Test workflow
     """
-    state = FSMField(default='new', protected=True,)
+    state = FSMField(default='new', protected=True)
 
     @transition(field=state, source='new', target='published')
     def publish(self):

@@ -27,7 +27,6 @@ else:
 
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
-    pass
 
 
 class FSMMeta(object):
