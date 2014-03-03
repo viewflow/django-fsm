@@ -22,6 +22,7 @@ except ImportError:
     pass
 else:
     add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMField"])
+    add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMIntegerField"])
     add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMKeyField"])
 
 
@@ -100,7 +101,7 @@ class FSMMeta(object):
     def _get_state_field_name(self, instance):
         field = self._get_state_field(instance)
 
-        if isinstance(field, FSMField):
+        if isinstance(field, (FSMField, FSMIntegerField)):
             field_name = field.name
         elif isinstance(field, FSMKeyField):
             field_name = field.attname
@@ -288,3 +289,13 @@ class FSMKeyField(models.ForeignKey):
 
     def get_internal_type(self):
         return 'ForeignKey'
+
+
+class FSMIntegerField(models.IntegerField, FSMField):
+    """
+    Same as FSMField, but stores the state value in an IntegerField.
+    db_index is True by default.
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('db_index', True)
+        super(FSMIntegerField, self).__init__(*args, **kwargs)

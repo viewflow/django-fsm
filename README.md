@@ -128,6 +128,7 @@ You could specify FSMField explicitly in transition decorator.
 This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
 that returns list of (target_state, method) available from current model state
 
+
 ### Foreign Key constraints support 
 
 If you store the states in the db table you could use FSMKeyField to
@@ -171,6 +172,24 @@ In your fixtures/initial_data.json :
 
 Note : source and target parameters in @transition decorator use pk values of DBState model
 as names, even if field "real" name is used, without _id postfix, as field parameter.
+
+
+### Integer Field support 
+
+You can also use `FSMIntegerField`. This is handy when you want to use enum style constants. This field is also `db_index=True` by default for speedy db loookups.
+
+	class BlogPostStateEnum(object):
+	    NEW = 10
+	    PUBLISHED = 20
+	    HIDDEN = 30
+	
+	class BlogPostWithIntegerField(models.Model):
+	    state = FSMIntegerField(default=BlogPostStateEnum.NEW)
+	
+	    @transition(source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
+	    def publish(self):
+	        pass
+
 
 ### Signals
 
@@ -237,4 +256,3 @@ django-fsm 1.1.0 2011-02-22
 django-fsm 1.0.0 2010-10-12
 
     * Initial public release
-

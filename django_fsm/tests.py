@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.db import models
 
 from django_fsm.signals import pre_transition, post_transition
-from django_fsm.db.fields import FSMField, FSMKeyField, \
+from django_fsm.db.fields import FSMField, FSMKeyField, FSMIntegerField, \
     TransitionNotAllowed, transition, can_proceed
 
 class BlogPost(models.Model):
@@ -274,6 +274,39 @@ class BlogPostWithFKStateTest(TestCase):
 
 def condition_func(instance):
     return True
+
+
+class BlogPostStateEnum(object):
+    NEW = 10
+    PUBLISHED = 20
+    HIDDEN = 30
+
+
+class BlogPostWithIntegerField(models.Model):
+    state = FSMIntegerField(default=BlogPostStateEnum.NEW)
+
+    @transition(source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
+    def publish(self):
+        pass
+
+    @transition(source=BlogPostStateEnum.PUBLISHED, target=BlogPostStateEnum.HIDDEN, save=True)
+    def hide(self):
+        pass
+
+
+class BlogPostWithIntegerFieldTest(TestCase):
+    def setUp(self):
+        self.model = BlogPostWithIntegerField()
+
+    def test_known_transition_should_succeed(self):
+        self.model.publish()
+        self.assertEqual(self.model.state, BlogPostStateEnum.PUBLISHED)
+
+        self.model.hide()
+        self.assertEqual(self.model.state, BlogPostStateEnum.HIDDEN)
+
+    def test_unknow_transition_fails(self):
+        self.assertRaises(TransitionNotAllowed, self.model.hide)
 
 
 class BlogPostWithConditions(models.Model):
