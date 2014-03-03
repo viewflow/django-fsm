@@ -1,5 +1,5 @@
 from django.db import models
-from django_fsm.db.fields import FSMField, transition
+from django_fsm.db.fields import FSMField, FSMKeyField, transition
 
 
 class Application(models.Model):
@@ -34,11 +34,55 @@ class Application(models.Model):
         pass
 
 
+class FKApplication(models.Model):
+    """
+    Student application need to be approved by dept chair and dean.
+    Test workflow for FSMKeyField
+    """
+    state = FSMKeyField('testapp.DbState', default='new')
+
+    @transition(field=state, source='new', target='draft')
+    def draft(self):
+        pass
+
+    @transition(field=state, source=['new', 'draft'], target='dept')
+    def to_approvement(self):
+        pass
+
+    @transition(field=state, source='dept', target='dean')
+    def dept_approved(self):
+        pass
+
+    @transition(field=state, source='dept', target='new')
+    def dept_rejected(self):
+        pass
+
+    @transition(field=state, source='dean', target='done')
+    def dean_approved(self):
+        pass
+
+    @transition(field=state, source='dean', target='dept')
+    def dean_rejected(self):
+        pass
+
+
+class DbState(models.Model):
+    '''
+    States in DB
+    '''
+    id = models.CharField(primary_key=True, max_length=50)
+
+    label = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.label
+
+
 class BlogPost(models.Model):
     """
     Test workflow
     """
-    state = FSMField(default='new')
+    state = FSMField(default='new', protected=True)
 
     @transition(field=state, source='new', target='published')
     def publish(self):

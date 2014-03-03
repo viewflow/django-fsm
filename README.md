@@ -10,8 +10,6 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
-[![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.png?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm)
-
 Installation
 ------------
 
@@ -130,10 +128,51 @@ You could specify FSMField explicitly in transition decorator.
 This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
 that returns list of (target_state, method) available from current model state
 
+
 ### Foreign Key constraints support 
 
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
+
+In your model : 
+
+    class DbState(models.Model):
+        id = models.CharField(primary_key=True, max_length=50)
+        label = models.CharField(max_length=255)
+        
+        def __unicode__(self);
+            return self.label
+
+    
+    class BlogPost(models.Model):
+        state = FSMKeyField(DbState, default='new')
+    
+        @transition(field=state, source='new', target='published')
+        def publish(self):
+            pass
+    
+In your fixtures/initial_data.json :
+
+    [...
+        {
+            "pk": "new", 
+            "model": "myapp.dbstate", 
+            "fields": {
+                "label": "_NEW_"
+            }
+        },
+        {
+            "pk": "published", 
+            "model": "myapp.dbstate", 
+            "fields": {
+                "label": "_PUBLISHED_"
+            }
+        }, ...
+    ]
+
+Note : source and target parameters in @transition decorator use pk values of DBState model
+as names, even if field "real" name is used, without _id postfix, as field parameter.
+
 
 ### Integer Field support 
 
@@ -217,4 +256,3 @@ django-fsm 1.1.0 2011-02-22
 django-fsm 1.0.0 2010-10-12
 
     * Initial public release
-

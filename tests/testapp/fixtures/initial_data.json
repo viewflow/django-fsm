@@ -1,0 +1,27 @@
+[
+    {
+        "model": "testapp.dbstate",
+         "pk": "new",
+         "fields": { "label": "_New"}
+    },
+    {
+        "model": "testapp.dbstate",
+         "pk": "draft",
+         "fields": { "label": "_Draft"}
+    },
+    {
+        "model": "testapp.dbstate",
+         "pk": "dept",
+         "fields": { "label": "_Dept"}
+    },
+    {
+        "model": "testapp.dbstate",
+         "pk": "dean",
+         "fields": { "label": "_Dean"}
+    },
+    {
+        "model": "testapp.dbstate",
+         "pk": "done",
+         "fields": { "label": "_Done"}
+    }
+]
