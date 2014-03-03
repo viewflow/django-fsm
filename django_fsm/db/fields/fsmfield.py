@@ -22,6 +22,7 @@ except ImportError:
     pass
 else:
     add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMField"])
+    add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMIntegerField"])
     add_introspection_rules([], [r"^django_fsm\.db\.fields\.fsmfield\.FSMKeyField"])
 
 
@@ -239,3 +240,13 @@ class FSMKeyField(models.ForeignKey):
     State Machine support for Django model
 
     """
+
+
+class FSMIntegerField(models.IntegerField, FSMField):
+    """
+    Same as FSMField, but stores the state value in an IntegerField.
+    db_index is True by default.
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('db_index', True)
+        super(FSMIntegerField, self).__init__(*args, **kwargs)

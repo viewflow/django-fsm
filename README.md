@@ -135,6 +135,23 @@ that returns list of (target_state, method) available from current model state
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
+### Integer Field support 
+
+You can also use `FSMIntegerField`. This is handy when you want to use enum style constants. This field is also `db_index=True` by default for speedy db loookups.
+
+	class BlogPostStateEnum(object):
+	    NEW = 10
+	    PUBLISHED = 20
+	    HIDDEN = 30
+	
+	class BlogPostWithIntegerField(models.Model):
+	    state = FSMIntegerField(default=BlogPostStateEnum.NEW)
+	
+	    @transition(source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
+	    def publish(self):
+	        pass
+
+
 ### Signals
 
 `django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before 
