@@ -227,32 +227,35 @@ Arguments sent with these signals:
 
 Changelog
 ---------
-django-fsm 1.5.1 2014-01-04
+    
+<img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
 
-    * Ad-hoc support for state fields from proxy and inherited models
+### django-fsm 1.5.1 2014-01-04
 
-django-fsm 1.5.0 2013-09-17
+* Ad-hoc support for state fields from proxy and inherited models
 
-    * Python 3 compatibility
+### django-fsm 1.5.0 2013-09-17
 
-django-fsm 1.4.0 2011-12-21
+* Python 3 compatibility
 
-    * Add graph_transition command for drawing state transition picture
+### django-fsm 1.4.0 2011-12-21
 
-django-fsm 1.3.0 2011-07-28
+* Add graph_transition command for drawing state transition picture
 
-    * Add direct field modification protection
+### django-fsm 1.3.0 2011-07-28
 
-django-fsm 1.2.0 2011-03-23
+* Add direct field modification protection
 
-    * Add pre_transition and post_transition signals
+### django-fsm 1.2.0 2011-03-23
 
-django-fsm 1.1.0 2011-02-22
+* Add pre_transition and post_transition signals
 
-    * Add support for transition conditions 
-    * Allow multiple FSMField in one model
-    * Contribute get_available_FIELD_transitions for model class
+### django-fsm 1.1.0 2011-02-22
 
-django-fsm 1.0.0 2010-10-12
+* Add support for transition conditions 
+* Allow multiple FSMField in one model
+* Contribute get_available_FIELD_transitions for model class
 
-    * Initial public release
+### django-fsm 1.0.0 2010-10-12
+
+* Initial public release
