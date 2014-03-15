@@ -8,11 +8,35 @@ from functools import wraps
 
 from django.db import models
 from django.db.models.signals import class_prepared
+from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
+
+
+__all__ = ["TransitionNotAllowed", "FSMFieldMixin", "FSMField",
+           'transition', 'can_proceed']
 
 
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
+
+
+def get_available_FIELD_transitions(instance, field):
+    curr_state = field.get_state(instance)
+    result = []
+    for transition in field.transitions.values():
+        meta = transition._django_fsm
+
+        if curr_state in meta.transitions:
+            target, conditions = meta.transitions[curr_state]
+            if all(map(lambda condition: condition(instance), conditions)):
+                result.append((target, transition))
+
+        if '*' in meta.transitions:
+            _, conditions = meta.transitions['*']
+            if all(map(lambda condition: condition(instance), conditions)):
+                result.append((target, transition))
+
+    return result
 
 
 class FSMMeta(object):
@@ -21,15 +45,13 @@ class FSMMeta(object):
     """
     def __init__(self, field, method):
         self.field = field
-        self.transitions = defaultdict()  # source -> target
-        self.conditions = defaultdict()   # source -> [list of conditions]
+        self.transitions = defaultdict()  # source -> (target, conditions)
 
     def add_transition(self, source, target, conditions=[]):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {} state'.format(source))
 
-        self.transitions[source] = target
-        self.conditions[source] = conditions
+        self.transitions[source] = (target, conditions)
 
     def has_transition(self, state):
         """
@@ -41,16 +63,17 @@ class FSMMeta(object):
         """
         Check if all conditions has been met
         """
-        if state not in self.conditions:
-            state = '*'
+        _, conditions = self.transitions.get(state, (None, []))
+        if not conditions:
+            _, conditions = self.transitions.get('*', (None, []))
 
-        return all(map(lambda f: f(instance), self.conditions[state]))
+        return all(map(lambda condition: condition(instance), conditions))
 
     def next_state(self, current_state):
         try:
-            return self.transitions[current_state]
+            return self.transitions[current_state][0]
         except KeyError:
-            return self.transitions['*']
+            return self.transitions['*'][0]
 
 
 class FSMFieldDescriptor(object):
@@ -124,6 +147,8 @@ class FSMFieldMixin(object):
     def contribute_to_class(self, cls, name, virtual_only=False):
         super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
         setattr(cls, self.name, self.descriptor_class(self))
+        setattr(cls, 'get_available_{}_transitions'.format(self.name),
+                curry(get_available_FIELD_transitions, field=self))
         class_prepared.connect(self._collect_transitions, sender=cls)
 
     def _collect_transitions(self, *args, **kwargs):

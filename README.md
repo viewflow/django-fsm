@@ -230,6 +230,15 @@ Changelog
     
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
 
+### django-fsm 2.0.0
+* Backward incompatible release
+* All public code import moved directly to django_fsm package
+* Correct support for several @transitions decorator with different source states and conditions on same method
+* TODO
+
+### django-fsm 1.6.0
+* FSMIntegerField and FSMKeyField suppoer
+
 ### django-fsm 1.5.1 2014-01-04
 
 * Ad-hoc support for state fields from proxy and inherited models
