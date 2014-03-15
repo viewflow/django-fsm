@@ -3,7 +3,6 @@
 State tracking functionality for django models
 """
 import inspect
-from collections import defaultdict
 from functools import wraps
 
 from django.db import models
@@ -22,8 +21,10 @@ class TransitionNotAllowed(Exception):
 
 def get_available_FIELD_transitions(instance, field):
     curr_state = field.get_state(instance)
+    transitions = field.transitions[instance.__class__]
+
     result = []
-    for transition in field.transitions.values():
+    for transition in transitions.values():
         meta = transition._django_fsm
 
         if curr_state in meta.transitions:
@@ -45,7 +46,7 @@ class FSMMeta(object):
     """
     def __init__(self, field, method):
         self.field = field
-        self.transitions = defaultdict()  # source -> (target, conditions)
+        self.transitions = {}  # source -> (target, conditions)
 
     def add_transition(self, source, target, conditions=[]):
         if source in self.transitions:
@@ -96,7 +97,7 @@ class FSMFieldMixin(object):
 
     def __init__(self, *args, **kwargs):
         self.protected = kwargs.pop('protected', False)
-        self.transitions = {}  # transitions name -> method
+        self.transitions = {}  # cls -> (transitions name -> method)
 
         super(FSMFieldMixin, self).__init__(*args, **kwargs)
 
@@ -145,22 +146,33 @@ class FSMFieldMixin(object):
         return result
 
     def contribute_to_class(self, cls, name, virtual_only=False):
+        self.base_cls = cls
+
         super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, 'get_available_{}_transitions'.format(self.name),
                 curry(get_available_FIELD_transitions, field=self))
-        class_prepared.connect(self._collect_transitions, sender=cls)
+
+        class_prepared.connect(self._collect_transitions)
 
     def _collect_transitions(self, *args, **kwargs):
+        sender = kwargs['sender']
+
+        if not issubclass(sender, self.base_cls):
+            return
+
         def is_field_transition_method(attr):
             return inspect.ismethod(attr) \
                 and hasattr(attr, '_django_fsm') \
                 and attr._django_fsm.field in [self, self.name]
 
+        sender_transitions = {}
         transitions = inspect.getmembers(kwargs['sender'], predicate=is_field_transition_method)
         for method_name, method in transitions:
             method._django_fsm.field = self
-            self.transitions[method_name] = method
+            sender_transitions[method_name] = method
+
+        self.transitions[sender] = sender_transitions
 
 
 class FSMField(FSMFieldMixin, models.CharField):
