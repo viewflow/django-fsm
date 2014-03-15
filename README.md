@@ -230,6 +230,9 @@ Changelog
     
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
 
+### django-fsm 1.6.0
+* FSMIntegerField and FSMKeyField support
+
 ### django-fsm 1.5.1 2014-01-04
 
 * Ad-hoc support for state fields from proxy and inherited models

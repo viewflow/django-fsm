@@ -7,7 +7,7 @@ except IOError:
 
 setup(
     name='django-fsm',
-    version='1.5.1',
+    version='1.6.0',
     description='Django friendly finite state machine support.',
     author='Mikhail Podgurskiy',
     author_email='kmmbvnr@gmail.com',
