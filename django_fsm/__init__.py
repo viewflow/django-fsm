@@ -43,21 +43,7 @@ def get_available_FIELD_transitions(instance, field):
 
 
 def get_all_FIELD_transitions(instance, field):
-    """
-    Returns [(source, target, name, method)] for all field transitions
-    """
-    transitions = field.transitions[instance.__class__]
-
-    for name, transition in transitions.items():
-        meta = transition._django_fsm
-
-        for source, (target, conditions) in meta.transitions.items():
-            yield Transition(
-                name=name,
-                source=source,
-                target=target,
-                conditions=conditions,
-                method=transition)
+    return field.get_all_transitions(instance.__class__)
 
 
 class FSMMeta(object):
@@ -164,6 +150,23 @@ class FSMFieldMixin(object):
             target=next_state)
 
         return result
+
+    def get_all_transitions(self, instance_cls):
+        """
+        Returns [(source, target, name, method)] for all field transitions
+        """
+        transitions = self.transitions[instance_cls]
+
+        for name, transition in transitions.items():
+            meta = transition._django_fsm
+
+            for source, (target, conditions) in meta.transitions.items():
+                yield Transition(
+                    name=name,
+                    source=source,
+                    target=target,
+                    conditions=conditions,
+                    method=transition)
 
     def contribute_to_class(self, cls, name, virtual_only=False):
         self.base_cls = cls
