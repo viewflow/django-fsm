@@ -13,7 +13,7 @@ from django_fsm.signals import pre_transition, post_transition
 
 
 __all__ = ["TransitionNotAllowed", "FSMFieldMixin", "FSMField",
-           'transition', 'can_proceed']
+           'FSMIntegerField', 'FSMKeyField', 'transition', 'can_proceed']
 
 
 class TransitionNotAllowed(Exception):
@@ -101,15 +101,15 @@ class FSMFieldDescriptor(object):
     def __init__(self, field):
         self.field = field
 
-    def __get__(self, obj, type=None):
-        if obj is None:
+    def __get__(self, instance, type=None):
+        if instance is None:
             raise AttributeError('Can only be accessed via an instance.')
-        return obj.__dict__[self.field.name]
+        return self.field.get_state(instance)
 
     def __set__(self, instance, value):
         if self.field.protected and self.field.name in instance.__dict__:
             raise AttributeError('Direct {} modification is not allowed'.format(self.field.name))
-        instance.__dict__[self.field.name] = self.field.to_python(value)
+        self.field.set_state(instance, value)
 
 
 class FSMFieldMixin(object):
@@ -214,6 +214,17 @@ class FSMIntegerField(FSMFieldMixin, models.IntegerField):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('db_index', True)
         super(FSMIntegerField, self).__init__(*args, **kwargs)
+
+
+class FSMKeyField(FSMFieldMixin, models.ForeignKey):
+    """
+    State Machine support for Django model
+    """
+    def get_state(self, instance):
+        return instance.__dict__[self.attname]
+
+    def set_state(self, instance, state):
+        instance.__dict__[self.attname] = self.to_python(state)
 
 
 def transition(field, source='*', target=None, conditions=[]):

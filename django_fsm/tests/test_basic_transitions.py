@@ -22,7 +22,7 @@ class BlogPost(models.Model):
 
     @transition(source='new', target='removed', field=state)
     def remove(self):
-        raise Exception('No rights to delete %s' % self)
+        raise Exception('Upss')
 
     @transition(source=['published', 'hidden'], target='stolen', field=state)
     def steal(self):
