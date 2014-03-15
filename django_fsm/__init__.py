@@ -3,6 +3,7 @@
 State tracking functionality for django models
 """
 import inspect
+from collections import namedtuple
 from functools import wraps
 
 from django.db import models
@@ -19,25 +20,44 @@ class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
 
 
+Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method'])
+
+
 def get_available_FIELD_transitions(instance, field):
     curr_state = field.get_state(instance)
     transitions = field.transitions[instance.__class__]
 
-    result = []
-    for transition in transitions.values():
+    for name, transition in transitions.items():
         meta = transition._django_fsm
 
-        if curr_state in meta.transitions:
-            target, conditions = meta.transitions[curr_state]
-            if all(map(lambda condition: condition(instance), conditions)):
-                result.append((target, transition))
+        for state in [curr_state, '*']:
+            if state in meta.transitions:
+                target, conditions = meta.transitions[state]
+                if all(map(lambda condition: condition(instance), conditions)):
+                    yield Transition(
+                        name=name,
+                        source=state,
+                        target=target,
+                        conditions=conditions,
+                        method=transition)
 
-        if '*' in meta.transitions:
-            _, conditions = meta.transitions['*']
-            if all(map(lambda condition: condition(instance), conditions)):
-                result.append((target, transition))
 
-    return result
+def get_all_FIELD_transitions(instance, field):
+    """
+    Returns [(source, target, name, method)] for all field transitions
+    """
+    transitions = field.transitions[instance.__class__]
+
+    for name, transition in transitions.items():
+        meta = transition._django_fsm
+
+        for source, (target, conditions) in meta.transitions.items():
+            yield Transition(
+                name=name,
+                source=source,
+                target=target,
+                conditions=conditions,
+                method=transition)
 
 
 class FSMMeta(object):
@@ -152,6 +172,8 @@ class FSMFieldMixin(object):
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, 'get_available_{}_transitions'.format(self.name),
                 curry(get_available_FIELD_transitions, field=self))
+        setattr(cls, 'get_all_{}_transitions'.format(self.name),
+                curry(get_all_FIELD_transitions, field=self))
 
         class_prepared.connect(self._collect_transitions)
 
@@ -162,12 +184,12 @@ class FSMFieldMixin(object):
             return
 
         def is_field_transition_method(attr):
-            return inspect.ismethod(attr) \
+            return (inspect.ismethod(attr) or inspect.isfunction(attr)) \
                 and hasattr(attr, '_django_fsm') \
                 and attr._django_fsm.field in [self, self.name]
 
         sender_transitions = {}
-        transitions = inspect.getmembers(kwargs['sender'], predicate=is_field_transition_method)
+        transitions = inspect.getmembers(sender, predicate=is_field_transition_method)
         for method_name, method in transitions:
             method._django_fsm.field = self
             sender_transitions[method_name] = method

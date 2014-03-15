@@ -234,10 +234,12 @@ Changelog
 * Backward incompatible release
 * All public code import moved directly to django_fsm package
 * Correct support for several @transitions decorator with different source states and conditions on same method
-* TODO
+* get_available_FIELD_transitions return Transition data object instead of tuple
+* Inherited models got get_available_FIELD_transitions
+* New get_all_FIELD_transitions method contributed to class
 
 ### django-fsm 1.6.0
-* FSMIntegerField and FSMKeyField suppoer
+* FSMIntegerField and FSMKeyField support
 
 ### django-fsm 1.5.1 2014-01-04
 

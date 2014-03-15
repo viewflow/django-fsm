@@ -109,3 +109,23 @@ class StateSignalsTests(TestCase):
         self.assertRaises(TransitionNotAllowed, self.model.hide)
         self.assertFalse(self.pre_transition_called)
         self.assertFalse(self.post_transition_called)
+
+
+class TestFieldTransitionsInspect(TestCase):
+    def setUp(self):
+        self.model = BlogPost()
+
+    def test_available_conditions(self):
+        pass
+
+    def test_all_conditions(self):
+        transitions = self.model.get_all_state_transitions()
+        actual = set((transition.source, transition.target) for transition in transitions)
+        expected = set([('*', 'moderated'),
+                        ('new', 'published'),
+                        ('new', 'removed'),
+                        ('published', None),
+                        ('published', 'hidden'),
+                        ('published', 'stolen'),
+                        ('hidden', 'stolen')])
+        self.assertEqual(actual, expected)
