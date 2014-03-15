@@ -2,3 +2,188 @@
 """
 State tracking functionality for django models
 """
+import inspect
+from collections import defaultdict
+from functools import wraps
+
+from django.db import models
+from django.db.models.signals import class_prepared
+from django_fsm.signals import pre_transition, post_transition
+
+
+class TransitionNotAllowed(Exception):
+    """Raise when a transition is not allowed"""
+
+
+class FSMMeta(object):
+    """
+    Models methods transitions meta information
+    """
+    def __init__(self, field, method):
+        self.field = field
+        self.transitions = defaultdict()  # source -> target
+        self.conditions = defaultdict()   # source -> [list of conditions]
+
+    def add_transition(self, source, target, conditions=[]):
+        if source in self.transitions:
+            raise AssertionError('Duplicate transition for {} state'.format(source))
+
+        self.transitions[source] = target
+        self.conditions[source] = conditions
+
+    def has_transition(self, state):
+        """
+        Lookup if any transition exists from current model state using current method
+        """
+        return state in self.transitions or '*' in self.transitions
+
+    def conditions_met(self, instance, state):
+        """
+        Check if all conditions has been met
+        """
+        if state not in self.conditions:
+            state = '*'
+
+        return all(map(lambda f: f(instance), self.conditions[state]))
+
+    def next_state(self, current_state):
+        try:
+            return self.transitions[current_state]
+        except KeyError:
+            return self.transitions['*']
+
+
+class FSMFieldDescriptor(object):
+    def __init__(self, field):
+        self.field = field
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            raise AttributeError('Can only be accessed via an instance.')
+        return obj.__dict__[self.field.name]
+
+    def __set__(self, instance, value):
+        if self.field.protected and self.field.name in instance.__dict__:
+            raise AttributeError('Direct {} modification is not allowed'.format(self.field.name))
+        instance.__dict__[self.field.name] = self.field.to_python(value)
+
+
+class FSMFieldMixin(object):
+    descriptor_class = FSMFieldDescriptor
+
+    def __init__(self, *args, **kwargs):
+        self.protected = kwargs.pop('protected', False)
+        self.transitions = {}  # transitions name -> method
+
+        super(FSMFieldMixin, self).__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(FSMFieldMixin, self).deconstruct()
+        if self.protected:
+            kwargs['protected'] = self.protected
+        return name, path, args, kwargs
+
+    def get_state(self, instance):
+        return instance.__dict__[self.name]
+
+    def set_state(self, instance, state):
+        instance.__dict__[self.name] = state
+
+    def change_state(self, instance, method, *args, **kwargs):
+        meta = method._django_fsm
+        method_name = method.__name__
+        current_state = self.get_state(instance)
+
+        if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state)):
+            raise TransitionNotAllowed(
+                "Can't switch from state '{}' using method '{}'".format(current_state, method_name))
+
+        next_state = meta.next_state(current_state)
+
+        pre_transition.send(
+            sender=instance.__class__,
+            instance=instance,
+            name=method_name,
+            source=current_state,
+            target=next_state)
+
+        result = method(instance, *args, **kwargs)
+
+        if next_state:
+            self.set_state(instance, next_state)
+
+        post_transition.send(
+            sender=instance.__class__,
+            instance=instance,
+            name=method_name,
+            source=current_state,
+            target=next_state)
+
+        return result
+
+    def contribute_to_class(self, cls, name, virtual_only=False):
+        super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
+        setattr(cls, self.name, self.descriptor_class(self))
+        class_prepared.connect(self._collect_transitions, sender=cls)
+
+    def _collect_transitions(self, *args, **kwargs):
+        def is_field_transition_method(attr):
+            return inspect.ismethod(attr) \
+                and hasattr(attr, '_django_fsm') \
+                and attr._django_fsm.field in [self, self.name]
+
+        transitions = inspect.getmembers(kwargs['sender'], predicate=is_field_transition_method)
+        for method_name, method in transitions:
+            method._django_fsm.field = self
+            self.transitions[method_name] = method
+
+
+class FSMField(FSMFieldMixin, models.CharField):
+    """
+    State Machine support for Django model as CharField
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('max_length', 50)
+        super(FSMField, self).__init__(*args, **kwargs)
+
+
+def transition(field, source='*', target=None, conditions=[]):
+    """
+    Method decorator for mark allowed transitions
+
+    Set target to None if current state need to be validated and not
+    changed after function call
+    """
+    def inner_transition(func):
+        fsm_meta = getattr(func, '_django_fsm', None)
+        if not fsm_meta:
+            fsm_meta = FSMMeta(field=field, method=func)
+            setattr(func, '_django_fsm', fsm_meta)
+
+        @wraps(func)
+        def _change_state(instance, *args, **kwargs):
+            return fsm_meta.field.change_state(instance, func, *args, **kwargs)
+
+        if isinstance(source, (list, tuple)):
+            for state in source:
+                func._django_fsm.add_transition(state, target, conditions)
+        else:
+            func._django_fsm.add_transition(source, target, conditions)
+
+        return _change_state
+
+    return inner_transition
+
+
+def can_proceed(bound_method):
+    """
+    Returns True if model in state allows to call bound_method
+    """
+    if not hasattr(bound_method, '_django_fsm'):
+        raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
+
+    meta = bound_method._django_fsm
+    im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
+    current_state = meta.field.get_state(im_self)
+
+    return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state)

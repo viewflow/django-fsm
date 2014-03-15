@@ -4,9 +4,11 @@
 from django.test import TestCase
 from django.db import models
 
+"""
 from django_fsm.signals import pre_transition, post_transition
 from django_fsm.db.fields import FSMField, FSMKeyField, FSMIntegerField, \
     TransitionNotAllowed, transition, can_proceed
+
 
 class BlogPost(models.Model):
     state = FSMField(default='new')
@@ -451,3 +453,131 @@ class TestinheritedModel(TestCase):
         self.assertTrue(can_proceed(self.model.stick))
         self.model.stick()
         self.assertEqual(self.model.state, 'sticked')
+"""
+
+## 2.0 Tests
+
+from django_fsm import FSMField, TransitionNotAllowed, \
+    transition, can_proceed
+
+
+class BlogPost(models.Model):
+    state = FSMField(default='new')
+
+    @transition(field=state, source='new', target='published')
+    def publish(self):
+        pass
+
+    @transition(source='published', field=state)
+    def notify_all(self):
+        pass
+
+    @transition(source='published', target='hidden', field=state)
+    def hide(self):
+        pass
+
+    @transition(source='new', target='removed', field=state)
+    def remove(self):
+        raise Exception('No rights to delete %s' % self)
+
+    @transition(source=['published', 'hidden'], target='stolen', field=state)
+    def steal(self):
+        pass
+
+    @transition(source='*', target='moderated', field=state)
+    def moderate(self):
+        pass
+
+
+class FSMFieldTest(TestCase):
+    def setUp(self):
+        self.model = BlogPost()
+
+    def test_initial_state_instatiated(self):
+        self.assertEqual(self.model.state, 'new')
+
+    def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+
+        self.assertTrue(can_proceed(self.model.hide))
+        self.model.hide()
+        self.assertEqual(self.model.state, 'hidden')
+
+    def test_unknow_transition_fails(self):
+        self.assertFalse(can_proceed(self.model.hide))
+        self.assertRaises(TransitionNotAllowed, self.model.hide)
+
+    def test_state_non_changed_after_fail(self):
+        self.assertTrue(can_proceed(self.model.remove))
+        self.assertRaises(Exception, self.model.remove)
+        self.assertEqual(self.model.state, 'new')
+
+    def test_allowed_null_transition_should_succeed(self):
+        self.model.publish()
+        self.model.notify_all()
+        self.assertEqual(self.model.state, 'published')
+
+    def test_unknow_null_transition_should_fail(self):
+        self.assertRaises(TransitionNotAllowed, self.model.notify_all)
+        self.assertEqual(self.model.state, 'new')
+
+    def test_mutiple_source_support_path_1_works(self):
+        self.model.publish()
+        self.model.steal()
+        self.assertEqual(self.model.state, 'stolen')
+
+    def test_mutiple_source_support_path_2_works(self):
+        self.model.publish()
+        self.model.hide()
+        self.model.steal()
+        self.assertEqual(self.model.state, 'stolen')
+
+    def test_star_shortcut_succeed(self):
+        self.assertTrue(can_proceed(self.model.moderate))
+        self.model.moderate()
+        self.assertEqual(self.model.state, 'moderated')
+
+
+def condition_func(instance):
+    return True
+
+
+class BlogPostWithConditions(models.Model):
+    state = FSMField(default='new')
+
+    def model_condition(self):
+        return True
+
+    def unmet_condition(self):
+        return False
+
+    @transition(field=state, source='new', target='published',
+                conditions=[condition_func, model_condition])
+    def publish(self):
+        self.state = 'aaa'
+
+    @transition(field=state, source='published', target='destroyed',
+                conditions=[condition_func, unmet_condition])
+    def destroy(self):
+        pass
+
+
+class ConditionalTest(TestCase):
+    def setUp(self):
+        self.model = BlogPostWithConditions()
+
+    def test_initial_staet(self):
+        self.assertEqual(self.model.state, 'new')
+
+    def test_known_transition_should_succeed(self):
+        self.assertTrue(can_proceed(self.model.publish))
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+
+    def test_unmet_condition(self):
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+        self.assertFalse(can_proceed(self.model.destroy))
+        self.assertRaises(TransitionNotAllowed, self.model.destroy)
