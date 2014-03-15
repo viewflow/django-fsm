@@ -36,7 +36,7 @@ Add FSMState field to your model
 
 Use the `transition` decorator to annotate model methods
 
-    @transition(source='new', target='published')
+    @transition(field=state, source='new', target='published')
     def publish(self):
         """
         This function may contain side-effects, 
@@ -61,15 +61,6 @@ will be changed, but not written to the database.
         post.save()
         return redirect('/')
 
-If you are using the transition decorator with the `save` argument set to `True`,
-the new state will be written to the database
-
-    @transition(source='new', target='published', save=True)
-    def publish(self):
-        """
-        Side effects other than changing state goes here
-        """
-
 If you require some conditions to be met before changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
 that takes one argument, the model instance.  The function must return either
@@ -93,13 +84,13 @@ Or model methods
 
 Use the conditions like this:
 
-    @transition(source='new', target='published', conditions=[can_publish])
+    @transition(field=state, source='new', target='published', conditions=[can_publish])
     def publish(self):
         """
         Side effects galore
         """
 
-    @transition(source='*', target='destroyed', conditions=[can_destroy])
+    @transition(field=state, source='*', target='destroyed', conditions=[can_destroy])
     def destroy(self):
         """
         Side effects galore
@@ -115,18 +106,10 @@ You could instantiate field with protected=True option, that prevents direct sta
 
 
 ### get_available_FIELD_transitions
+Returns all transitions data available in current state
 
-You could specify FSMField explicitly in transition decorator.
-
-    class BlogPost(models.Model):
-        state = FSMField(default='new')
-
-        @transition(field=state, source='new', target='published')
-        def publish(self):
-    	    pass
-
-This allows django_fsm to contribute to model class get_available_FIELD_transitions method,
-that returns list of (target_state, method) available from current model state
+### get_all_FIELD_transitions
+Enumerates all declared transitions
 
 
 ### Foreign Key constraints support 
@@ -229,6 +212,15 @@ Changelog
 ---------
     
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
+
+### django-fsm 2.0.0 2014-03-15
+* Backward incompatible release
+* All public code import moved directly to django_fsm package
+* Correct support for several @transitions decorator with different source states and conditions on same method
+* save parameter from transition decorator removed
+* get_available_FIELD_transitions return Transition data object instead of tuple
+* Models got get_available_FIELD_transitions, even if field specified as string reference
+* New get_all_FIELD_transitions method contributed to class
 
 ### django-fsm 1.6.0 2014-03-15
 * FSMIntegerField and FSMKeyField support
