@@ -206,6 +206,16 @@ class FSMField(FSMFieldMixin, models.CharField):
         super(FSMField, self).__init__(*args, **kwargs)
 
 
+class FSMIntegerField(FSMFieldMixin, models.IntegerField):
+    """
+    Same as FSMField, but stores the state value in an IntegerField.
+    db_index is True by default.
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('db_index', True)
+        super(FSMIntegerField, self).__init__(*args, **kwargs)
+
+
 def transition(field, source='*', target=None, conditions=[]):
     """
     Method decorator for mark allowed transitions
