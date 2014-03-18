@@ -19,7 +19,7 @@ Or, for the latest git version
 
     $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
 
-Library have full Python 3 support, for graph transition drawing
+Library has full Python 3 support, for the graph transition drawing
 you should install python3 compatible graphviz version
 from git+https://github.com/philipaxer/pygraphviz
 
@@ -61,7 +61,7 @@ will be changed, but not written to the database.
         post.save()
         return redirect('/')
 
-If you require some conditions to be met before changing state, use the
+If some conditions are required to be met before the changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
 that takes one argument, the model instance.  The function must return either
 `True` or `False` or a value that evaluates to `True` or `False`. If all
