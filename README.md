@@ -28,7 +28,7 @@ Usage
 
 Add FSMState field to your model
 
-    from django_fsm.db.fields import FSMField, transition
+    from django_fsm import FSMField, transition
 
     class BlogPost(models.Model):
         state = FSMField(default='new')
@@ -50,7 +50,7 @@ You can use `*` for source, to allow switching to `target` from any state.
 If calling publish() succeeds without raising an exception, the state field
 will be changed, but not written to the database.
 
-    from django_fsm.db.fields import can_proceed
+    from django_fsm import can_proceed
 
     def publish_view(request, post_id):
         post = get_object__or_404(BlogPost, pk=post_id)
