@@ -68,7 +68,7 @@ class FSMMeta(object):
 
     def conditions_met(self, instance, state):
         """
-        Check if all conditions has been met
+        Check if all conditions have been met
         """
         _, conditions = self.transitions.get(state, (None, []))
         if not conditions:
@@ -234,8 +234,8 @@ def transition(field, source='*', target=None, conditions=[]):
     """
     Method decorator for mark allowed transitions
 
-    Set target to None if current state need to be validated and not
-    changed after function call
+    Set target to None if current state needs to be validated and 
+    has not changed after the function call
     """
     def inner_transition(func):
         fsm_meta = getattr(func, '_django_fsm', None)
