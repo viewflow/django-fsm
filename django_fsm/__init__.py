@@ -16,6 +16,17 @@ __all__ = ["TransitionNotAllowed", "FSMFieldMixin", "FSMField",
            'FSMIntegerField', 'FSMKeyField', 'transition', 'can_proceed']
 
 
+# South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
+try:
+    from south.modelsinspector import add_introspection_rules
+except ImportError:
+    pass
+else:
+    add_introspection_rules([], [r"^django_fsm\.FSMField"])
+    add_introspection_rules([], [r"^django_fsm\.FSMIntegerField"])
+    add_introspection_rules([], [r"^django_fsm\.FSMKeyField"])
+
+
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
 
