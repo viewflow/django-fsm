@@ -141,24 +141,21 @@ class FSMFieldMixin(object):
 
         next_state = meta.next_state(current_state)
 
-        pre_transition.send(
-            sender=instance.__class__,
-            instance=instance,
-            name=method_name,
-            source=current_state,
-            target=next_state)
+        signal_kwargs = {
+            'sender': instance.__class__,
+            'instance': instance,
+            'name': method_name,
+            'source': current_state,
+            'target': next_state
+        }
+
+        pre_transition.send(**signal_kwargs)
 
         result = method(instance, *args, **kwargs)
-
         if next_state:
             self.set_state(instance, next_state)
 
-        post_transition.send(
-            sender=instance.__class__,
-            instance=instance,
-            name=method_name,
-            source=current_state,
-            target=next_state)
+        post_transition.send(**signal_kwargs)
 
         return result
 
