@@ -12,12 +12,13 @@ before a transition is allowed.
 
 Installation
 ------------
-
-    $ pip install django-fsm
-
+```bash
+$ pip install django-fsm
+```
 Or, for the latest git version
-
-    $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
+```bash
+$ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
+```
 
 Library has full Python 3 support, for the graph transition drawing
 you should install python3 compatible graphviz version
@@ -27,39 +28,41 @@ Usage
 -----
 
 Add FSMState field to your model
+```python
+from django_fsm import FSMField, transition
 
-    from django_fsm import FSMField, transition
-
-    class BlogPost(models.Model):
-        state = FSMField(default='new')
-
+class BlogPost(models.Model):
+	state = FSMField(default='new')
+```
 
 Use the `transition` decorator to annotate model methods
-
-    @transition(field=state, source='new', target='published')
-    def publish(self):
-        """
-        This function may contain side-effects, 
-        like updating caches, notifying users, etc.
-        The return value will be discarded.
-        """
+```python
+@transition(field=state, source='new', target='published')
+def publish(self):
+	"""
+	This function may contain side-effects, 
+	like updating caches, notifying users, etc.
+	The return value will be discarded.
+	"""
+```
 
 `source` parameter accepts a list of states, or an individual state.
 You can use `*` for source, to allow switching to `target` from any state.
 
 If calling publish() succeeds without raising an exception, the state field
 will be changed, but not written to the database.
+```python
+from django_fsm import can_proceed
 
-    from django_fsm import can_proceed
-
-    def publish_view(request, post_id):
-        post = get_object__or_404(BlogPost, pk=post_id)
-        if not can_proceed(post.publish):
-             raise Http404;
-
-        post.publish()
-        post.save()
-        return redirect('/')
+def publish_view(request, post_id):
+    post = get_object__or_404(BlogPost, pk=post_id)
+    if not can_proceed(post.publish):
+        raise Http404;
+	
+    post.publish()
+    post.save()
+    return redirect('/')
+```
 
 If some conditions are required to be met before the changing state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
@@ -70,40 +73,43 @@ is allowed to happen. If one of the functions return `False`, the transition
 will not happen. These functions should not have any side effects.
 
 You can use ordinary functions
-
-    def can_publish(instance):
-        # No publishing after 17 hours
-        if datetime.datetime.now().hour > 17:
-           return False
-        return True
+```python
+def can_publish(instance):
+    # No publishing after 17 hours
+    if datetime.datetime.now().hour > 17:
+        return False
+    return True
+```
 
 Or model methods
-
-    def can_destroy(self):
-        return self.is_under_investigation()
+```python
+def can_destroy(self):
+	return self.is_under_investigation()
+```
 
 Use the conditions like this:
-
-    @transition(field=state, source='new', target='published', conditions=[can_publish])
+```python
+@transition(field=state, source='new', target='published', conditions=[can_publish])
     def publish(self):
-        """
-        Side effects galore
-        """
+    """
+    Side effects galore
+    """
 
-    @transition(field=state, source='*', target='destroyed', conditions=[can_destroy])
+@transition(field=state, source='*', target='destroyed', conditions=[can_destroy])
     def destroy(self):
-        """
-        Side effects galore
-        """
+    """
+    Side effects galore
+    """
+```
 
 You could instantiate field with protected=True option, that prevents direct state field modification
+```python
+class BlogPost(models.Model):
+    state = FSMField(default='new', protected=True)
 
-    class BlogPost(models.Model):
-        state = FSMField(default='new', protected=True)
-
-    model = BlogPost()
-    model.state = 'invalid' # Raises AttributeError
-
+model = BlogPost()
+model.state = 'invalid' # Raises AttributeError
+```
 
 ### get_available_FIELD_transitions
 Returns all transitions data available in current state
@@ -118,40 +124,42 @@ If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
 In your model : 
+```python
+class DbState(models.Model):
+    id = models.CharField(primary_key=True, max_length=50)
+    label = models.CharField(max_length=255)
 
-    class DbState(models.Model):
-        id = models.CharField(primary_key=True, max_length=50)
-        label = models.CharField(max_length=255)
-        
-        def __unicode__(self);
-            return self.label
+    def __unicode__(self);
+        return self.label
 
-    
-    class BlogPost(models.Model):
-        state = FSMKeyField(DbState, default='new')
-    
-        @transition(field=state, source='new', target='published')
-        def publish(self):
-            pass
-    
+
+class BlogPost(models.Model):
+    state = FSMKeyField(DbState, default='new')
+
+@transition(field=state, source='new', target='published')
+    def publish(self):
+        pass
+```
+
 In your fixtures/initial_data.json :
-
-    [...
-        {
-            "pk": "new", 
-            "model": "myapp.dbstate", 
-            "fields": {
-                "label": "_NEW_"
-            }
-        },
-        {
-            "pk": "published", 
-            "model": "myapp.dbstate", 
-            "fields": {
-                "label": "_PUBLISHED_"
-            }
-        }, ...
-    ]
+```json
+[
+    {
+        "pk": "new",
+        "model": "myapp.dbstate",
+        "fields": {
+            "label": "_NEW_"
+        }
+    },
+    {
+        "pk": "published",
+        "model": "myapp.dbstate",
+        "fields": {
+            "label": "_PUBLISHED_"
+        }
+    }
+]
+```
 
 Note : source and target parameters in @transition decorator use pk values of DBState model
 as names, even if field "real" name is used, without _id postfix, as field parameter.
@@ -160,19 +168,19 @@ as names, even if field "real" name is used, without _id postfix, as field param
 ### Integer Field support 
 
 You can also use `FSMIntegerField`. This is handy when you want to use enum style constants. This field is also `db_index=True` by default for speedy db loookups.
+```python
+class BlogPostStateEnum(object):
+    NEW = 10
+    PUBLISHED = 20
+    HIDDEN = 30
 
-	class BlogPostStateEnum(object):
-	    NEW = 10
-	    PUBLISHED = 20
-	    HIDDEN = 30
-	
-	class BlogPostWithIntegerField(models.Model):
-	    state = FSMIntegerField(default=BlogPostStateEnum.NEW)
-	
-	    @transition(source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
-	    def publish(self):
-	        pass
+class BlogPostWithIntegerField(models.Model):
+    state = FSMIntegerField(default=BlogPostStateEnum.NEW)
 
+    @transition(source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
+    def publish(self):
+        pass
+```
 
 ### Signals
 
@@ -199,14 +207,14 @@ Arguments sent with these signals:
 
 ### Drawing transitions
 
-    Renders a graphical overview of your models states transitions
+Renders a graphical overview of your models states transitions
+```bash
+# Create a dot file
+$ ./manage.py graph_transitions > transitions.dot
 
-    # Create a dot file
-    $ ./manage.py graph_transitions > transitions.dot
-
-    # Create a PNG image file only for specific model
-    $ ./manage.py graph_transitions -o blog_transitions.png myapp.Blog
-
+# Create a PNG image file only for specific model
+$ ./manage.py graph_transitions -o blog_transitions.png myapp.Blog
+```
 
 Changelog
 ---------
