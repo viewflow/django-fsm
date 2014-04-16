@@ -43,6 +43,10 @@ class FKBlogPost(models.Model):
     def remove(self):
         raise Exception('Upss')
 
+    @transition(field=state, source='new', target='removed', crashed='crashed')
+    def remove_crash(self):
+        raise Exception('Upss')
+
     @transition(field=state, source=['published', 'hidden'], target='stolen')
     def steal(self):
         pass
@@ -73,9 +77,14 @@ class FSMKeyFieldTest(TestCase):
         self.model.hide()
         self.assertEqual(self.model.state, 'hidden')
 
-    def test_unknow_transition_fails(self):
+    def test_unknown_transition_fails(self):
         self.assertFalse(can_proceed(self.model.hide))
         self.assertRaises(TransitionNotAllowed, self.model.hide)
+
+    def test_state_changed_after_fail(self):
+        self.assertTrue(can_proceed(self.model.remove_crash))
+        self.assertRaises(Exception, self.model.remove_crash)
+        self.assertEqual(self.model.state, 'crashed')
 
     def test_state_non_changed_after_fail(self):
         self.assertTrue(can_proceed(self.model.remove))
@@ -88,7 +97,7 @@ class FSMKeyFieldTest(TestCase):
         self.model.notify_all()
         self.assertEqual(self.model.state, 'published')
 
-    def test_unknow_null_transition_should_fail(self):
+    def test_unknown_null_transition_should_fail(self):
         self.assertRaises(TransitionNotAllowed, self.model.notify_all)
         self.assertEqual(self.model.state, 'new')
 

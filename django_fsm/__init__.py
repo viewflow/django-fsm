@@ -43,7 +43,7 @@ def get_available_FIELD_transitions(instance, field):
 
         for state in [curr_state, '*']:
             if state in meta.transitions:
-                target, conditions = meta.transitions[state]
+                target, conditions, crashed = meta.transitions[state]
                 if all(map(lambda condition: condition(instance), conditions)):
                     yield Transition(
                         name=name,
@@ -63,13 +63,13 @@ class FSMMeta(object):
     """
     def __init__(self, field, method):
         self.field = field
-        self.transitions = {}  # source -> (target, conditions)
+        self.transitions = {}  # source -> (target, conditions, crashed)
 
-    def add_transition(self, source, target, conditions=[]):
+    def add_transition(self, source, target, conditions=[], crashed=None):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {} state'.format(source))
 
-        self.transitions[source] = (target, conditions)
+        self.transitions[source] = (target, conditions, crashed)
 
     def has_transition(self, state):
         """
@@ -81,9 +81,9 @@ class FSMMeta(object):
         """
         Check if all conditions have been met
         """
-        _, conditions = self.transitions.get(state, (None, []))
+        _, conditions, _ = self.transitions.get(state, (None, [], None))
         if not conditions:
-            _, conditions = self.transitions.get('*', (None, []))
+            _, conditions, _ = self.transitions.get('*', (None, [], None))
 
         return all(map(lambda condition: condition(instance), conditions))
 
@@ -92,6 +92,12 @@ class FSMMeta(object):
             return self.transitions[current_state][0]
         except KeyError:
             return self.transitions['*'][0]
+
+    def exception_state(self, current_state):
+        try:
+            return self.transitions[current_state][2]
+        except KeyError:
+            return self.transitions['*'][2]
 
 
 class FSMFieldDescriptor(object):
@@ -151,13 +157,18 @@ class FSMFieldMixin(object):
 
         pre_transition.send(**signal_kwargs)
 
-        result = method(instance, *args, **kwargs)
-        if next_state:
-            self.set_state(instance, next_state)
-
-        post_transition.send(**signal_kwargs)
-
-        return result
+        try:
+            result = method(instance, *args, **kwargs)
+            if next_state:
+                self.set_state(instance, next_state)
+            return result
+        except Exception:
+            if meta.exception_state(current_state):
+                self.set_state(instance, meta.exception_state(current_state))
+                signal_kwargs['target'] = meta.exception_state(current_state)
+            raise
+        finally:
+            post_transition.send(**signal_kwargs)
 
     def get_all_transitions(self, instance_cls):
         """
@@ -168,7 +179,7 @@ class FSMFieldMixin(object):
         for name, transition in transitions.items():
             meta = transition._django_fsm
 
-            for source, (target, conditions) in meta.transitions.items():
+            for source, (target, conditions, crashed) in meta.transitions.items():
                 yield Transition(
                     name=name,
                     source=source,
@@ -238,11 +249,11 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
         instance.__dict__[self.attname] = self.to_python(state)
 
 
-def transition(field, source='*', target=None, conditions=[]):
+def transition(field, source='*', target=None, conditions=[], crashed=None):
     """
     Method decorator for mark allowed transitions
 
-    Set target to None if current state needs to be validated and 
+    Set target to None if current state needs to be validated and
     has not changed after the function call
     """
     def inner_transition(func):
@@ -257,9 +268,9 @@ def transition(field, source='*', target=None, conditions=[]):
 
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.add_transition(state, target, conditions)
+                func._django_fsm.add_transition(state, target, conditions, crashed)
         else:
-            func._django_fsm.add_transition(source, target, conditions)
+            func._django_fsm.add_transition(source, target, conditions, crashed)
 
         return _change_state
 
