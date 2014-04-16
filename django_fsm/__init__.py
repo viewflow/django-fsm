@@ -161,6 +161,7 @@ class FSMFieldMixin(object):
             result = method(instance, *args, **kwargs)
             if next_state:
                 self.set_state(instance, next_state)
+            return result
         except Exception:
             if meta.exception_state(current_state):
                 self.set_state(instance, meta.exception_state(current_state))
@@ -168,7 +169,6 @@ class FSMFieldMixin(object):
             raise
         finally:
             post_transition.send(**signal_kwargs)
-            return result
 
     def get_all_transitions(self, instance_cls):
         """
