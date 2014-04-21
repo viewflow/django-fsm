@@ -111,6 +111,18 @@ model = BlogPost()
 model.state = 'invalid' # Raises AttributeError
 ```
 
+Custom properties can be added by providing a dictionary to the `custom` keyword on the `transition` decorator.
+```python
+@transition(field=state,
+            source='*',
+            target='onhold',
+            custom=dict(verbose='Hold for legal reasons'), transition_type='manual')
+def legal_hold(self):
+    """
+    Side effects galore
+    """
+```
+
 ### get_available_FIELD_transitions
 Returns all transitions data available in current state
 

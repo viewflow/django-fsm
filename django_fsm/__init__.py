@@ -31,7 +31,7 @@ class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
 
 
-Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method'])
+Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method', 'custom'])
 
 
 def get_available_FIELD_transitions(instance, field):
@@ -43,14 +43,15 @@ def get_available_FIELD_transitions(instance, field):
 
         for state in [curr_state, '*']:
             if state in meta.transitions:
-                target, conditions = meta.transitions[state]
+                target, conditions, custom = meta.transitions[state]
                 if all(map(lambda condition: condition(instance), conditions)):
                     yield Transition(
                         name=name,
                         source=state,
                         target=target,
                         conditions=conditions,
-                        method=transition)
+                        method=transition,
+                        custom=custom)
 
 
 def get_all_FIELD_transitions(instance, field):
@@ -65,11 +66,11 @@ class FSMMeta(object):
         self.field = field
         self.transitions = {}  # source -> (target, conditions)
 
-    def add_transition(self, source, target, conditions=[]):
+    def add_transition(self, source, target, conditions=[], custom={}):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {} state'.format(source))
 
-        self.transitions[source] = (target, conditions)
+        self.transitions[source] = (target, conditions, custom)
 
     def has_transition(self, state):
         """
@@ -81,9 +82,9 @@ class FSMMeta(object):
         """
         Check if all conditions have been met
         """
-        _, conditions = self.transitions.get(state, (None, []))
+        _, conditions, _ = self.transitions.get(state, (None, [], {}))
         if not conditions:
-            _, conditions = self.transitions.get('*', (None, []))
+            _, conditions, _ = self.transitions.get('*', (None, [], {}))
 
         return all(map(lambda condition: condition(instance), conditions))
 
@@ -168,13 +169,14 @@ class FSMFieldMixin(object):
         for name, transition in transitions.items():
             meta = transition._django_fsm
 
-            for source, (target, conditions) in meta.transitions.items():
+            for source, (target, conditions, custom) in meta.transitions.items():
                 yield Transition(
                     name=name,
                     source=source,
                     target=target,
                     conditions=conditions,
-                    method=transition)
+                    method=transition,
+                    custom=custom)
 
     def contribute_to_class(self, cls, name, virtual_only=False):
         self.base_cls = cls
@@ -238,7 +240,7 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
         instance.__dict__[self.attname] = self.to_python(state)
 
 
-def transition(field, source='*', target=None, conditions=[]):
+def transition(field, source='*', target=None, conditions=[], custom={}):
     """
     Method decorator for mark allowed transitions
 
@@ -257,9 +259,9 @@ def transition(field, source='*', target=None, conditions=[]):
 
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.add_transition(state, target, conditions)
+                func._django_fsm.add_transition(state, target, conditions, custom)
         else:
-            func._django_fsm.add_transition(source, target, conditions)
+            func._django_fsm.add_transition(source, target, conditions, custom)
 
         return _change_state
 
