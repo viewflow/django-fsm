@@ -10,6 +10,12 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
+You may also take a look to django-fsm-admin project
+contains mixin and template tags to integrate django-fsm 
+state transitions into the django admin.
+
+https://github.com/gadventures/django-fsm-admin
+
 Installation
 ------------
 ```bash
@@ -24,11 +30,6 @@ Library has full Python 3 support, for the graph transition drawing
 you should install python3 compatible graphviz version
 from git+https://github.com/philipaxer/pygraphviz
 
-You may also take a look to django-fsm-admin project
-contains mixin and template tags to integrate django-fsm 
-state transitions into the django admin.
-
-https://github.com/gadventures/django-fsm-admin
 
 Usage
 -----
