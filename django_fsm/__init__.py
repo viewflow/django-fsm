@@ -34,7 +34,7 @@ class TransitionNotAllowed(Exception):
 Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method', 'custom'])
 
 
-def get_available_FIELD_transitions(instance, field):
+def get_available_FIELD_transitions(instance, field, **kwargs):
     curr_state = field.get_state(instance)
     transitions = field.transitions[instance.__class__]
 
@@ -44,7 +44,7 @@ def get_available_FIELD_transitions(instance, field):
         for state in [curr_state, '*']:
             if state in meta.transitions:
                 target, conditions, custom = meta.transitions[state]
-                if all(map(lambda condition: condition(instance), conditions)):
+                if all(map(lambda condition: condition(instance, **kwargs), conditions)):
                     yield Transition(
                         name=name,
                         source=state,
@@ -78,7 +78,7 @@ class FSMMeta(object):
         """
         return state in self.transitions or '*' in self.transitions
 
-    def conditions_met(self, instance, state):
+    def conditions_met(self, instance, state, **kwargs):
         """
         Check if all conditions have been met
         """
@@ -86,7 +86,7 @@ class FSMMeta(object):
         if not conditions:
             _, conditions, _ = self.transitions.get('*', (None, [], {}))
 
-        return all(map(lambda condition: condition(instance), conditions))
+        return all(map(lambda condition: condition(instance, **kwargs), conditions))
 
     def next_state(self, current_state):
         try:
@@ -136,7 +136,7 @@ class FSMFieldMixin(object):
         method_name = method.__name__
         current_state = self.get_state(instance)
 
-        if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state)):
+        if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state, **kwargs)):
             raise TransitionNotAllowed(
                 "Can't switch from state '{}' using method '{}'".format(current_state, method_name))
 
@@ -269,7 +269,7 @@ def transition(field, source='*', target=None, conditions=[], custom={}):
     return inner_transition
 
 
-def can_proceed(bound_method):
+def can_proceed(bound_method, **kwargs):
     """
     Returns True if model in state allows to call bound_method
     """
@@ -280,4 +280,4 @@ def can_proceed(bound_method):
     im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
     current_state = meta.field.get_state(im_self)
 
-    return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state)
+    return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state, **kwargs)
