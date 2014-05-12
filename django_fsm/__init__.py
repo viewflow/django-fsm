@@ -178,10 +178,11 @@ class FSMFieldMixin(object):
                     method=transition,
                     custom=custom)
 
-    def contribute_to_class(self, cls, name, virtual_only=False):
+    def contribute_to_class(self, cls, name, *args, **kwargs):
         self.base_cls = cls
 
-        super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
+        super(FSMFieldMixin, self).contribute_to_class(
+            cls, name, *args, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, 'get_available_{}_transitions'.format(self.name),
                 curry(get_available_FIELD_transitions, field=self))
