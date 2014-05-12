@@ -34,7 +34,7 @@ class TransitionNotAllowed(Exception):
 Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method', 'custom'])
 
 
-def get_available_FIELD_transitions(instance, field):
+def get_available_FIELD_transitions(instance, field, **kwargs):
     curr_state = field.get_state(instance)
     transitions = field.transitions[instance.__class__]
 
@@ -44,7 +44,7 @@ def get_available_FIELD_transitions(instance, field):
         for state in [curr_state, '*']:
             if state in meta.transitions:
                 target, conditions, custom = meta.transitions[state]
-                if all(map(lambda condition: condition(instance), conditions)):
+                if all(map(lambda condition: condition(instance, **kwargs), conditions)):
                     yield Transition(
                         name=name,
                         source=state,
@@ -68,7 +68,7 @@ class FSMMeta(object):
 
     def add_transition(self, source, target, conditions=[], custom={}):
         if source in self.transitions:
-            raise AssertionError('Duplicate transition for {} state'.format(source))
+            raise AssertionError('Duplicate transition for {0} state'.format(source))
 
         self.transitions[source] = (target, conditions, custom)
 
@@ -78,7 +78,7 @@ class FSMMeta(object):
         """
         return state in self.transitions or '*' in self.transitions
 
-    def conditions_met(self, instance, state):
+    def conditions_met(self, instance, state, **kwargs):
         """
         Check if all conditions have been met
         """
@@ -86,7 +86,7 @@ class FSMMeta(object):
         if not conditions:
             _, conditions, _ = self.transitions.get('*', (None, [], {}))
 
-        return all(map(lambda condition: condition(instance), conditions))
+        return all(map(lambda condition: condition(instance, **kwargs), conditions))
 
     def next_state(self, current_state):
         try:
@@ -106,7 +106,7 @@ class FSMFieldDescriptor(object):
 
     def __set__(self, instance, value):
         if self.field.protected and self.field.name in instance.__dict__:
-            raise AttributeError('Direct {} modification is not allowed'.format(self.field.name))
+            raise AttributeError('Direct {0} modification is not allowed'.format(self.field.name))
         self.field.set_state(instance, value)
 
 
@@ -136,9 +136,9 @@ class FSMFieldMixin(object):
         method_name = method.__name__
         current_state = self.get_state(instance)
 
-        if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state)):
+        if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state, **kwargs)):
             raise TransitionNotAllowed(
-                "Can't switch from state '{}' using method '{}'".format(current_state, method_name))
+                "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name))
 
         next_state = meta.next_state(current_state)
 
@@ -178,21 +178,22 @@ class FSMFieldMixin(object):
                     method=transition,
                     custom=custom)
 
-    def contribute_to_class(self, cls, name, virtual_only=False):
+    def contribute_to_class(self, cls, name, *args, **kwargs):
         self.base_cls = cls
 
-        super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
+        super(FSMFieldMixin, self).contribute_to_class(
+            cls, name, *args, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
-        setattr(cls, 'get_available_{}_transitions'.format(self.name),
+        setattr(cls, 'get_available_{0}_transitions'.format(self.name),
                 curry(get_available_FIELD_transitions, field=self))
-        setattr(cls, 'get_all_{}_transitions'.format(self.name),
+        setattr(cls, 'get_all_{0}_transitions'.format(self.name),
                 curry(get_all_FIELD_transitions, field=self))
 
         class_prepared.connect(self._collect_transitions)
 
     def _collect_transitions(self, *args, **kwargs):
         sender = kwargs['sender']
-
+        
         if not issubclass(sender, self.base_cls):
             return
 
@@ -202,8 +203,10 @@ class FSMFieldMixin(object):
                 and attr._django_fsm.field in [self, self.name]
 
         sender_transitions = {}
-        transitions = inspect.getmembers(sender, predicate=is_field_transition_method)
+        transitions = [(k, getattr(sender, k, None)) for k in dir(sender)]
         for method_name, method in transitions:
+            if not is_field_transition_method(method):
+                continue
             method._django_fsm.field = self
             sender_transitions[method_name] = method
 
@@ -268,7 +271,7 @@ def transition(field, source='*', target=None, conditions=[], custom={}):
     return inner_transition
 
 
-def can_proceed(bound_method):
+def can_proceed(bound_method, **kwargs):
     """
     Returns True if model in state allows to call bound_method
     """
@@ -279,4 +282,4 @@ def can_proceed(bound_method):
     im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
     current_state = meta.field.get_state(im_self)
 
-    return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state)
+    return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state, **kwargs)
