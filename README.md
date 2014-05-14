@@ -56,16 +56,24 @@ def publish(self):
 `source` parameter accepts a list of states, or an individual state.
 You can use `*` for source, to allow switching to `target` from any state.
 
-If calling publish() succeeds without raising an exception, the state field
-will be changed, but not written to the database.
+To check if a transition is allowed without taking it, use `can_proceed()` and pass the method itself that represents the transition.
+```python
+
+from django_fsm import can_proceed
+
+post_can_publish(post_id):
+    post = get_object__or_404(BlogPost, pk=post_id)
+    return can_proceed(post.publish)
+
+```
+
+To transition, simply call the transition method.  In the following example, if the transition `publish()` succeeds without raising an exception, the state field will be changed, but not written to the database.  You must call `save()` to commit the state change.
 ```python
 from django_fsm import can_proceed
 
 def publish_view(request, post_id):
     post = get_object__or_404(BlogPost, pk=post_id)
-    if not can_proceed(post.publish):
-        raise Http404;
-	
+
     post.publish()
     post.save()
     return redirect('/')
