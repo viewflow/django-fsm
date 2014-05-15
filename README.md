@@ -1,5 +1,6 @@
 Django friendly finite state machine support
 ============================================
+[![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm)
 
 django-fsm adds declarative states management for django models.
 Instead of adding some state field to a django model, and manage it
@@ -270,6 +271,9 @@ Changelog
 ---------
     
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
+
+### django-fsm 2.1.0 2014-05-15
+* Support for attaching permission checks on model transitions
 
 ### django-fsm 2.0.0 2014-03-15
 * Backward incompatible release
