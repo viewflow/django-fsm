@@ -31,10 +31,15 @@ class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
 
 
-Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method', 'custom'])
+Transition = namedtuple('Transition', ['name', 'source', 'target', 'conditions', 'method',
+                                       'permission', 'custom'])
 
 
 def get_available_FIELD_transitions(instance, field):
+    """
+    List of transitions available in current model state
+    with all conditions met
+    """
     curr_state = field.get_state(instance)
     transitions = field.transitions[instance.__class__]
 
@@ -43,7 +48,7 @@ def get_available_FIELD_transitions(instance, field):
 
         for state in [curr_state, '*']:
             if state in meta.transitions:
-                target, conditions, custom = meta.transitions[state]
+                target, conditions, permission, custom = meta.transitions[state]
                 if all(map(lambda condition: condition(instance), conditions)):
                     yield Transition(
                         name=name,
@@ -51,11 +56,29 @@ def get_available_FIELD_transitions(instance, field):
                         target=target,
                         conditions=conditions,
                         method=transition,
+                        permission=permission,
                         custom=custom)
 
 
 def get_all_FIELD_transitions(instance, field):
+    """
+    List of all transitions available in current model state
+    """
     return field.get_all_transitions(instance.__class__)
+
+
+def get_available_user_FIELD_transitions(instance, user, field):
+    """
+    List of transitions available in current model state
+    with all conditions met and user have rights on it
+    """
+    for transition in get_available_FIELD_transitions(instance, field):
+        if not transition.permission:
+            yield transition
+        elif callable(transition.permission) and transition.permission(user):
+            yield transition
+        elif user.has_perm(transition.permission):
+            yield transition
 
 
 class FSMMeta(object):
@@ -64,13 +87,13 @@ class FSMMeta(object):
     """
     def __init__(self, field, method):
         self.field = field
-        self.transitions = {}  # source -> (target, conditions)
+        self.transitions = {}  # source -> (target, conditions, permission, custom)
 
-    def add_transition(self, source, target, conditions=[], custom={}):
+    def add_transition(self, source, target, conditions=[], permission=None, custom={}):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {} state'.format(source))
 
-        self.transitions[source] = (target, conditions, custom)
+        self.transitions[source] = (target, conditions, permission, custom)
 
     def has_transition(self, state):
         """
@@ -82,11 +105,25 @@ class FSMMeta(object):
         """
         Check if all conditions have been met
         """
-        _, conditions, _ = self.transitions.get(state, (None, [], {}))
+        _, conditions, _, _ = self.transitions.get(state, (None, [], None, {}))
         if not conditions:
-            _, conditions, _ = self.transitions.get('*', (None, [], {}))
+            _, conditions, _, _ = self.transitions.get('*', (None, [], None, {}))
 
         return all(map(lambda condition: condition(instance), conditions))
+
+    def has_transition_perm(self, instance, state, user):
+        permission = None
+        if state in self.transitions:
+            _, _, permission, _ = self.transitions[state]
+        elif '*' in self.transitions:
+            _, _, permission, _ = self.transitions['*']
+
+        if not permission:
+            return True
+        elif callable(permission) and permission(user):
+            return True
+        elif user.has_perm(permission):
+            return True
 
     def next_state(self, current_state):
         try:
@@ -169,13 +206,14 @@ class FSMFieldMixin(object):
         for name, transition in transitions.items():
             meta = transition._django_fsm
 
-            for source, (target, conditions, custom) in meta.transitions.items():
+            for source, (target, conditions, permission, custom) in meta.transitions.items():
                 yield Transition(
                     name=name,
                     source=source,
                     target=target,
                     conditions=conditions,
                     method=transition,
+                    permission=permission,
                     custom=custom)
 
     def contribute_to_class(self, cls, name, virtual_only=False):
@@ -183,10 +221,12 @@ class FSMFieldMixin(object):
 
         super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
         setattr(cls, self.name, self.descriptor_class(self))
-        setattr(cls, 'get_available_{}_transitions'.format(self.name),
-                curry(get_available_FIELD_transitions, field=self))
         setattr(cls, 'get_all_{}_transitions'.format(self.name),
                 curry(get_all_FIELD_transitions, field=self))
+        setattr(cls, 'get_available_{}_transitions'.format(self.name),
+                curry(get_available_FIELD_transitions, field=self))
+        setattr(cls, 'get_available_user_{}_transitions'.format(self.name),
+                curry(get_available_user_FIELD_transitions, field=self))
 
         class_prepared.connect(self._collect_transitions)
 
@@ -240,11 +280,11 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
         instance.__dict__[self.attname] = self.to_python(state)
 
 
-def transition(field, source='*', target=None, conditions=[], custom={}):
+def transition(field, source='*', target=None, conditions=[], permission=None, custom={}):
     """
     Method decorator for mark allowed transitions
 
-    Set target to None if current state needs to be validated and 
+    Set target to None if current state needs to be validated and
     has not changed after the function call
     """
     def inner_transition(func):
@@ -259,9 +299,9 @@ def transition(field, source='*', target=None, conditions=[], custom={}):
 
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.add_transition(state, target, conditions, custom)
+                func._django_fsm.add_transition(state, target, conditions, permission, custom)
         else:
-            func._django_fsm.add_transition(source, target, conditions, custom)
+            func._django_fsm.add_transition(source, target, conditions, permission, custom)
 
         return _change_state
 
@@ -280,3 +320,16 @@ def can_proceed(bound_method):
     current_state = meta.field.get_state(im_self)
 
     return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state)
+
+
+def has_transition_perm(bound_method, user):
+    """
+    Returns True if model in state allows to call bound_method and user have rights on it
+    """
+    meta = bound_method._django_fsm
+    im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
+    current_state = meta.field.get_state(im_self)
+
+    return (meta.has_transition(current_state)
+            and meta.conditions_met(im_self, current_state)
+            and meta.has_transition_perm(im_self, current_state, user))

@@ -84,7 +84,8 @@ class BlogPost(models.Model):
     """
     state = FSMField(default='new', protected=True)
 
-    @transition(field=state, source='new', target='published')
+    @transition(field=state, source='new', target='published',
+                permission='testapp.can_publish_post')
     def publish(self):
         pass
 
@@ -96,7 +97,8 @@ class BlogPost(models.Model):
     def hide(self):
         pass
 
-    @transition(field=state, source='new', target='removed')
+    @transition(field=state, source='new', target='removed',
+                permission=lambda u: u.has_perm('testapp.can_remove_post'))
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 
@@ -107,3 +109,9 @@ class BlogPost(models.Model):
     @transition(field=state, source='*', target='moderated')
     def moderate(self):
         pass
+
+    class Meta:
+        permissions = [
+            ('can_publish_post', 'Can publish post'),
+            ('can_remove_post', 'Can remove post'),
+        ]

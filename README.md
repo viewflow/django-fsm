@@ -64,7 +64,7 @@ from django_fsm import can_proceed
 def publish_view(request, post_id):
     post = get_object__or_404(BlogPost, pk=post_id)
     if not can_proceed(post.publish):
-        raise PermissionDenied;
+        raise PermissionDenied
 	
     post.publish()
     post.save()
@@ -129,13 +129,44 @@ def legal_hold(self):
     Side effects galore
     """
 ```
+### Permissions
+It is common to have permissions attached to each model transition. `django-fsm` handles this with
+`permission` keyword on the `transition` decorator. `permission` accepts a permission string, or
+callable that excepts `user` argument and returns True if user can perform the transition
+
+```python
+@transition(field=state, source='*', target='publish',
+            permission=lambda user: not user.has_perm('myapp.can_make_mistakes'))
+def publish(self):
+    pass
+
+@transition(field=state, source='*', target='publish',
+            permission='myapp.can_remove_post')
+def remove(self):
+    pass
+```
+
+You can check permission with `has_transition_permission` method
+from django_fsm import can_proceed
+``` python
+def publish_view(request, post_id):
+    post = get_object__or_404(BlogPost, pk=post_id)
+    if not has_transition_permission(post.publish, request.user):
+        raise PermissionDenied
+	
+    post.publish()
+    post.save()
+    return redirect('/')
+```
+    
+### get_all_FIELD_transitions
+Enumerates all declared transitions
 
 ### get_available_FIELD_transitions
 Returns all transitions data available in current state
 
-### get_all_FIELD_transitions
-Enumerates all declared transitions
-
+### get_available_user_FIELD_transitions:
+Enumerates all  transitions data available in current state for provided user
 
 ### Foreign Key constraints support 
 
