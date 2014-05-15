@@ -64,7 +64,7 @@ from django_fsm import can_proceed
 def publish_view(request, post_id):
     post = get_object__or_404(BlogPost, pk=post_id)
     if not can_proceed(post.publish):
-        raise Http404;
+        raise PermissionDenied;
 	
     post.publish()
     post.save()
