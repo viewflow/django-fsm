@@ -11,6 +11,8 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
+Here is nice introduction available https://gist.github.com/Nagyman/9502133
+
 You may also take a look to django-fsm-admin project
 contains mixin and template tags to integrate django-fsm 
 state transitions into the django admin.
