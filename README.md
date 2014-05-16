@@ -135,7 +135,7 @@ def legal_hold(self):
 ### Permissions
 It is common to have permissions attached to each model transition. `django-fsm` handles this with
 `permission` keyword on the `transition` decorator. `permission` accepts a permission string, or
-callable that excepts `user` argument and returns True if user can perform the transition
+callable that expects `user` argument and returns True if user can perform the transition
 
 ```python
 @transition(field=state, source='*', target='publish',
@@ -150,10 +150,11 @@ def remove(self):
 ```
 
 You can check permission with `has_transition_permission` method
-from django_fsm import can_proceed
+
 ``` python
+from django_fsm import can_proceed
 def publish_view(request, post_id):
-    post = get_object__or_404(BlogPost, pk=post_id)
+    post = get_object_or_404(BlogPost, pk=post_id)
     if not has_transition_permission(post.publish, request.user):
         raise PermissionDenied
 	
@@ -258,7 +259,7 @@ Arguments sent with these signals:
    Target model state
 
 
-### Drawing transitions
+## Drawing transitions
 
 Renders a graphical overview of your models states transitions
 ```bash
