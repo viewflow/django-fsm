@@ -13,7 +13,8 @@ from django_fsm.signals import pre_transition, post_transition
 
 
 __all__ = ["TransitionNotAllowed", "FSMFieldMixin", "FSMField",
-           'FSMIntegerField', 'FSMKeyField', 'transition', 'can_proceed']
+           'FSMIntegerField', 'FSMKeyField', 'transition',
+           'can_proceed', 'has_transition_perm']
 
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
