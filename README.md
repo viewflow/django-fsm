@@ -132,6 +132,17 @@ def legal_hold(self):
     Side effects galore
     """
 ```
+
+### `state_choices`
+Instead of passing two elements list `choices` you could use three elements `state_choices`,
+the last element states for string reference to model proxy class.
+
+Base class instance would be dynamically changed to corresponding Proxy class instance, depends on state.
+Even for queryset results, you will get Proxy class instances, even if QuerySet executed on base class.
+
+Check the [test case](https://github.com/kmmbvnr/django-fsm/blob/master/tests/testapp/tests/test_state_transitions.py)
+for example usage. Or read about [implementation internals](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/)
+
 ### Permissions
 It is common to have permissions attached to each model transition. `django-fsm` handles this with
 `permission` keyword on the `transition` decorator. `permission` accepts a permission string, or
@@ -274,6 +285,9 @@ Changelog
 ---------
     
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
+
+### django-fsm GIT
+* Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depends on state
 
 ### django-fsm 2.1.0 2014-05-15
 * Support for attaching permission checks on model transitions
