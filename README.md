@@ -2,8 +2,6 @@ Django friendly finite state machine support
 ============================================
 [![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm)
 
-[![Donate](http://i.imgur.com/B7Ioq3v.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7C4XH7LEDHMYU)
-
 django-fsm adds declarative states management for django models.
 Instead of adding some state field to a django model, and manage it
 values by hand, you could use FSMState field and mark model methods
@@ -20,6 +18,9 @@ contains mixin and template tags to integrate django-fsm
 state transitions into the django admin.
 
 https://github.com/gadventures/django-fsm-admin
+
+[![Donate](http://i.imgur.com/B7Ioq3v.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7C4XH7LEDHMYU)
+
 
 Installation
 ------------
