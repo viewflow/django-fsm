@@ -120,6 +120,7 @@ class TestFieldTransitionsInspect(TestCase):
 
     def test_all_conditions(self):
         transitions = self.model.get_all_state_transitions()
+        
         actual = set((transition.source, transition.target) for transition in transitions)
         expected = set([('*', 'moderated'),
                         ('new', 'published'),

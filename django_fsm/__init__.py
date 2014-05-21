@@ -6,6 +6,7 @@ import inspect
 from functools import wraps
 
 from django.db import models
+from django.db.models.loading import get_model
 from django.db.models.signals import class_prepared
 from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
@@ -164,6 +165,9 @@ class FSMFieldDescriptor(object):
     def __set__(self, instance, value):
         if self.field.protected and self.field.name in instance.__dict__:
             raise AttributeError('Direct {} modification is not allowed'.format(self.field.name))
+
+        # Update state
+        self.field.set_proxy(instance, value)
         self.field.set_state(instance, value)
 
 
@@ -173,6 +177,19 @@ class FSMFieldMixin(object):
     def __init__(self, *args, **kwargs):
         self.protected = kwargs.pop('protected', False)
         self.transitions = {}  # cls -> (transitions name -> method)
+        self.state_proxy = {}  # state -> ProxyClsRef
+
+        state_choices = kwargs.pop('state_choices', None)
+        choices = kwargs.get('choices', None)
+        if state_choices is not None and choices is not None:
+            raise ValueError('Use one of choices or state_choces value')
+
+        if state_choices is not None:
+            choices = []
+            for state, title, proxy_cls_ref in state_choices:
+                choices.append((state, title))
+                self.state_proxy[state] = proxy_cls_ref
+            kwargs['choices'] = choices
 
         super(FSMFieldMixin, self).__init__(*args, **kwargs)
 
@@ -188,6 +205,26 @@ class FSMFieldMixin(object):
     def set_state(self, instance, state):
         instance.__dict__[self.name] = state
 
+    def set_proxy(self, instance, state):
+        """
+        Change class
+        """
+        if state in self.state_proxy:
+            state_proxy = self.state_proxy[state]
+
+            try:
+                app_label, model_name = state_proxy.split(".")
+            except ValueError:
+                # If we can't split, assume a model in current app
+                app_label = instance._meta.app_label
+                model_name = state_proxy
+
+            model = get_model(app_label, model_name)
+            if model is None:
+                raise ValueError('No model found {}'.format(state_proxy))
+
+            instance.__class__ = model
+        
     def change_state(self, instance, method, *args, **kwargs):
         meta = method._django_fsm
         method_name = method.__name__
@@ -211,6 +248,7 @@ class FSMFieldMixin(object):
 
         result = method(instance, *args, **kwargs)
         if next_state:
+            self.set_proxy(instance, next_state)
             self.set_state(instance, next_state)
 
         post_transition.send(**signal_kwargs)
