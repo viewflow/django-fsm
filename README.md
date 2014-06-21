@@ -245,7 +245,7 @@ class BlogPostStateEnum(object):
 class BlogPostWithIntegerField(models.Model):
     state = FSMIntegerField(default=BlogPostStateEnum.NEW)
 
-    @transition(source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
+    @transition(field=state, source=BlogPostStateEnum.NEW, target=BlogPostStateEnum.PUBLISHED)
     def publish(self):
         pass
 ```
