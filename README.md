@@ -235,7 +235,7 @@ as names, even if field "real" name is used, without _id postfix, as field param
 
 ### Integer Field support 
 
-You can also use `FSMIntegerField`. This is handy when you want to use enum style constants. This field is also `db_index=True` by default for speedy db loookups.
+You can also use `FSMIntegerField`. This is handy when you want to use enum style constants.
 ```python
 class BlogPostStateEnum(object):
     NEW = 10
