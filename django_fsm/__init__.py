@@ -313,11 +313,8 @@ class FSMField(FSMFieldMixin, models.CharField):
 class FSMIntegerField(FSMFieldMixin, models.IntegerField):
     """
     Same as FSMField, but stores the state value in an IntegerField.
-    db_index is True by default.
     """
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('db_index', True)
-        super(FSMIntegerField, self).__init__(*args, **kwargs)
+    pass
 
 
 class FSMKeyField(FSMFieldMixin, models.ForeignKey):
