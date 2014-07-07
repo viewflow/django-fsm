@@ -176,7 +176,7 @@ def publish_view(request, post_id):
     return redirect('/')
 ```
 
-## Model method
+### Model methods
 
 `get_all_FIELD_transitions`
 Enumerates all declared transitions
