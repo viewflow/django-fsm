@@ -7,13 +7,14 @@ from functools import wraps
 
 from django.db import models
 from django.db.models.loading import get_model
-from django.db.models.signals import class_prepared, post_save
+from django.db.models.signals import class_prepared
 from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
 
 
-__all__ = ["TransitionNotAllowed", "FSMFieldMixin", "FSMField",
-           'FSMIntegerField', 'FSMKeyField', 'transition',
+__all__ = ['TransitionNotAllowed', 'ConcurrentUpdate',
+           'FSMFieldMixin', 'FSMField', 'FSMIntegerField',
+           'FSMKeyField', 'FSMLockMixin', 'transition',
            'can_proceed', 'has_transition_perm']
 
 
