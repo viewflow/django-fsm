@@ -20,8 +20,6 @@ state transitions into the django admin.
 
 https://github.com/gadventures/django-fsm-admin
 
-[![Donate](http://i.imgur.com/B7Ioq3v.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7C4XH7LEDHMYU)
-
 
 Installation
 ------------
@@ -177,15 +175,17 @@ def publish_view(request, post_id):
     post.save()
     return redirect('/')
 ```
-    
-### get_all_FIELD_transitions
+
+## Model method
+
+`get_all_FIELD_transitions`
 Enumerates all declared transitions
 
-### get_available_FIELD_transitions
+`get_available_FIELD_transitions`
 Returns all transitions data available in current state
 
-### get_available_user_FIELD_transitions:
-Enumerates all  transitions data available in current state for provided user
+`get_available_user_FIELD_transitions`
+Enumerates all transitions data available in current state for provided user
 
 ### Foreign Key constraints support 
 
