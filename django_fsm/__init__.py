@@ -7,7 +7,7 @@ from functools import wraps
 
 from django.db import models
 from django.db.models.loading import get_model
-from django.db.models.signals import class_prepared
+from django.db.models.signals import class_prepared, post_save
 from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
 
@@ -30,6 +30,10 @@ else:
 
 class TransitionNotAllowed(Exception):
     """Raise when a transition is not allowed"""
+
+
+class ConcurrentUpdate(Exception):
+    """Raised when a model can not be saved due to a concurrent update"""
 
 
 class Transition(object):
@@ -224,7 +228,7 @@ class FSMFieldMixin(object):
                 raise ValueError('No model found {}'.format(state_proxy))
 
             instance.__class__ = model
-        
+
     def change_state(self, instance, method, *args, **kwargs):
         meta = method._django_fsm
         method_name = method.__name__
@@ -326,6 +330,49 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
 
     def set_state(self, instance, state):
         instance.__dict__[self.attname] = self.to_python(state)
+
+
+class FSMLockMixin(object):
+    """
+    Perform optimistic locking based on fsm state fields
+    """
+    def __init__(self, *args, **kwargs):
+        super(FSMLockMixin, self).__init__(*args, **kwargs)
+        self._update_initial_state()
+
+    def _do_update(self, base_qs, using, pk_val, values, update_fields, forced_update):
+        initial_state = {field: state for field, state in self._initial_fsm_state.items()
+                         if field.model == base_qs.model}
+
+        if not initial_state:
+            """
+            No fsm state on current inheritance level
+            """
+            return super(FSMLockMixin, self)._do_update(
+                base_qs, using, pk_val, values, update_fields, forced_update)
+
+        filtered = base_qs.filter(
+            pk=pk_val,
+            **{field.attname: state for field, state in initial_state.items()})
+
+        if not values:
+            updated = int(filtered.exists())
+        else:
+            updated = filtered._update(values) > 0
+
+        if not updated and base_qs.filter(pk=pk_val).exists():
+            raise ConcurrentUpdate
+
+        return updated
+
+    def _update_initial_state(self):
+        self._initial_fsm_state = {
+            field: getattr(self, field.attname) for field in self._meta.fields
+            if isinstance(field, FSMFieldMixin)}
+
+    def save(self, *args, **kwargs):
+        super(FSMLockMixin, self).save(*args, **kwargs)
+        self._update_initial_state()
 
 
 def transition(field, source='*', target=None, conditions=[], permission=None, custom={}):

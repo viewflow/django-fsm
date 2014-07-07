@@ -3,6 +3,7 @@ Django friendly finite state machine support
 [![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm)
 
 django-fsm adds declarative states management for django models.
+
 Instead of adding some state field to a django model, and manage it
 values by hand, you could use FSMState field and mark model methods
 with the `transition` decorator. Your method will contain the side-effects
@@ -272,6 +273,18 @@ Arguments sent with these signals:
 **target**
    Target model state
 
+## Optimistic locking
+
+`django-fsm` provides optimistic locking mixin, to avoid concurent model state changes.
+If model state was changed in database `django_fsm.ConcurrentUpdate` exception would be raised
+on model.save()
+
+```python
+from django_fsm import FMSField, FSMLockMixin
+
+class BlogPost(FSMLockMixin, models.Model):
+    state = FSMField(default='new')
+
 
 ## Drawing transitions
 
@@ -291,6 +304,7 @@ Changelog
 
 ### django-fsm GIT
 * Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depends on state
+* Added optimistic lock model mixin
 * Default db_index=True for FSMIntegerField removed
 
 ### django-fsm 2.1.0 2014-05-15
