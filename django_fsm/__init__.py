@@ -344,7 +344,7 @@ class FSMLockMixin(object):
     transitions with the same SOURCE state at the same time.
 
     This behavior is achieved using an idea based on optimistic locking. No additional
-    version field is required though; the state field(s) is/are used for the tracking.
+    version field is required though; only the state field(s) is/are used for the tracking.
     This scheme is not that strict as true *optimistic locking* mechanism, it is however
     more lightweight - leveraging the specifics of FSM models.
 
