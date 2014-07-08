@@ -205,7 +205,7 @@ class DbState(models.Model):
 class BlogPost(models.Model):
     state = FSMKeyField(DbState, default='new')
 
-@transition(field=state, source='new', target='published')
+    @transition(field=state, source='new', target='published')
     def publish(self):
         pass
 ```
