@@ -15,7 +15,7 @@ from django_fsm.signals import pre_transition, post_transition
 __all__ = ['TransitionNotAllowed', 'ConcurrentUpdate',
            'FSMFieldMixin', 'FSMField', 'FSMIntegerField',
            'FSMKeyField', 'FSMLockMixin', 'transition',
-           'can_proceed', 'has_transition_perm']
+           'can_proceed', 'has_transition_perm', 'has_transition']
 
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
@@ -469,3 +469,19 @@ def has_transition_perm(bound_method, user):
     return (meta.has_transition(current_state)
             and meta.conditions_met(im_self, current_state)
             and meta.has_transition_perm(im_self, current_state, user))
+
+
+def has_transition(bound_method):
+    """
+    Returns True if model state there is transition regardless of conditions.
+    """
+    if not hasattr(bound_method, '_django_fsm'):
+        raise TypeError(
+            '%s method is not transition' % bound_method.im_func.__name__)
+
+    meta = bound_method._django_fsm
+    im_self = getattr(bound_method, 'im_self',
+                      getattr(bound_method, '__self__'))
+    current_state = meta.field.get_state(im_self)
+
+    return meta.has_transition(current_state)
