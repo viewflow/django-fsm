@@ -4,7 +4,7 @@ Django friendly finite state machine support
 
 django-fsm adds declarative states management for django models.
 
-Instead of adding some state field to a django model, and manage it
+Instead of adding some state field to a django model, and managing its
 values by hand, you could use FSMState field and mark model methods
 with the `transition` decorator. Your method will contain the side-effects
 of the state change.
@@ -12,10 +12,10 @@ of the state change.
 The decorator also takes a list of conditions, all of which must be met
 before a transition is allowed.
 
-Here is nice introduction available https://gist.github.com/Nagyman/9502133
+Nice introduction is available here: https://gist.github.com/Nagyman/9502133
 
-You may also take a look to django-fsm-admin project
-contains mixin and template tags to integrate django-fsm 
+You may also take a look at django-fsm-admin project
+containing a mixin and template tags to integrate django-fsm
 state transitions into the django admin.
 
 https://github.com/gadventures/django-fsm-admin
@@ -31,7 +31,7 @@ Or, for the latest git version
 $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
 ```
 
-Library has full Python 3 support, for the graph transition drawing
+The library has full Python 3 support, for the graph transition drawing
 you should install python3 compatible graphviz version
 from git+https://github.com/philipaxer/pygraphviz
 
@@ -76,12 +76,12 @@ def publish_view(request, post_id):
     return redirect('/')
 ```
 
-If some conditions are required to be met before the changing state, use the
+If some conditions are required to be met before changing the state, use the
 `conditions` argument to `transition`. `conditions` must be a list of functions
-that takes one argument, the model instance.  The function must return either
-`True` or `False` or a value that evaluates to `True` or `False`. If all
-functions return `True`, all conditions are considered to be met and transition
-is allowed to happen. If one of the functions return `False`, the transition
+taking one argument, the model instance.  The function must return either
+`True` or `False` or a value that evaluates to `True` or `False`. If all functions
+return `True`, all conditions are considered to be met and the transition
+is allowed to happen. If one of the functions returns `False`, the transition
 will not happen. These functions should not have any side effects.
 
 You can use ordinary functions
@@ -114,7 +114,7 @@ Use the conditions like this:
     """
 ```
 
-You could instantiate field with protected=True option, that prevents direct state field modification
+You could instantiate a field with protected=True option, that prevents direct state field modification
 ```python
 class BlogPost(models.Model):
     state = FSMField(default='new', protected=True)
@@ -139,7 +139,7 @@ def legal_hold(self):
 Instead of passing two elements list `choices` you could use three elements `state_choices`,
 the last element states for string reference to model proxy class.
 
-Base class instance would be dynamically changed to corresponding Proxy class instance, depends on state.
+Base class instance would be dynamically changed to corresponding Proxy class instance, depending on the state.
 Even for queryset results, you will get Proxy class instances, even if QuerySet executed on base class.
 
 Check the [test case](https://github.com/kmmbvnr/django-fsm/blob/master/tests/testapp/tests/test_state_transitions.py)
@@ -284,7 +284,14 @@ from django_fsm import FMSField, FSMLockMixin
 
 class BlogPost(FSMLockMixin, models.Model):
     state = FSMField(default='new')
+```
 
+For guaranteed protection against race conditions caused by concurrently executed transitions, make sure:
+* Your transitions do not have any side effects except for changes in the database,
+* You always run the save() method on the object within `django.db.transaction.atomic()` block.
+
+Following these recommendations, you can rely on FSMLockMixin to cause a rollback of all the changes
+that have been executed in an inconsistent (out of sync) state, thus practically negating their effect.
 
 ## Drawing transitions
 
@@ -303,7 +310,7 @@ Changelog
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
 
 ### django-fsm GIT
-* Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depends on state
+* Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depending on the state
 * Added optimistic lock model mixin
 * Default db_index=True for FSMIntegerField removed
 
