@@ -1,9 +1,9 @@
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, FSMLockMixin, ConcurrentTransition, transition
+from django_fsm import FSMField, ConcurrentTransitionMixin, ConcurrentTransition, transition
 
 
-class LockedBlogPost(FSMLockMixin, models.Model):
+class LockedBlogPost(ConcurrentTransitionMixin, models.Model):
     state = FSMField(default='new', protected=True)
     text = models.CharField(max_length=50)
 

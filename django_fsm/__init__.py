@@ -14,7 +14,7 @@ from django_fsm.signals import pre_transition, post_transition
 
 __all__ = ['TransitionNotAllowed', 'ConcurrentTransition',
            'FSMFieldMixin', 'FSMField', 'FSMIntegerField',
-           'FSMKeyField', 'FSMLockMixin', 'transition',
+           'FSMKeyField', 'ConcurrentTransitionMixin', 'transition',
            'can_proceed', 'has_transition_perm']
 
 
@@ -337,7 +337,7 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
         instance.__dict__[self.attname] = self.to_python(state)
 
 
-class FSMLockMixin(object):
+class ConcurrentTransitionMixin(object):
     """
     Protects a Model from undesirable effects caused by concurrently executed transitions,
     e.g. running the same transition multiple times at the same time, or running different
@@ -358,12 +358,12 @@ class FSMLockMixin(object):
     * You always run the save() method on the object within django.db.transaction.atomic()
     block.
 
-    Following these recommendations, you can rely on FSMLockMixin to cause
+    Following these recommendations, you can rely on ConcurrentTransitionMixin to cause
     a rollback of all the changes that have been executed in an inconsistent (out of sync)
     state, thus practically negating their effect.
     """
     def __init__(self, *args, **kwargs):
-        super(FSMLockMixin, self).__init__(*args, **kwargs)
+        super(ConcurrentTransitionMixin, self).__init__(*args, **kwargs)
         self._update_initial_state()
 
     @property
@@ -383,7 +383,7 @@ class FSMLockMixin(object):
         # state filter will be used to narrow down the standard filter checking only PK
         state_filter = {field.attname: self.__initial_states[field.attname] for field in filter_on}
 
-        updated = super(FSMLockMixin, self)._do_update(
+        updated = super(ConcurrentTransitionMixin, self)._do_update(
             base_qs=base_qs.filter(**state_filter),
             using=using,
             pk_val=pk_val,
@@ -409,7 +409,7 @@ class FSMLockMixin(object):
         }
 
     def save(self, *args, **kwargs):
-        super(FSMLockMixin, self).save(*args, **kwargs)
+        super(ConcurrentTransitionMixin, self).save(*args, **kwargs)
         self._update_initial_state()
 
 
