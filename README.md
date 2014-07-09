@@ -276,13 +276,13 @@ Arguments sent with these signals:
 ## Optimistic locking
 
 `django-fsm` provides optimistic locking mixin, to avoid concurent model state changes.
-If model state was changed in database `django_fsm.ConcurrentUpdate` exception would be raised
+If model state was changed in database `django_fsm.ConcurrentTransition` exception would be raised
 on model.save()
 
 ```python
-from django_fsm import FMSField, FSMLockMixin
+from django_fsm import FMSField, ConcurrentTransitionMixin
 
-class BlogPost(FSMLockMixin, models.Model):
+class BlogPost(ConcurrentTransitionMixin, models.Model):
     state = FSMField(default='new')
 ```
 
@@ -290,7 +290,7 @@ For guaranteed protection against race conditions caused by concurrently execute
 * Your transitions do not have any side effects except for changes in the database,
 * You always run the save() method on the object within `django.db.transaction.atomic()` block.
 
-Following these recommendations, you can rely on FSMLockMixin to cause a rollback of all the changes
+Following these recommendations, you can rely on ConcurrentTransitionMixin to cause a rollback of all the changes
 that have been executed in an inconsistent (out of sync) state, thus practically negating their effect.
 
 ## Drawing transitions
@@ -311,7 +311,7 @@ Changelog
 
 ### django-fsm GIT
 * Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depending on the state
-* Added optimistic lock model mixin
+* Added ConcurrentTransitionMixin with optimistic locking support
 * Default db_index=True for FSMIntegerField removed
 
 ### django-fsm 2.1.0 2014-05-15
