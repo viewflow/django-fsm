@@ -45,3 +45,6 @@ class ConditionalTest(TestCase):
         self.assertEqual(self.model.state, 'published')
         self.assertFalse(can_proceed(self.model.destroy))
         self.assertRaises(TransitionNotAllowed, self.model.destroy)
+
+        self.assertTrue(can_proceed(self.model.destroy,
+                                    check_conditions=False))

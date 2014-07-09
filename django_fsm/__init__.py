@@ -441,9 +441,12 @@ def transition(field, source='*', target=None, conditions=[], permission=None, c
     return inner_transition
 
 
-def can_proceed(bound_method):
+def can_proceed(bound_method, check_conditions=True):
     """
     Returns True if model in state allows to call bound_method
+
+    Set ``check_conditions`` argument to ``False`` to skip checking
+    conditions.
     """
     if not hasattr(bound_method, '_django_fsm'):
         raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
@@ -452,7 +455,8 @@ def can_proceed(bound_method):
     im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
     current_state = meta.field.get_state(im_self)
 
-    return meta.has_transition(current_state) and meta.conditions_met(im_self, current_state)
+    return meta.has_transition(current_state) and (
+        not check_conditions or meta.conditions_met(im_self, current_state))
 
 
 def has_transition_perm(bound_method, user):
