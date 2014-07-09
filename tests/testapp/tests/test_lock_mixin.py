@@ -1,6 +1,6 @@
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, FSMLockMixin, ConcurrentUpdate, transition
+from django_fsm import FSMField, FSMLockMixin, ConcurrentTransition, transition
 
 
 class LockedBlogPost(FSMLockMixin, models.Model):
@@ -65,7 +65,7 @@ class TestLockMixin(TestCase):
 
         post2.text = 'aaa'
         post2.publish()
-        with self.assertRaises(ConcurrentUpdate):
+        with self.assertRaises(ConcurrentTransition):
             post2.save()
 
     def test_inheritance_crud_succeed(self):

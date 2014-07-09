@@ -12,7 +12,7 @@ from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
 
 
-__all__ = ['TransitionNotAllowed', 'ConcurrentUpdate',
+__all__ = ['TransitionNotAllowed', 'ConcurrentTransition',
            'FSMFieldMixin', 'FSMField', 'FSMIntegerField',
            'FSMKeyField', 'FSMLockMixin', 'transition',
            'can_proceed', 'has_transition_perm']
@@ -33,7 +33,7 @@ class TransitionNotAllowed(Exception):
     """Raised when a transition is not allowed"""
 
 
-class ConcurrentUpdate(Exception):
+class ConcurrentTransition(Exception):
     """
     Raised when the transition cannot be executed because the
     object has become stale (state has been changed since it
@@ -350,7 +350,7 @@ class FSMLockMixin(object):
 
     Instance of a model based on this Mixin will be prevented from saving into DB if any
     of its state fields (instances of FSMFieldMixin) has been changed since the object
-    was fetched from the database. *ConcurrentUpdate* exception will be raised in such
+    was fetched from the database. *ConcurrentTransition* exception will be raised in such
     cases.
 
     For guaranteed protection against such race conditions, make sure:
@@ -399,7 +399,7 @@ class FSMLockMixin(object):
         # Thus, we need to make sure we only catch the case when the object *is* in the DB, but with changed state; and
         # mimic standard _do_update behavior otherwise. Django will pick it up and execute _do_insert.
         if not updated and base_qs.filter(pk=pk_val).exists():
-            raise ConcurrentUpdate("Cannot save object! The state has been changed since fetched from the database!")
+            raise ConcurrentTransition("Cannot save object! The state has been changed since fetched from the database!")
 
         return updated
 
