@@ -311,7 +311,7 @@ Changelog
 
 ### django-fsm GIT
 * Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depending on the state
-* Added optimistic lock model mixin
+* Added ConcurrentTransitionMixin with optimistic locking support
 * Default db_index=True for FSMIntegerField removed
 
 ### django-fsm 2.1.0 2014-05-15
