@@ -4,6 +4,7 @@ State tracking functionality for django models
 """
 import inspect
 from functools import wraps
+import sys
 
 from django.db import models
 from django.db.models.loading import get_model
@@ -17,6 +18,23 @@ __all__ = ['TransitionNotAllowed', 'ConcurrentTransition',
            'FSMKeyField', 'ConcurrentTransitionMixin', 'transition',
            'can_proceed', 'has_transition_perm']
 
+if sys.version_info[:2] == (2, 6):
+    # Backport of Python 2.7 inspect.getmembers,
+    # since Python 2.6 ships buggy implementation
+    def __getmembers(object, predicate=None):
+        """Return all members of an object as (name, value) pairs sorted by name.
+        Optionally, only return members that satisfy a given predicate."""
+        results = []
+        for key in dir(object):
+            try:
+                value = getattr(object, key)
+            except AttributeError:
+                continue
+            if not predicate or predicate(value):
+                results.append((key, value))
+        results.sort()
+        return results
+    inspect.getmembers = __getmembers
 
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
 try:
