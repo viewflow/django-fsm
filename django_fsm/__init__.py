@@ -116,7 +116,7 @@ class FSMMeta(object):
 
     def add_transition(self, method, source, target, conditions=[], permission=None, custom={}):
         if source in self.transitions:
-            raise AssertionError('Duplicate transition for {} state'.format(source))
+            raise AssertionError('Duplicate transition for {0} state'.format(source))
 
         self.transitions[source] = Transition(
             method=method,
@@ -157,7 +157,7 @@ class FSMMeta(object):
         transition = self.get_transition(current_state)
 
         if transition is None:
-            raise TransitionNotAllowed('No transition from {}'.format(current_state))
+            raise TransitionNotAllowed('No transition from {0}'.format(current_state))
 
         return transition.target
 
@@ -173,7 +173,7 @@ class FSMFieldDescriptor(object):
 
     def __set__(self, instance, value):
         if self.field.protected and self.field.name in instance.__dict__:
-            raise AttributeError('Direct {} modification is not allowed'.format(self.field.name))
+            raise AttributeError('Direct {0} modification is not allowed'.format(self.field.name))
 
         # Update state
         self.field.set_proxy(instance, value)
@@ -230,7 +230,7 @@ class FSMFieldMixin(object):
 
             model = get_model(app_label, model_name)
             if model is None:
-                raise ValueError('No model found {}'.format(state_proxy))
+                raise ValueError('No model found {0}'.format(state_proxy))
 
             instance.__class__ = model
 
@@ -241,7 +241,7 @@ class FSMFieldMixin(object):
 
         if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state)):
             raise TransitionNotAllowed(
-                "Can't switch from state '{}' using method '{}'".format(current_state, method_name))
+                "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name))
 
         next_state = meta.next_state(current_state)
 
@@ -281,11 +281,11 @@ class FSMFieldMixin(object):
 
         super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
         setattr(cls, self.name, self.descriptor_class(self))
-        setattr(cls, 'get_all_{}_transitions'.format(self.name),
+        setattr(cls, 'get_all_{0}_transitions'.format(self.name),
                 curry(get_all_FIELD_transitions, field=self))
-        setattr(cls, 'get_available_{}_transitions'.format(self.name),
+        setattr(cls, 'get_available_{0}_transitions'.format(self.name),
                 curry(get_available_FIELD_transitions, field=self))
-        setattr(cls, 'get_available_user_{}_transitions'.format(self.name),
+        setattr(cls, 'get_available_user_{0}_transitions'.format(self.name),
                 curry(get_available_user_FIELD_transitions, field=self))
 
         class_prepared.connect(self._collect_transitions)
