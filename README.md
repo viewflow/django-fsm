@@ -52,7 +52,7 @@ Use the `transition` decorator to annotate model methods
 @transition(field=state, source='new', target='published')
 def publish(self):
 	"""
-	This function may contain side-effects, 
+	This function may contain side-effects,
 	like updating caches, notifying users, etc.
 	The return value will be discarded.
 	"""
@@ -70,7 +70,7 @@ def publish_view(request, post_id):
     post = get_object__or_404(BlogPost, pk=post_id)
     if not can_proceed(post.publish):
         raise PermissionDenied
-	
+
     post.publish()
     post.save()
     return redirect('/')
@@ -165,12 +165,12 @@ def remove(self):
 You can check permission with `has_transition_permission` method
 
 ``` python
-from django_fsm import can_proceed
+from django_fsm import has_transition_perm
 def publish_view(request, post_id):
     post = get_object_or_404(BlogPost, pk=post_id)
-    if not has_transition_permission(post.publish, request.user):
+    if not has_transition_perm(post.publish, request.user):
         raise PermissionDenied
-	
+
     post.publish()
     post.save()
     return redirect('/')
@@ -187,12 +187,12 @@ Returns all transitions data available in current state
 `get_available_user_FIELD_transitions`
 Enumerates all transitions data available in current state for provided user
 
-### Foreign Key constraints support 
+### Foreign Key constraints support
 
 If you store the states in the db table you could use FSMKeyField to
 ensure Foreign Key database integrity.
 
-In your model : 
+In your model :
 ```python
 class DbState(models.Model):
     id = models.CharField(primary_key=True, max_length=50)
@@ -234,7 +234,7 @@ Note : source and target parameters in @transition decorator use pk values of DB
 as names, even if field "real" name is used, without _id postfix, as field parameter.
 
 
-### Integer Field support 
+### Integer Field support
 
 You can also use `FSMIntegerField`. This is handy when you want to use enum style constants.
 ```python
@@ -253,7 +253,7 @@ class BlogPostWithIntegerField(models.Model):
 
 ### Signals
 
-`django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before 
+`django_fsm.signals.pre_transition` and `django_fsm.signals.post_transition` are called before
 and after allowed transition. No signals on invalid transition are called.
 
 Arguments sent with these signals:
@@ -306,7 +306,7 @@ $ ./manage.py graph_transitions -o blog_transitions.png myapp.Blog
 
 Changelog
 ---------
-    
+
 <img src="https://f.cloud.github.com/assets/41479/2227946/a9e77760-9ad0-11e3-804f-301d075470fe.png" alt="django-fsm" width="100px"/>
 
 ### django-fsm GIT
@@ -351,7 +351,7 @@ Changelog
 
 ### django-fsm 1.1.0 2011-02-22
 
-* Add support for transition conditions 
+* Add support for transition conditions
 * Allow multiple FSMField in one model
 * Contribute get_available_FIELD_transitions for model class
 
