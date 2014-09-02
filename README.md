@@ -31,9 +31,7 @@ Or, for the latest git version
 $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
 ```
 
-The library has full Python 3 support, for the graph transition drawing
-you should install python3 compatible graphviz version
-from git+https://github.com/philipaxer/pygraphviz
+The library has full Python 3 support
 
 
 Usage
@@ -296,6 +294,9 @@ that have been executed in an inconsistent (out of sync) state, thus practically
 ## Drawing transitions
 
 Renders a graphical overview of your models states transitions
+
+You need `pip install graphviz` library
+
 ```bash
 # Create a dot file
 $ ./manage.py graph_transitions > transitions.dot

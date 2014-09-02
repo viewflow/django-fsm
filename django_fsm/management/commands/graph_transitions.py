@@ -1,5 +1,5 @@
 # -*- coding: utf-8; mode: django -*-
-import pygraphviz
+import graphviz
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.db.models import get_apps, get_app, get_models, get_model
@@ -13,42 +13,45 @@ def all_fsm_fields_data(model):
 
 def node_name(field, state):
     opts = field.model._meta
-    return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name, field.name, state)
+    return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(' ', '_'), field.name, state)
 
 
 def generate_dot(fields_data):
-    result = pygraphviz.AGraph(directed=True)
-    model_graphs = {}
+    result = graphviz.Digraph()
 
     for field, model in fields_data:
-        sources, any_targets = [], []
+        sources, targets, edges, any_targets = set(), set(), set(), set()
 
+        # dump nodes and edges
         for transition in field.get_all_transitions(model):
-            opts = field.model._meta
-            if field.model in model_graphs:
-                model_graph = model_graphs[field.model]
-            else:
-                model_graph = result.subgraph(name="cluster_%s_%s" % (opts.app_label, opts.object_name),
-                                              label="%s.%s" % (opts.app_label, opts.object_name))
-
             if transition.source == '*':
-                any_targets.append(transition.target)
+                any_targets.add(transition.target)
             else:
                 if transition.target is not None:
-                    source_node = node_name(field, transition.source)
-                    target_node = node_name(field, transition.target)
-                    if source_node not in model_graph:
-                        model_graph.add_node(source_node, label=transition.source)
-                    if target_node not in model_graph:
-                        model_graph.add_node(target_node, label=transition.target)
-                    model_graph.add_edge(source_node, target_node)
-                    sources.append(transition.source)
+                    source_name = node_name(field, transition.source)
+                    target_name = node_name(field, transition.target)
+                    sources.add((source_name, transition.source))
+                    targets.add((target_name, transition.target))
+                    edges.add((source_name, target_name))
 
         for target in any_targets:
-            target_node = node_name(field, target)
-            model_graph.add_node(target_node, label=target)
-            for source in sources:
-                model_graph.add_edge(node_name(field, source), target_node)
+            target_name = node_name(field, target)
+            targets.add((target_name, target))
+            for source_name, label in sources:
+                edges.add((source_name, target_name))
+
+        # construct subgraph
+        opts = field.model._meta
+        subgraph = graphviz.Digraph(
+            name="cluster_%s_%s" % (opts.app_label, opts.object_name),
+            graph_attr={'label': "%s.%s" % (opts.app_label, opts.object_name)})
+
+        for name, label in sources | targets:
+            subgraph.node(name, label=label)
+        for source_name, target_name in edges:
+            subgraph.edge(source_name, target_name)
+
+        result.subgraph(subgraph)
 
     return result
 
@@ -67,8 +70,11 @@ class Command(BaseCommand):
     args = "[appname[.model[.field]]]"
 
     def render_output(self, graph, **options):
-        graph.layout(prog=options['layout'])
-        graph.draw(options['outputfile'])
+        filename, format = options['outputfile'].rsplit('.', 1)
+
+        graph.engine = options['layout']
+        graph.format = format
+        graph.render(filename)
 
     def handle(self, *args, **options):
         fields_data = []
