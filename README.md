@@ -6,11 +6,8 @@ django-fsm adds declarative states management for django models.
 
 Instead of adding some state field to a django model, and managing its
 values by hand, you could use FSMState field and mark model methods
-with the `transition` decorator. Your method will contain the side-effects
+with the `transition` decorator. Your method could contain the side-effects
 of the state change.
-
-The decorator also takes a list of conditions, all of which must be met
-before a transition is allowed.
 
 Nice introduction is available here: https://gist.github.com/Nagyman/9502133
 
@@ -20,6 +17,18 @@ state transitions into the django admin.
 
 https://github.com/gadventures/django-fsm-admin
 
+Transition logging support could be achived with help of django-fsm-log package
+
+https://github.com/gizmag/django-fsm-log
+
+FSM really helps to structure the code, especially when a new
+developer comes to the project.  FSM is most effective when you use it
+for some sequential steps.
+
+If you need parallel task execution, view and background task code reuse
+over different flows - check my new project django-viewflow
+
+https://github.com/kmmbvnr/django-viewflow
 
 Installation
 ------------
