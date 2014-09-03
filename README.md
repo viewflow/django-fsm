@@ -121,6 +121,8 @@ model = BlogPost()
 model.state = 'invalid' # Raises AttributeError
 ```
 
+
+### `custom` properties
 Custom properties can be added by providing a dictionary to the `custom` keyword on the `transition` decorator.
 ```python
 @transition(field=state,
@@ -131,6 +133,18 @@ def legal_hold(self):
     """
     Side effects galore
     """
+```
+
+### `on_error` state
+
+In case of transition method would raise exception, you can provide specific target state
+
+```python
+@transition(field=state, source='new', target='published', on_error='failed')
+def publish(self):
+   """
+   Some exceptio could happends here
+   """
 ```
 
 ### `state_choices`
@@ -295,7 +309,7 @@ that have been executed in an inconsistent (out of sync) state, thus practically
 
 Renders a graphical overview of your models states transitions
 
-You need `pip install graphviz` library
+You need `pip install graphviz>=0.4` library
 
 ```bash
 # Create a dot file
@@ -314,6 +328,8 @@ Changelog
 * Support for [class substitution](http://schinckel.net/2013/06/13/django-proxy-model-state-machine/) to proxy classes depending on the state
 * Added ConcurrentTransitionMixin with optimistic locking support
 * Default db_index=True for FSMIntegerField removed
+* Graph transition code migrated to new graphviz library with python 3 support
+* Ability to change state on transition exception
 
 ### django-fsm 2.1.0 2014-05-15
 * Support for attaching permission checks on model transitions

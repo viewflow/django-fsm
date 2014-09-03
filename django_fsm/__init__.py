@@ -60,10 +60,11 @@ class ConcurrentTransition(Exception):
 
 
 class Transition(object):
-    def __init__(self, method, source, target, conditions, permission, custom):
+    def __init__(self, method, source, target, on_error, conditions, permission, custom):
         self.method = method
         self.source = source
         self.target = target
+        self.on_error = on_error
         self.conditions = conditions
         self.permission = permission
         self.custom = custom
@@ -132,7 +133,7 @@ class FSMMeta(object):
             transition = self.transitions.get('*', None)
         return transition
 
-    def add_transition(self, method, source, target, conditions=[], permission=None, custom={}):
+    def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {0} state'.format(source))
 
@@ -140,6 +141,7 @@ class FSMMeta(object):
             method=method,
             source=source,
             target=target,
+            on_error=on_error,
             conditions=conditions,
             permission=permission,
             custom=custom)
@@ -178,6 +180,14 @@ class FSMMeta(object):
             raise TransitionNotAllowed('No transition from {0}'.format(current_state))
 
         return transition.target
+
+    def exception_state(self, current_state):
+        transition = self.get_transition(current_state)
+
+        if transition is None:
+            raise TransitionNotAllowed('No transition from {0}'.format(current_state))
+
+        return transition.on_error
 
 
 class FSMFieldDescriptor(object):
@@ -273,12 +283,21 @@ class FSMFieldMixin(object):
 
         pre_transition.send(**signal_kwargs)
 
-        result = method(instance, *args, **kwargs)
-        if next_state:
-            self.set_proxy(instance, next_state)
-            self.set_state(instance, next_state)
-
-        post_transition.send(**signal_kwargs)
+        try:
+            result = method(instance, *args, **kwargs)
+            if next_state:
+                self.set_proxy(instance, next_state)
+                self.set_state(instance, next_state)
+        except Exception as exc:
+            exception_state = meta.exception_state(current_state)
+            if exception_state:
+                self.set_proxy(instance, exception_state)
+                self.set_state(instance, exception_state)
+                signal_kwargs['target'] = exception_state
+                signal_kwargs['exception'] = exc
+            raise
+        finally:
+            post_transition.send(**signal_kwargs)
 
         return result
 
@@ -431,7 +450,7 @@ class ConcurrentTransitionMixin(object):
         self._update_initial_state()
 
 
-def transition(field, source='*', target=None, conditions=[], permission=None, custom={}):
+def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}):
     """
     Method decorator for mark allowed transitions
 
@@ -450,9 +469,9 @@ def transition(field, source='*', target=None, conditions=[], permission=None, c
 
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.add_transition(func, state, target, conditions, permission, custom)
+                func._django_fsm.add_transition(func, state, target, on_error, conditions, permission, custom)
         else:
-            func._django_fsm.add_transition(func, source, target, conditions, permission, custom)
+            func._django_fsm.add_transition(func, source, target, on_error, conditions, permission, custom)
 
         return _change_state
 
