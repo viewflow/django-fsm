@@ -85,7 +85,7 @@ class BlogPost(models.Model):
     state = FSMField(default='new', protected=True)
 
     @transition(field=state, source='new', target='published',
-                permission='testapp.can_publish_post')
+                on_error='failed', permission='testapp.can_publish_post')
     def publish(self):
         pass
 
@@ -93,12 +93,12 @@ class BlogPost(models.Model):
     def notify_all(self):
         pass
 
-    @transition(field=state, source='published', target='hidden')
+    @transition(field=state, source='published', target='hidden', on_error='failed',)
     def hide(self):
         pass
 
     @transition(field=state, source='new', target='removed',
-                permission=lambda u: u.has_perm('testapp.can_remove_post'))
+                on_error='failed', permission=lambda u: u.has_perm('testapp.can_remove_post'))
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 

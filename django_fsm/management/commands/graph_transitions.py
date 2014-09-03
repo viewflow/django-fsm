@@ -32,13 +32,17 @@ def generate_dot(fields_data):
                     target_name = node_name(field, transition.target)
                     sources.add((source_name, transition.source))
                     targets.add((target_name, transition.target))
-                    edges.add((source_name, target_name))
+                    edges.add((source_name, target_name, ()))
+            if transition.on_error:
+                on_error_name = node_name(field, transition.on_error)
+                targets.add((on_error_name, transition.on_error))
+                edges.add((source_name, on_error_name, (('style', 'dotted'),)))
 
         for target in any_targets:
             target_name = node_name(field, target)
             targets.add((target_name, target))
             for source_name, label in sources:
-                edges.add((source_name, target_name))
+                edges.add((source_name, target_name, ()))
 
         # construct subgraph
         opts = field.model._meta
@@ -48,8 +52,8 @@ def generate_dot(fields_data):
 
         for name, label in sources | targets:
             subgraph.node(name, label=label)
-        for source_name, target_name in edges:
-            subgraph.edge(source_name, target_name)
+        for source_name, target_name, attrs in edges:
+            subgraph.edge(source_name, target_name, **dict(attrs))
 
         result.subgraph(subgraph)
 
