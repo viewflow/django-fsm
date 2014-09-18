@@ -267,9 +267,12 @@ class FSMFieldMixin(object):
         method_name = method.__name__
         current_state = self.get_state(instance)
 
-        if not (meta.has_transition(current_state) and meta.conditions_met(instance, current_state)):
+        if not meta.has_transition(current_state):
             raise TransitionNotAllowed(
                 "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name))
+        if not meta.conditions_met(instance, current_state):
+            raise TransitionNotAllowed(
+                "Transition conditions have not been met for method '{0}'".format(method_name))
 
         next_state = meta.next_state(current_state)
 
