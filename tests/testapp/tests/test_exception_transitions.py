@@ -37,3 +37,4 @@ class FSMFieldExceptionTest(TestCase):
         self.assertTrue(can_proceed(self.model.delete))
         self.assertRaises(Exception, self.model.delete)
         self.assertEqual(self.model.state, 'new')
+        self.assertIsNone(self.post_transition_data)

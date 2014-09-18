@@ -298,8 +298,9 @@ class FSMFieldMixin(object):
                 self.set_state(instance, exception_state)
                 signal_kwargs['target'] = exception_state
                 signal_kwargs['exception'] = exc
+                post_transition.send(**signal_kwargs)
             raise
-        finally:
+        else:
             post_transition.send(**signal_kwargs)
 
         return result
