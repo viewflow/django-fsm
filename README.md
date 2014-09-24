@@ -130,7 +130,6 @@ model = BlogPost()
 model.state = 'invalid' # Raises AttributeError
 ```
 
-
 ### `custom` properties
 Custom properties can be added by providing a dictionary to the `custom` keyword on the `transition` decorator.
 ```python
@@ -152,9 +151,11 @@ In case of transition method would raise exception, you can provide specific tar
 @transition(field=state, source='new', target='published', on_error='failed')
 def publish(self):
    """
-   Some exceptio could happends here
+   Some exception could happens here
    """
 ```
+
+To swallow these exceptions after transitioning to the `on_error` state, set `propogate=False`.
 
 ### `state_choices`
 Instead of passing two elements list `choices` you could use three elements `state_choices`,
