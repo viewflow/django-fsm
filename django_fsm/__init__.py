@@ -213,6 +213,7 @@ class FSMFieldMixin(object):
 
     def __init__(self, *args, **kwargs):
         self.protected = kwargs.pop('protected', False)
+        self.propagate = kwargs.pop('propagate', True)
         self.transitions = {}  # cls -> (transitions name -> method)
         self.state_proxy = {}  # state -> ProxyClsRef
 
@@ -299,6 +300,8 @@ class FSMFieldMixin(object):
                 signal_kwargs['target'] = exception_state
                 signal_kwargs['exception'] = exc
                 post_transition.send(**signal_kwargs)
+            if not self.propagate:
+                return None
             raise
         else:
             post_transition.send(**signal_kwargs)
