@@ -219,7 +219,7 @@ class DbState(models.Model):
     id = models.CharField(primary_key=True, max_length=50)
     label = models.CharField(max_length=255)
 
-    def __unicode__(self);
+    def __unicode__(self):
         return self.label
 
 
