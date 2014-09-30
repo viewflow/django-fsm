@@ -23,6 +23,9 @@ class DBState(models.Model):
     class Meta:
         app_label = 'django_fsm'
 
+def hidden():
+    if django_apps.models_ready:
+        return django_apps.get_model('testapp', 'DbState').objects.get(id = 'hidden')
 
 class FKBlogPost(models.Model):
     state = FSMKeyField(DBState, default='new', protected=True)
@@ -35,7 +38,7 @@ class FKBlogPost(models.Model):
     def notify_all(self):
         pass
 
-    @transition(field=state, source='published', target='hidden')
+    @transition(field=state, source='published', target=hidden())
     def hide(self):
         pass
 

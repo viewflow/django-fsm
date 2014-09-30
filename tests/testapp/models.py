@@ -1,6 +1,10 @@
+from django.apps.registry import apps as django_apps
 from django.db import models
 from django_fsm import FSMField, FSMKeyField, transition
 
+def dept():
+    if django_apps.models_ready:
+        return django_apps.get_model('testapp', 'DbState').objects.get(id = 'dept')
 
 class Application(models.Model):
     """
@@ -61,7 +65,7 @@ class FKApplication(models.Model):
     def dean_approved(self):
         pass
 
-    @transition(field=state, source='dean', target='dept')
+    @transition(field=state, source='dean', target=dept())
     def dean_rejected(self):
         pass
 

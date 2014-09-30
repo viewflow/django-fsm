@@ -371,11 +371,16 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
     """
     State Machine support for Django model
     """
-    def get_state(self, instance):
-        return instance.__dict__[self.attname]
-
     def set_state(self, instance, state):
-        instance.__dict__[self.attname] = self.to_python(state)
+        if callable(state):
+            state = state()
+        instance.__setattr__(self.attname, self.to_python(state))
+
+    def get_state(self, instance):
+        if callable(instance.__dict__[self.attname]):
+            return instance.__dict__[self.attname]()
+        else:
+            return instance.__dict__[self.attname]
 
 
 class ConcurrentTransitionMixin(object):
