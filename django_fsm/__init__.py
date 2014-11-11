@@ -288,7 +288,7 @@ class FSMFieldMixin(object):
 
         try:
             result = method(instance, *args, **kwargs)
-            if next_state:
+            if next_state is not None:
                 self.set_proxy(instance, next_state)
                 self.set_state(instance, next_state)
         except Exception as exc:

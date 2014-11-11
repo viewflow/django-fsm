@@ -32,6 +32,10 @@ class BlogPost(models.Model):
     def moderate(self):
         pass
 
+    @transition(source='*', target='', field=state)
+    def empty(self):
+        pass
+
 
 class FSMFieldTest(TestCase):
     def setUp(self):
@@ -83,6 +87,10 @@ class FSMFieldTest(TestCase):
         self.model.moderate()
         self.assertEqual(self.model.state, 'moderated')
 
+    def test_empty_string_target(self):
+        self.model.empty()
+        self.assertEqual(self.model.state, '')
+
 
 class StateSignalsTests(TestCase):
     def setUp(self):
@@ -128,5 +136,6 @@ class TestFieldTransitionsInspect(TestCase):
                         ('published', None),
                         ('published', 'hidden'),
                         ('published', 'stolen'),
-                        ('hidden', 'stolen')])
+                        ('hidden', 'stolen'),
+                        ('*', '')])
         self.assertEqual(actual, expected)
