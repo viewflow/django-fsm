@@ -32,12 +32,16 @@ class BlogPost(models.Model):
     def moderate(self):
         pass
 
+    @transition(source='*', target='', field=state)
+    def empty(self):
+        pass
+
 
 class FSMFieldTest(TestCase):
     def setUp(self):
         self.model = BlogPost()
 
-    def test_initial_state_instatiated(self):
+    def test_initial_state_instantiated(self):
         self.assertEqual(self.model.state, 'new')
 
     def test_known_transition_should_succeed(self):
@@ -49,7 +53,7 @@ class FSMFieldTest(TestCase):
         self.model.hide()
         self.assertEqual(self.model.state, 'hidden')
 
-    def test_unknow_transition_fails(self):
+    def test_unknown_transition_fails(self):
         self.assertFalse(can_proceed(self.model.hide))
         self.assertRaises(TransitionNotAllowed, self.model.hide)
 
@@ -63,16 +67,16 @@ class FSMFieldTest(TestCase):
         self.model.notify_all()
         self.assertEqual(self.model.state, 'published')
 
-    def test_unknow_null_transition_should_fail(self):
+    def test_unknown_null_transition_should_fail(self):
         self.assertRaises(TransitionNotAllowed, self.model.notify_all)
         self.assertEqual(self.model.state, 'new')
 
-    def test_mutiple_source_support_path_1_works(self):
+    def test_multiple_source_support_path_1_works(self):
         self.model.publish()
         self.model.steal()
         self.assertEqual(self.model.state, 'stolen')
 
-    def test_mutiple_source_support_path_2_works(self):
+    def test_multiple_source_support_path_2_works(self):
         self.model.publish()
         self.model.hide()
         self.model.steal()
@@ -82,6 +86,10 @@ class FSMFieldTest(TestCase):
         self.assertTrue(can_proceed(self.model.moderate))
         self.model.moderate()
         self.assertEqual(self.model.state, 'moderated')
+
+    def test_empty_string_target(self):
+        self.model.empty()
+        self.assertEqual(self.model.state, '')
 
 
 class StateSignalsTests(TestCase):
@@ -128,5 +136,6 @@ class TestFieldTransitionsInspect(TestCase):
                         ('published', None),
                         ('published', 'hidden'),
                         ('published', 'stolen'),
-                        ('hidden', 'stolen')])
+                        ('hidden', 'stolen'),
+                        ('*', '')])
         self.assertEqual(actual, expected)
