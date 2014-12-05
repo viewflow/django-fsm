@@ -25,24 +25,24 @@ def generate_dot(fields_data):
         # dump nodes and edges
         for transition in field.get_all_transitions(model):
             if transition.source == '*':
-                any_targets.add(transition.target)
+                any_targets.add((transition.target, transition.name))
             else:
                 if transition.target is not None:
                     source_name = node_name(field, transition.source)
                     target_name = node_name(field, transition.target)
                     sources.add((source_name, transition.source))
                     targets.add((target_name, transition.target))
-                    edges.add((source_name, target_name, ()))
+                    edges.add((source_name, target_name, (('label', transition.name),)))
             if transition.on_error:
                 on_error_name = node_name(field, transition.on_error)
                 targets.add((on_error_name, transition.on_error))
                 edges.add((source_name, on_error_name, (('style', 'dotted'),)))
 
-        for target in any_targets:
+        for target, name in any_targets:
             target_name = node_name(field, target)
             targets.add((target_name, target))
             for source_name, label in sources:
-                edges.add((source_name, target_name, ()))
+                edges.add((source_name, target_name, (('label', name),)))
 
         # construct subgraph
         opts = field.model._meta
