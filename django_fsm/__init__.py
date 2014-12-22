@@ -119,6 +119,20 @@ def get_available_user_FIELD_transitions(instance, user, field):
             yield transition
 
 
+def FIELD_change_state(field):
+    """ Run transaction by next state. """
+
+    @wraps(FIELD_change_state)
+    def wrapper(instance, state, *args, **kwargs):
+        targets = dict((tt.target, tt) for tt in instance.get_available_state_transitions())
+        if state not in targets:
+            raise TransitionNotAllowed('Invalid transaction')
+        transition = targets[state]
+        field.change_state(instance, transition.method, *args, **kwargs)
+
+    return wrapper
+
+
 class FSMMeta(object):
     """
     Models methods transitions meta information
@@ -328,6 +342,7 @@ class FSMFieldMixin(object):
                 curry(get_available_FIELD_transitions, field=self))
         setattr(cls, 'get_available_user_{0}_transitions'.format(self.name),
                 curry(get_available_user_FIELD_transitions, field=self))
+        setattr(cls, '{0}_change_state'.format(self.name), FIELD_change_state(self))
 
         class_prepared.connect(self._collect_transitions)
 
