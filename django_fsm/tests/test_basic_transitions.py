@@ -91,6 +91,12 @@ class FSMFieldTest(TestCase):
         self.model.empty()
         self.assertEqual(self.model.state, '')
 
+    def test_change_state_method(self):
+        self.model.state_change_state('published')
+        self.assertEqual(self.model.state, 'published')
+        with self.assertRaises(TransitionNotAllowed):
+            self.model.state_change_state('published')
+
 
 class StateSignalsTests(TestCase):
     def setUp(self):
@@ -128,7 +134,7 @@ class TestFieldTransitionsInspect(TestCase):
 
     def test_all_conditions(self):
         transitions = self.model.get_all_state_transitions()
-        
+
         actual = set((transition.source, transition.target) for transition in transitions)
         expected = set([('*', 'moderated'),
                         ('new', 'published'),
