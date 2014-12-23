@@ -208,13 +208,6 @@ Returns all transitions data available in current state
 `get_available_user_FIELD_transitions`
 Enumerates all transitions data available in current state for provided user
 
-`FIELD_change_state`
-Invoke a state changing by state value.
-```python
-    post.state_change_state('publish')
-    post.state_change_state('destroy')
-```
-
 ### Foreign Key constraints support
 
 If you store the states in the db table you could use FSMKeyField to
