@@ -301,7 +301,7 @@ If model state was changed in database `django_fsm.ConcurrentTransition` excepti
 on model.save()
 
 ```python
-from django_fsm import FMSField, ConcurrentTransitionMixin
+from django_fsm import FSMField, ConcurrentTransitionMixin
 
 class BlogPost(ConcurrentTransitionMixin, models.Model):
     state = FSMField(default='new')
