@@ -50,8 +50,15 @@ def generate_dot(fields_data):
             name="cluster_%s_%s" % (opts.app_label, opts.object_name),
             graph_attr={'label': "%s.%s" % (opts.app_label, opts.object_name)})
 
-        for name, label in sources | targets:
-            subgraph.node(name, label=label)
+        final_states = targets - sources
+        for name, label in final_states:
+            subgraph.node(name, label=label, shape='doublecircle')
+        for name, label in (sources | targets) - final_states:
+            subgraph.node(name, label=label, shape='circle')
+            if field.default:  # Adding initial state notation
+                if label == field.default:
+                    subgraph.node('.', shape='point')
+                    subgraph.edge('.', name)
         for source_name, target_name, attrs in edges:
             subgraph.edge(source_name, target_name, **dict(attrs))
 
