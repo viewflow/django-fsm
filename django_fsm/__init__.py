@@ -7,7 +7,13 @@ from functools import wraps
 import sys
 
 from django.db import models
-from django.db.models.loading import get_model
+try:
+    from django.apps import apps as django_apps
+    def get_model(app_label, model_name):
+        app = django_apps.get_app_config(app_label)
+        return app.get_model(model_name)
+except ImportError:
+    from django.db.models.loading import get_model
 from django.db.models.signals import class_prepared
 from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
