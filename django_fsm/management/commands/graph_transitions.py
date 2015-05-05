@@ -2,12 +2,12 @@
 import graphviz
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from django.db.models import get_apps, get_app, get_models, get_model
+from django.apps import apps
 from django_fsm import FSMFieldMixin
 
 
 def all_fsm_fields_data(model):
-    return [(field, model) for field in model._meta.fields
+    return [(field, model) for field in model._meta.get_fields()
             if isinstance(field, FSMFieldMixin)]
 
 
@@ -30,8 +30,16 @@ def generate_dot(fields_data):
                 if transition.target is not None:
                     source_name = node_name(field, transition.source)
                     target_name = node_name(field, transition.target)
-                    sources.add((source_name, transition.source))
-                    targets.add((target_name, transition.target))
+                    if isinstance(transition.source, int):
+                        source_label = [name[1] for name in field.choices if name[0] == transition.source][0]
+                    else:
+                        source_label = transition.source
+                    sources.add((source_name, source_label))
+                    if isinstance(transition.target, int):
+                        target_label = [name[1] for name in field.choices if name[0] == transition.target][0]
+                    else:
+                        target_label = transition.target
+                    targets.add((target_name, target_label))
                     edges.add((source_name, target_name, (('label', transition.name),)))
             if transition.on_error:
                 on_error_name = node_name(field, transition.on_error)
@@ -68,13 +76,14 @@ def generate_dot(fields_data):
 
 
 class Command(BaseCommand):
-    requires_model_validation = True
+    requires_system_checks = True
 
     option_list = BaseCommand.option_list + (
         make_option('--output', '-o', action='store', dest='outputfile',
-            help='Render output file. Type of output dependent on file extensions. Use png or jpg to render graph to image.'),  # NOQA
+                    help='Render output file. Type of output dependent on file extensions. Use png or jpg to render graph to image.'),
+        # NOQA
         make_option('--layout', '-l', action='store', dest='layout', default='dot',
-            help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
+                    help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
     )
 
     help = ("Creates a GraphViz dot file with transitions for selected fields")
@@ -94,20 +103,19 @@ class Command(BaseCommand):
                 field_spec = arg.split('.')
 
                 if len(field_spec) == 1:
-                    app = get_app(field_spec[0])
-                    models = get_models(app)
+                    app = apps.get_app(field_spec[0])
+                    models = apps.get_models(app)
                     for model in models:
                         fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 2:
-                    model = get_model(field_spec[0], field_spec[1])
+                    model = apps.get_model(field_spec[0], field_spec[1])
                     fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 3:
-                    model = get_model(field_spec[0], field_spec[1])
-                    fields_data.append((model._meta.get_field_by_name(field_spec[2])[0], model))
+                    model = apps.get_model(field_spec[0], field_spec[1])
+                    fields_data.append((model._meta.get_field(field_spec[2])[0], model))
         else:
-            for app in get_apps():
-                for model in get_models(app):
-                    fields_data += all_fsm_fields_data(model)
+            for model in apps.get_models():
+                fields_data += all_fsm_fields_data(model)
 
         dotdata = generate_dot(fields_data)
 
