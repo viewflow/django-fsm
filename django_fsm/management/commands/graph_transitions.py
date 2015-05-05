@@ -2,12 +2,12 @@
 import graphviz
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from django.db.models import get_apps, get_app, get_models, get_model
+from django.apps import apps
 from django_fsm import FSMFieldMixin
 
 
 def all_fsm_fields_data(model):
-    return [(field, model) for field in model._meta.fields
+    return [(field, model) for field in model._meta.get_fields()
             if isinstance(field, FSMFieldMixin)]
 
 
@@ -52,9 +52,9 @@ def generate_dot(fields_data):
 
         final_states = targets - sources
         for name, label in final_states:
-            subgraph.node(name, label=label, shape='doublecircle')
+            subgraph.node(name, label=str(label), shape='doublecircle')
         for name, label in (sources | targets) - final_states:
-            subgraph.node(name, label=label, shape='circle')
+            subgraph.node(name, label=str(label), shape='circle')
             if field.default:  # Adding initial state notation
                 if label == field.default:
                     subgraph.node('.', shape='point')
@@ -68,13 +68,14 @@ def generate_dot(fields_data):
 
 
 class Command(BaseCommand):
-    requires_model_validation = True
+    requires_system_checks = True
 
     option_list = BaseCommand.option_list + (
         make_option('--output', '-o', action='store', dest='outputfile',
-            help='Render output file. Type of output dependent on file extensions. Use png or jpg to render graph to image.'),  # NOQA
+                    help='Render output file. Type of output dependent on file extensions. Use png or jpg to render graph to image.'),
+        # NOQA
         make_option('--layout', '-l', action='store', dest='layout', default='dot',
-            help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
+                    help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
     )
 
     help = ("Creates a GraphViz dot file with transitions for selected fields")
@@ -94,20 +95,19 @@ class Command(BaseCommand):
                 field_spec = arg.split('.')
 
                 if len(field_spec) == 1:
-                    app = get_app(field_spec[0])
-                    models = get_models(app)
+                    app = apps.get_app(field_spec[0])
+                    models = apps.get_models(app)
                     for model in models:
                         fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 2:
-                    model = get_model(field_spec[0], field_spec[1])
+                    model = apps.get_model(field_spec[0], field_spec[1])
                     fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 3:
-                    model = get_model(field_spec[0], field_spec[1])
-                    fields_data.append((model._meta.get_field_by_name(field_spec[2])[0], model))
+                    model = apps.get_model(field_spec[0], field_spec[1])
+                    fields_data.append((model._meta.get_field(field_spec[2])[0], model))
         else:
-            for app in get_apps():
-                for model in get_models(app):
-                    fields_data += all_fsm_fields_data(model)
+            for model in apps.get_models():
+                fields_data += all_fsm_fields_data(model)
 
         dotdata = generate_dot(fields_data)
 
