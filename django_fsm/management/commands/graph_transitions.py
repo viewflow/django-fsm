@@ -30,8 +30,16 @@ def generate_dot(fields_data):
                 if transition.target is not None:
                     source_name = node_name(field, transition.source)
                     target_name = node_name(field, transition.target)
-                    sources.add((source_name, transition.source))
-                    targets.add((target_name, transition.target))
+                    if isinstance(transition.source, int):
+                        source_label = [name[1] for name in field.choices if name[0] == transition.source][0]
+                    else:
+                        source_label = transition.source
+                    sources.add((source_name, source_label))
+                    if isinstance(transition.target, int):
+                        target_label = [name[1] for name in field.choices if name[0] == transition.target][0]
+                    else:
+                        target_label = transition.target
+                    targets.add((target_name, target_label))
                     edges.add((source_name, target_name, (('label', transition.name),)))
             if transition.on_error:
                 on_error_name = node_name(field, transition.on_error)
@@ -52,9 +60,9 @@ def generate_dot(fields_data):
 
         final_states = targets - sources
         for name, label in final_states:
-            subgraph.node(name, label=str(label), shape='doublecircle')
+            subgraph.node(name, label=label, shape='doublecircle')
         for name, label in (sources | targets) - final_states:
-            subgraph.node(name, label=str(label), shape='circle')
+            subgraph.node(name, label=label, shape='circle')
             if field.default:  # Adding initial state notation
                 if label == field.default:
                     subgraph.node('.', shape='point')
