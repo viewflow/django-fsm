@@ -137,7 +137,7 @@ Custom properties can be added by providing a dictionary to the `custom` keyword
 @transition(field=state,
             source='*',
             target='onhold',
-            custom=dict(verbose='Hold for legal reasons'), transition_type='manual')
+            custom=dict(verbose='Hold for legal reasons'))
 def legal_hold(self):
     """
     Side effects galore
