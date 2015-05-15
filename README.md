@@ -1,6 +1,6 @@
 Django friendly finite state machine support
 ============================================
-[![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm)
+[![Build Status](https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master)](https://travis-ci.org/kmmbvnr/django-fsm) [![Downloads](https://pypip.in/d/django-fsm/badge.png)](https://crate.io/packages/django-fsm) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kmmbvnr/django-fsm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 django-fsm adds declarative states management for django models.
 
@@ -137,7 +137,7 @@ Custom properties can be added by providing a dictionary to the `custom` keyword
 @transition(field=state,
             source='*',
             target='onhold',
-            custom=dict(verbose='Hold for legal reasons'), transition_type='manual')
+            custom=dict(verbose='Hold for legal reasons'))
 def legal_hold(self):
     """
     Side effects galore
@@ -301,7 +301,7 @@ If model state was changed in database `django_fsm.ConcurrentTransition` excepti
 on model.save()
 
 ```python
-from django_fsm import FMSField, ConcurrentTransitionMixin
+from django_fsm import FSMField, ConcurrentTransitionMixin
 
 class BlogPost(ConcurrentTransitionMixin, models.Model):
     state = FSMField(default='new')
