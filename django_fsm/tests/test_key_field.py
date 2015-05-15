@@ -4,12 +4,12 @@ from django_fsm import FSMKeyField, TransitionNotAllowed, transition, can_procee
 
 
 FK_AVAILABLE_STATES = (
-    ('new', '_NEW_'),
-    ('published', '_PUBLISHED_'),
-    ('hidden', '_HIDDEN_'),
-    ('removed', '_REMOVED_'),
-    ('stolen', '_STOLEN_'),
-    ('moderated', '_MODERATED_'))
+    ('New', '_NEW_'),
+    ('Published', '_PUBLISHED_'),
+    ('Hidden', '_HIDDEN_'),
+    ('Removed', '_REMOVED_'),
+    ('Stolen', '_STOLEN_'),
+    ('Moderated', '_MODERATED_'))
 
 
 class DBState(models.Model):
