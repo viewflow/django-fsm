@@ -121,7 +121,7 @@ Use the conditions like this:
     """
 ```
 
-You could instantiate a field with protected=True option, that prevents direct state field modification
+You could instantiate a field with protected=True option, that prevents direct state field modification.
 ```python
 class BlogPost(models.Model):
     state = FSMField(default='new', protected=True)
@@ -129,6 +129,8 @@ class BlogPost(models.Model):
 model = BlogPost()
 model.state = 'invalid' # Raises AttributeError
 ```
+
+Note that calling [`refresh_from_db`](https://docs.djangoproject.com/en/1.8/ref/models/instances/#django.db.models.Model.refresh_from_db) on a model instance with a protected FSMField will cause an exception.
 
 
 ### `custom` properties
