@@ -5,6 +5,7 @@ State tracking functionality for django models
 import inspect
 from functools import wraps
 import sys
+import types
 
 from django.db import models
 try:
@@ -200,7 +201,10 @@ class FSMFieldDescriptor(object):
     def __init__(self, field):
         self.field = field
 
-    def __get__(self, instance, type=None):
+    def __get__(self, instance, obj_type=None):
+        if isinstance(obj_type, (type, types.ClassType)):
+            return
+
         if instance is None:
             raise AttributeError('Can only be accessed via an instance.')
         return self.field.get_state(instance)
