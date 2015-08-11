@@ -320,7 +320,15 @@ that have been executed in an inconsistent (out of sync) state, thus practically
 
 Renders a graphical overview of your models states transitions
 
-You need `pip install graphviz>=0.4` library
+You need `pip install graphviz>=0.4` library and add `django_fsm` to your `INSTALLED_APPS`:
+
+```python
+INSTALLED_APPS = (
+    ...
+    'django_fsm',
+    ...
+)
+```
 
 ```bash
 # Create a dot file
