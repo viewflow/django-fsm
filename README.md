@@ -174,12 +174,12 @@ It is common to have permissions attached to each model transition. `django-fsm`
 callable that expects `user` argument and returns True if user can perform the transition
 
 ```python
-@transition(field=state, source='*', target='publish',
+@transition(field=state, source='*', target='published',
             permission=lambda user: not user.has_perm('myapp.can_make_mistakes'))
 def publish(self):
     pass
 
-@transition(field=state, source='*', target='publish',
+@transition(field=state, source='*', target='removed',
             permission='myapp.can_remove_post')
 def remove(self):
     pass
