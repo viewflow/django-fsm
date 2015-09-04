@@ -40,12 +40,12 @@ def generate_dot(fields_data):
                     source_name = node_name(field, transition.source)
                     target_name = node_name(field, transition.target)
                     if isinstance(transition.source, int):
-                        source_label = [name[1] for name in field.choices if name[0] == transition.source][0]
+                        source_label = [str(name[1]) for name in field.choices if name[0] == transition.source][0]
                     else:
                         source_label = transition.source
                     sources.add((source_name, source_label))
                     if isinstance(transition.target, int):
-                        target_label = [name[1] for name in field.choices if name[0] == transition.target][0]
+                        target_label = [str(name[1]) for name in field.choices if name[0] == transition.target][0]
                     else:
                         target_label = transition.target
                     targets.add((target_name, target_label))
