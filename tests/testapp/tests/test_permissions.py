@@ -10,6 +10,7 @@ class PermissionFSMFieldTest(TestCase):
         self.model = BlogPost()
         self.unpriviledged = User.objects.create(username='unpriviledged')
         self.priviledged = User.objects.create(username='priviledged')
+        self.staff = User.objects.create(username='staff', is_staff=True)
 
         self.priviledged.user_permissions.add(
             Permission.objects.get_by_natural_key('can_publish_post', 'testapp', 'blogpost'))
@@ -31,3 +32,7 @@ class PermissionFSMFieldTest(TestCase):
         transitions = self.model.get_available_user_state_transitions(self.unpriviledged)
         self.assertEquals(set(['moderate']),
                           set(transition.name for transition in transitions))
+
+    def test_permission_instance_method(self):
+        self.assertFalse(has_transition_perm(self.model.restore, self.unpriviledged))
+        self.assertTrue(has_transition_perm(self.model.restore, self.staff))
