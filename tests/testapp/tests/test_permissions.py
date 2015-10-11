@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User, Permission
 from django.test import TestCase
 
+
 from django_fsm import has_transition_perm
 from testapp.models import BlogPost
 

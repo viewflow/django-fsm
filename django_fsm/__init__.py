@@ -81,10 +81,12 @@ class Transition(object):
     def name(self):
         return self.method.__name__
 
-    def has_perm(self, user):
+    def has_perm(self, user, obj):
         if not self.permission:
             return True
         elif callable(self.permission) and self.permission(user):
+            return True
+        elif not callable(self.permission) and user.has_perm(self.permission, obj):
             return True
         elif user.has_perm(self.permission):
             return True
@@ -123,7 +125,7 @@ def get_available_user_FIELD_transitions(instance, user, field):
     with all conditions met and user have rights on it
     """
     for transition in get_available_FIELD_transitions(instance, field):
-        if transition.has_perm(user):
+        if transition.has_perm(user, instance):
             yield transition
 
 
@@ -179,7 +181,7 @@ class FSMMeta(object):
         if not transition:
             return False
         else:
-            return transition.has_perm(user)
+            return transition.has_perm(user, instance)
 
     def next_state(self, current_state):
         transition = self.get_transition(current_state)
