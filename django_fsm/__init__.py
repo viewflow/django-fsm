@@ -103,7 +103,7 @@ def get_available_FIELD_transitions(instance, field):
     for name, transition in transitions.items():
         meta = transition._django_fsm
 
-        for state in [curr_state, '*']:
+        for state in [curr_state, '*', '+']:
             if state in meta.transitions:
                 transition = meta.transitions[state]
                 if all(map(lambda condition: condition(instance), transition.conditions)):
@@ -139,6 +139,8 @@ class FSMMeta(object):
         transition = self.transitions.get(source, None)
         if transition is None:
             transition = self.transitions.get('*', None)
+        if transition is None:
+            transition = self.transitions.get('+', None)
         return transition
 
     def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}):
@@ -158,7 +160,16 @@ class FSMMeta(object):
         """
         Lookup if any transition exists from current model state using current method
         """
-        return state in self.transitions or '*' in self.transitions
+        if state in self.transitions:
+            return True
+
+        if '*' in self.transitions:
+            return True
+
+        if '+' in self.transitions and self.transitions['+'].target != state:
+            return True
+
+        return False
 
     def conditions_met(self, instance, state):
         """

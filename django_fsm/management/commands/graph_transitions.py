@@ -33,12 +33,14 @@ def generate_dot(fields_data):
     result = graphviz.Digraph()
 
     for field, model in fields_data:
-        sources, targets, edges, any_targets = set(), set(), set(), set()
+        sources, targets, edges, any_targets, any_except_targets = set(), set(), set(), set(), set()
 
         # dump nodes and edges
         for transition in field.get_all_transitions(model):
             if transition.source == '*':
                 any_targets.add((transition.target, transition.name))
+            elif transition.source == '+':
+                any_except_targets.add((transition.target, transition.name))
             else:
                 if transition.target is not None:
                     source_name = node_name(field, transition.source)
@@ -63,6 +65,14 @@ def generate_dot(fields_data):
             target_name = node_name(field, target)
             targets.add((target_name, target))
             for source_name, label in sources:
+                edges.add((source_name, target_name, (('label', name),)))
+
+        for target, name in any_except_targets:
+            target_name = node_name(field, target)
+            targets.add((target_name, target))
+            for source_name, label in sources:
+                if target_name == source_name:
+                    continue
                 edges.add((source_name, target_name, (('label', name),)))
 
         # construct subgraph
