@@ -3,8 +3,9 @@
 State tracking functionality for django models
 """
 import inspect
-from functools import wraps
 import sys
+import warnings
+from functools import wraps
 
 from django.db import models
 from django.db.models.signals import class_prepared
@@ -91,9 +92,10 @@ class Transition(object):
             return True
         elif callable(self.permission):
             try:
-                return bool(self.permission(user))
-            except TypeError:
                 return bool(self.permission(instance, user))
+            except TypeError:
+                warnings.warn('Callable permissions without instance parameter is depricated')
+                return bool(self.permission(user))
         elif user.has_perm(self.permission):
             return True
         else:
