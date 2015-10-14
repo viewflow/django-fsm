@@ -1,16 +1,19 @@
 # -*- coding: utf-8; mode: django -*-
 import graphviz
 from optparse import make_option
+
 from django.core.management.base import BaseCommand
+from django.utils.encoding import smart_text
+
 from django_fsm import FSMFieldMixin
+
 try:
-    from django.db.models.fields.related import RelatedObject
-    from django.db.models.fields.related import RelatedField
     from django.db.models import get_apps, get_app, get_models, get_model
     NEW_META_API = False
 except ImportError:
     from django.apps import apps
     NEW_META_API = True
+
 
 def all_fsm_fields_data(model):
     if NEW_META_API:
@@ -19,6 +22,7 @@ def all_fsm_fields_data(model):
     else:
         return [(field, model) for field in model._meta.fields
                 if isinstance(field, FSMFieldMixin)]
+
 
 def node_name(field, state):
     opts = field.model._meta
@@ -40,12 +44,12 @@ def generate_dot(fields_data):
                     source_name = node_name(field, transition.source)
                     target_name = node_name(field, transition.target)
                     if isinstance(transition.source, int):
-                        source_label = [name[1] for name in field.choices if name[0] == transition.source][0]
+                        source_label = [smart_text(name[1]) for name in field.choices if name[0] == transition.source][0]
                     else:
                         source_label = transition.source
                     sources.add((source_name, source_label))
                     if isinstance(transition.target, int):
-                        target_label = [name[1] for name in field.choices if name[0] == transition.target][0]
+                        target_label = [smart_text(name[1]) for name in field.choices if name[0] == transition.target][0]
                     else:
                         target_label = transition.target
                     targets.add((target_name, target_label))
@@ -89,10 +93,12 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('--output', '-o', action='store', dest='outputfile',
-                    help='Render output file. Type of output dependent on file extensions. Use png or jpg to render graph to image.'),
+                    help=('Render output file. Type of output dependent on file extensions. '
+                          'Use png or jpg to render graph to image.')),
         # NOQA
         make_option('--layout', '-l', action='store', dest='layout', default='dot',
-                    help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
+                    help=('Layout to be used by GraphViz for visualization. '
+                          'Layouts: circo dot fdp neato nop nop1 nop2 twopi')),
     )
 
     help = ("Creates a GraphViz dot file with transitions for selected fields")
