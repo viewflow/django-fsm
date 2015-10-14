@@ -96,6 +96,8 @@ class Transition(object):
             except TypeError:
                 warnings.warn('Callable permissions without instance parameter is depricated')
                 return bool(self.permission(user))
+        elif user.has_perm(self.permission, instance):
+            return True
         elif user.has_perm(self.permission):
             return True
         else:
