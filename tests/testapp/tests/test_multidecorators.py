@@ -31,5 +31,4 @@ class TestStateProxy(TestCase):
         model = TestModel()
         model.review()
         self.assertEqual(1, model.counter)
-        # BUG self.assertEqual(1, model.signal_counter)
-    
+        self.assertEqual(1, model.signal_counter)

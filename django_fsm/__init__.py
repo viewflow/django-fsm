@@ -493,14 +493,11 @@ def transition(field, source='*', target=None, on_error=None, conditions=[], per
     has not changed after the function call
     """
     def inner_transition(func):
-        fsm_meta = getattr(func, '_django_fsm', None)
+        wrapper_installed, fsm_meta = True, getattr(func, '_django_fsm', None)
         if not fsm_meta:
+            wrapper_installed = False
             fsm_meta = FSMMeta(field=field, method=func)
             setattr(func, '_django_fsm', fsm_meta)
-
-        @wraps(func)
-        def _change_state(instance, *args, **kwargs):
-            return fsm_meta.field.change_state(instance, func, *args, **kwargs)
 
         if isinstance(source, (list, tuple)):
             for state in source:
@@ -508,7 +505,14 @@ def transition(field, source='*', target=None, on_error=None, conditions=[], per
         else:
             func._django_fsm.add_transition(func, source, target, on_error, conditions, permission, custom)
 
-        return _change_state
+        @wraps(func)
+        def _change_state(instance, *args, **kwargs):
+            return fsm_meta.field.change_state(instance, func, *args, **kwargs)
+
+        if not wrapper_installed:
+            return _change_state
+
+        return func
 
     return inner_transition
 
