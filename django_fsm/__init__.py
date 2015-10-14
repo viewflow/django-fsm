@@ -7,16 +7,19 @@ from functools import wraps
 import sys
 
 from django.db import models
-try:
-    from django.apps import apps as django_apps
-    def get_model(app_label, model_name):
-        app = django_apps.get_app_config(app_label)
-        return app.get_model(model_name)
-except ImportError:
-    from django.db.models.loading import get_model
 from django.db.models.signals import class_prepared
 from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
+
+try:
+    from django.apps import apps as django_apps
+
+    def get_model(app_label, model_name):
+        app = django_apps.get_app_config(app_label)
+        return app.get_model(model_name)
+
+except ImportError:
+    from django.db.models.loading import get_model
 
 
 __all__ = ['TransitionNotAllowed', 'ConcurrentTransition',
@@ -42,6 +45,7 @@ if sys.version_info[:2] == (2, 6):
         return results
     inspect.getmembers = __getmembers
 
+
 # South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
 try:
     from south.modelsinspector import add_introspection_rules
@@ -66,7 +70,7 @@ class ConcurrentTransition(Exception):
 
 
 class Transition(object):
-    def __init__(self, method, source, target, on_error, conditions, permission, custom):
+    def __init__(self, method, source, target, on_error, conditions, permission, custom, conceal):
         self.method = method
         self.source = source
         self.target = target
@@ -74,6 +78,7 @@ class Transition(object):
         self.conditions = conditions
         self.permission = permission
         self.custom = custom
+        self.conceal = conceal
 
     @property
     def name(self):
@@ -139,7 +144,7 @@ class FSMMeta(object):
             transition = self.transitions.get('*', None)
         return transition
 
-    def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}):
+    def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}, conceal=()):
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {0} state'.format(source))
 
@@ -150,7 +155,8 @@ class FSMMeta(object):
             on_error=on_error,
             conditions=conditions,
             permission=permission,
-            custom=custom)
+            custom=custom,
+            conceal=conceal)
 
     def has_transition(self, state):
         """
@@ -194,6 +200,14 @@ class FSMMeta(object):
             raise TransitionNotAllowed('No transition from {0}'.format(current_state))
 
         return transition.on_error
+
+    def conceal_exceptions(self, current_state):
+        transition = self.get_transition(current_state)
+
+        if transition is None:
+            raise TransitionNotAllowed('No transition from {0}'.format(current_state))
+
+        return transition.conceal_exceptions
 
 
 class FSMFieldDescriptor(object):
@@ -305,7 +319,9 @@ class FSMFieldMixin(object):
                 signal_kwargs['target'] = exception_state
                 signal_kwargs['exception'] = exc
                 post_transition.send(**signal_kwargs)
-            raise
+
+            if not isinstance(exc, meta.conceal_exceptions(current_state)):
+                raise
         else:
             post_transition.send(**signal_kwargs)
 
@@ -460,7 +476,7 @@ class ConcurrentTransitionMixin(object):
         self._update_initial_state()
 
 
-def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}):
+def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}, conceal=()):
     """
     Method decorator for mark allowed transitions
 
@@ -479,9 +495,9 @@ def transition(field, source='*', target=None, on_error=None, conditions=[], per
 
         if isinstance(source, (list, tuple)):
             for state in source:
-                func._django_fsm.add_transition(func, state, target, on_error, conditions, permission, custom)
+                func._django_fsm.add_transition(func, state, target, on_error, conditions, permission, custom, conceal)
         else:
-            func._django_fsm.add_transition(func, source, target, on_error, conditions, permission, custom)
+            func._django_fsm.add_transition(func, source, target, on_error, conditions, permission, custom, conceal)
 
         return _change_state
 
