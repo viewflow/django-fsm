@@ -1,7 +1,7 @@
 from setuptools import setup
 
 try:
-    long_description = open('README.md').read()
+    long_description = open('README.rst').read()
 except IOError:
     long_description = ''
 

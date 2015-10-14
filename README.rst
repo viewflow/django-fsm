@@ -469,7 +469,7 @@ django-fsm 1.0.0 2010-10-12
 
 .. |Build Status| image:: https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master
    :target: https://travis-ci.org/kmmbvnr/django-fsm
-.. |Downloads| image:: https://pypip.in/d/django-fsm/badge.png
-   :target: https://crate.io/packages/django-fsm
+.. |Downloads| image:: https://img.shields.io/pypi/dm/django-fsm.svg
+   :target: https://pypi.python.org/pypi/django-fsm
 .. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/kmmbvnr/django-fsm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
