@@ -58,6 +58,11 @@ else:
 class TransitionNotAllowed(Exception):
     """Raised when a transition is not allowed"""
 
+    def __init__(self, *args, **kwargs):
+        self.object = kwargs.pop('object', None)
+        self.method = kwargs.pop('method', None)
+        super(TransitionNotAllowed, self).__init__(*args, **kwargs)
+
 
 class ConcurrentTransition(Exception):
     """
@@ -288,10 +293,12 @@ class FSMFieldMixin(object):
 
         if not meta.has_transition(current_state):
             raise TransitionNotAllowed(
-                "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name))
+                "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name),
+                object=instance, method=method)
         if not meta.conditions_met(instance, current_state):
             raise TransitionNotAllowed(
-                "Transition conditions have not been met for method '{0}'".format(method_name))
+                "Transition conditions have not been met for method '{0}'".format(method_name),
+                object=instance, method=method)
 
         next_state = meta.next_state(current_state)
 
