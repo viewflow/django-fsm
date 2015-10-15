@@ -384,6 +384,15 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
+django-fsm 2.3.0 2015-10-15
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-  Add source state shortcut '+' to specify transitions from all states except the target
+-  Add object-level permission checks
+-  Fix translated labels for graph of FSMIntegerField
+-  Fix multiple signals for several transition decorators
+
+
 django-fsm 2.2.1 2015-04-27
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
