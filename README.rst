@@ -3,7 +3,13 @@ Django friendly finite state machine support
 
 |Build Status| |Downloads| |Gitter|
 
-django-fsm adds declarative states management for django models.
+django-fsm adds simple declarative states management for django models.
+
+If you need parallel task execution, view and background task code reuse
+over different flows - check my new project django-viewflow
+
+https://github.com/viewflow/viewflow
+
 
 Instead of adding some state field to a django model, and managing its
 values by hand, you could use FSMState field and mark model methods with
@@ -28,10 +34,6 @@ FSM really helps to structure the code, especially when a new developer
 comes to the project. FSM is most effective when you use it for some
 sequential steps.
 
-If you need parallel task execution, view and background task code reuse
-over different flows - check my new project django-viewflow
-
-https://github.com/kmmbvnr/django-viewflow
 
 Installation
 ------------
