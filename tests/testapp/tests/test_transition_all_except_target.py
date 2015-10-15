@@ -14,6 +14,9 @@ class TestExceptTargetTransitionShortcut(models.Model):
     def remove(self):
         pass
 
+    class Meta:
+        app_label = 'testapp'
+
 
 class Test(TestCase):
     def setUp(self):

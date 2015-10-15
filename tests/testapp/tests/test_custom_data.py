@@ -21,6 +21,9 @@ class BlogPostWithCustomData(models.Model):
     def review(self):
         pass
 
+    class Meta:
+        app_label = 'testapp'
+
 
 class CustomTransitionDataTest(TestCase):
     def setUp(self):

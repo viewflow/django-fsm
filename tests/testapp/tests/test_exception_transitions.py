@@ -16,6 +16,9 @@ class ExceptionalBlogPost(models.Model):
     def delete(self):
         raise Exception('Upss')
 
+    class Meta:
+        app_label = 'testapp'
+
 
 class FSMFieldExceptionTest(TestCase):
     def setUp(self):

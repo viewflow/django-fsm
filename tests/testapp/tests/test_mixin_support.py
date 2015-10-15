@@ -12,6 +12,9 @@ class WorkflowMixin(object):
     def publish(self):
         pass
 
+    class Meta:
+        app_label = 'testapp'
+
 
 class MixinSupportTestModel(WorkflowMixin, models.Model):
     state = FSMField(default="new")
