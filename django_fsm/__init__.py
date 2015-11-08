@@ -114,12 +114,8 @@ def get_available_FIELD_transitions(instance, field):
 
     for name, transition in transitions.items():
         meta = transition._django_fsm
-
-        for state in [curr_state, '*', '+']:
-            if state in meta.transitions:
-                transition = meta.transitions[state]
-                if all(map(lambda condition: condition(instance), transition.conditions)):
-                    yield transition
+        if meta.has_transition(curr_state) and meta.conditions_met(instance, curr_state):
+            yield meta.get_transition(curr_state)
 
 
 def get_all_FIELD_transitions(instance, field):
