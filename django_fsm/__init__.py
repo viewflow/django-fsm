@@ -270,7 +270,11 @@ class FSMFieldMixin(object):
         return getattr(instance, self.name)
 
     def set_state(self, instance, state):
-        instance.__dict__[self.name] = state
+        if self.name in instance.__dict__:
+            instance.__dict__[self.name] = state
+        else:
+            setattr(instance, self.name, state)
+
 
     def set_proxy(self, instance, state):
         """
