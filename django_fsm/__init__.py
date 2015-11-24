@@ -264,7 +264,10 @@ class FSMFieldMixin(object):
         return name, path, args, kwargs
 
     def get_state(self, instance):
-        return instance.__dict__[self.name]
+        if self.name in instance.__dict__:
+            return instance.__dict__[self.name]
+
+        return getattr(instance, self.name)
 
     def set_state(self, instance, state):
         instance.__dict__[self.name] = state

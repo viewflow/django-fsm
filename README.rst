@@ -76,7 +76,8 @@ Use the ``transition`` decorator to annotate model methods
 
 ``source`` parameter accepts a list of states, or an individual state.
 You can use ``*`` for source, to allow switching to ``target`` from any
-state.
+state. The ``field`` paramter accepts both a string attribute name or an
+actual field instance.
 
 If calling publish() succeeds without raising an exception, the state
 field will be changed, but not written to the database.
