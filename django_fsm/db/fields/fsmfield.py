@@ -153,7 +153,17 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
 
                 meta.to_next_state(instance)
                 if save:
+                    # Turn off write protection for Django's full_clean function.
+                    # This allows for CharField choice validation.
+                    protected = field.protected
+                    if protected:
+                        field.protected = False
+
                     instance.full_clean()
+
+                    if protected:
+                        field.protected = True
+
                     instance.save()
 
                 post_transition.send(
