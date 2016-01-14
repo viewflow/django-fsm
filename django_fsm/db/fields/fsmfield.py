@@ -153,6 +153,7 @@ def transition(field=None, source='*', target=None, save=False, conditions=[]):
 
                 meta.to_next_state(instance)
                 if save:
+                    instance.full_clean()
                     instance.save()
 
                 post_transition.send(
