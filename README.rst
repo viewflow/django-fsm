@@ -180,7 +180,7 @@ specific target state
     @transition(field=state, source='new', target='published', on_error='failed')
     def publish(self):
        """
-       Some exceptio could happends here
+       An exception could happen here
        """
 
 ``state_choices``
