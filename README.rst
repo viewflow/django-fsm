@@ -6,7 +6,7 @@ Django friendly finite state machine support
 django-fsm adds simple declarative states management for django models.
 
 If you need parallel task execution, view and background task code reuse
-over different flows - check my new project django-viewflow
+over different flows - check my new project django-viewflow:
 
 https://github.com/viewflow/viewflow
 
@@ -76,7 +76,7 @@ Use the ``transition`` decorator to annotate model methods
 
 ``source`` parameter accepts a list of states, or an individual state.
 You can use ``*`` for source, to allow switching to ``target`` from any
-state. The ``field`` paramter accepts both a string attribute name or an
+state. The ``field`` parameter accepts both a string attribute name or an
 actual field instance.
 
 If calling publish() succeeds without raising an exception, the state
@@ -180,7 +180,7 @@ specific target state
     @transition(field=state, source='new', target='published', on_error='failed')
     def publish(self):
        """
-       Some exceptio could happends here
+       Some exception could happen here
        """
 
 ``state_choices``
@@ -326,7 +326,7 @@ Arguments sent with these signals:
 
 **sender** The model class.
 
-**instance** The actual instance being procceed
+**instance** The actual instance being proceed
 
 **name** Transition name
 
@@ -337,7 +337,7 @@ Arguments sent with these signals:
 Optimistic locking
 ------------------
 
-``django-fsm`` provides optimistic locking mixin, to avoid concurent
+``django-fsm`` provides optimistic locking mixin, to avoid concurrent
 model state changes. If model state was changed in database
 ``django_fsm.ConcurrentTransition`` exception would be raised on
 model.save()
@@ -400,10 +400,10 @@ django-fsm 2.2.1 2015-04-27
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Improved exception message for unmet transition conditions.
--  Don't send post transiton signal in case of no state chnages on
+-  Don't send post transition signal in case of no state changes on
    exception
 -  Allow empty string as correct state value
--  Imporved graphviz fsm visualisation
+-  Improved graphviz fsm visualisation
 -  Clean django 1.8 warnings
 
 django-fsm 2.2.0 2014-09-03
