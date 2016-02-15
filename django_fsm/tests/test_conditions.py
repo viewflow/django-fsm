@@ -4,6 +4,14 @@ from django_fsm import FSMField, TransitionNotAllowed, \
     transition, can_proceed
 
 
+def args_kwargs_condition(instance, *args, **kwargs):
+    if args and kwargs:
+        some_arg, some_kwarg = args[0], kwargs.get('some_kwarg')
+        if not some_arg == 'x' and not some_kwarg == 'y':
+            return False
+    return True
+
+
 def condition_func(instance):
     return True
 
@@ -27,6 +35,11 @@ class BlogPostWithConditions(models.Model):
     def destroy(self):
         pass
 
+    @transition(field=state, source='published', target='edited',
+                conditions=[args_kwargs_condition])
+    def edit(self, some_arg, some_kwarg='default'):
+        pass
+
 
 class ConditionalTest(TestCase):
     def setUp(self):
@@ -48,3 +61,12 @@ class ConditionalTest(TestCase):
 
         self.assertTrue(can_proceed(self.model.destroy,
                                     check_conditions=False))
+
+    def test_pass_args_kwargs_condition(self):
+        self.model.publish()
+        self.assertEqual(self.model.state, 'published')
+        self.assertFalse(can_proceed(self.model.destroy))
+        self.assertTrue(can_proceed(self.model.edit,
+                                    check_conditions=True))
+        self.model.edit('x', some_kwarg='y')
+        self.assertEqual(self.model.state, 'edited')
