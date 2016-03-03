@@ -42,8 +42,8 @@ def generate_dot(fields_data):
             elif transition.source == '+':
                 any_except_targets.add((transition.target, transition.name))
             else:
+                source_name = node_name(field, transition.source)
                 if transition.target is not None:
-                    source_name = node_name(field, transition.source)
                     target_name = node_name(field, transition.target)
                     if isinstance(transition.source, int):
                         source_label = [smart_text(name[1]) for name in field.choices if name[0] == transition.source][0]
