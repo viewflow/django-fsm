@@ -211,7 +211,7 @@ perform the transition
 .. code:: python
 
     @transition(field=state, source='*', target='publish',
-                permission=lambda user: not user.has_perm('myapp.can_make_mistakes'))
+                permission=lambda instance, user: not user.has_perm('myapp.can_make_mistakes'))
     def publish(self):
         pass
 
