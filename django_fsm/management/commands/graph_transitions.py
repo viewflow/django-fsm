@@ -78,8 +78,8 @@ def generate_dot(fields_data):
         # construct subgraph
         opts = field.model._meta
         subgraph = graphviz.Digraph(
-            name="cluster_%s_%s" % (opts.app_label, opts.object_name),
-            graph_attr={'label': "%s.%s" % (opts.app_label, opts.object_name)})
+            name="cluster_%s_%s_%s" % (opts.app_label, opts.object_name, field.name),
+            graph_attr={'label': "%s.%s.%s" % (opts.app_label, opts.object_name, field.name)})
 
         final_states = targets - sources
         for name, label in final_states:
@@ -88,8 +88,9 @@ def generate_dot(fields_data):
             subgraph.node(name, label=label, shape='circle')
             if field.default:  # Adding initial state notation
                 if label == field.default:
-                    subgraph.node('.', shape='point')
-                    subgraph.edge('.', name)
+                    initial_name = node_name(field, '_initial')
+                    subgraph.node(name=initial_name, label='', shape='point')
+                    subgraph.edge(initial_name, name)
         for source_name, target_name, attrs in edges:
             subgraph.edge(source_name, target_name, **dict(attrs))
 
