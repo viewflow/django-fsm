@@ -100,8 +100,12 @@ class BlogPost(models.Model):
     def hide(self):
         pass
 
-    @transition(field=state, source='new', target='removed',
-                on_error='failed', permission=lambda u: u.has_perm('testapp.can_remove_post'))
+    @transition(
+        field=state,
+        source='new',
+        target='removed',
+        on_error='failed',
+        permission=lambda self, u: u.has_perm('testapp.can_remove_post'))
     def remove(self):
         raise Exception('No rights to delete %s' % self)
 

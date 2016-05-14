@@ -4,7 +4,6 @@ State tracking functionality for django models
 """
 import inspect
 import sys
-import warnings
 from functools import wraps
 
 from django.db import models
@@ -95,11 +94,7 @@ class Transition(object):
         if not self.permission:
             return True
         elif callable(self.permission):
-            try:
-                return bool(self.permission(instance, user))
-            except TypeError:
-                warnings.warn('Callable permissions without instance parameter is depricated')
-                return bool(self.permission(user))
+            return bool(self.permission(instance, user))
         elif user.has_perm(self.permission, instance):
             return True
         elif user.has_perm(self.permission):
