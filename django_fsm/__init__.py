@@ -65,6 +65,10 @@ class TransitionNotAllowed(Exception):
         super(TransitionNotAllowed, self).__init__(*args, **kwargs)
 
 
+class InvalidResultState(Exception):
+    """Raised when we got invalid result state"""
+
+
 class ConcurrentTransition(Exception):
     """
     Raised when the transition cannot be executed because the
@@ -318,6 +322,10 @@ class FSMFieldMixin(object):
         try:
             result = method(instance, *args, **kwargs)
             if next_state is not None:
+                if hasattr(next_state, 'get_state'):
+                    next_state = next_state.get_state(
+                        instance, transition, result,
+                        args=args, kwargs=kwargs)
                 self.set_proxy(instance, next_state)
                 self.set_state(instance, next_state)
         except Exception as exc:
@@ -547,3 +555,36 @@ def has_transition_perm(bound_method, user):
     return (meta.has_transition(current_state) and
             meta.conditions_met(im_self, current_state) and
             meta.has_transition_perm(im_self, current_state, user))
+
+
+class State(object):
+    def get_state(self, model, transition, result, args=[], kwargs={}):
+        raise NotImplementedError
+
+
+class RETURN_VALUE(State):
+    def __init__(self, *allowed_states):
+        self.allowed_states = allowed_states if allowed_states else None
+
+    def get_state(self, model, transition, result, args=[], kwargs={}):
+        if self.allowed_states is not None:
+            if result not in self.allowed_states:
+                raise InvalidResultState(
+                    '{} is not in list of allowed states\n{}'.format(
+                        result, self.allowed_states))
+        return result
+
+
+class GET_STATE(State):
+    def __init__(self, func, states=None):
+        self.func = func
+        self.allowed_states = states
+
+    def get_state(self, model, transition, result, args=[], kwargs={}):
+        result_state = self.func(model, *args, **kwargs)
+        if self.allowed_states is not None:
+            if result_state not in self.allowed_states:
+                raise InvalidResultState(
+                    '{} is not in list of allowed states\n{}'.format(
+                        result, self.allowed_states))
+        return result_state
