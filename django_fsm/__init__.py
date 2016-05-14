@@ -544,6 +544,6 @@ def has_transition_perm(bound_method, user):
     im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
     current_state = meta.field.get_state(im_self)
 
-    return (meta.has_transition(current_state)
-            and meta.conditions_met(im_self, current_state)
-            and meta.has_transition_perm(im_self, current_state, user))
+    return (meta.has_transition(current_state) and
+            meta.conditions_met(im_self, current_state) and
+            meta.has_transition_perm(im_self, current_state, user))
