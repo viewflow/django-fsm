@@ -309,7 +309,9 @@ class FSMFieldMixin(object):
             'instance': instance,
             'name': method_name,
             'source': current_state,
-            'target': next_state
+            'target': next_state,
+            'method_args' : args,
+            'method_kwargs' : kwargs
         }
 
         pre_transition.send(**signal_kwargs)
