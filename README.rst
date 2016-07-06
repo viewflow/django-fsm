@@ -414,7 +414,7 @@ Changelog
 django-fsm 2.4.0 2016-05-14
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- graph_transition commnad now works with multiple  FSM's per model
+- graph_transition command now works with multiple  FSM's per model
 - Add ability to set target state from transition return value or callable
 
 
