@@ -149,7 +149,7 @@ direct state field modification.
     model.state = 'invalid' # Raises AttributeError
 
 Note that calling
-```refresh_from_db`` <https://docs.djangoproject.com/en/1.8/ref/models/instances/#django.db.models.Model.refresh_from_db>`__
+`refresh_from_db <https://docs.djangoproject.com/en/1.8/ref/models/instances/#django.db.models.Model.refresh_from_db>`_
 on a model instance with a protected FSMField will cause an exception.
 
 `target`
