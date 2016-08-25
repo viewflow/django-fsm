@@ -245,7 +245,7 @@ class FSMFieldMixin(object):
         state_choices = kwargs.pop('state_choices', None)
         choices = kwargs.get('choices', None)
         if state_choices is not None and choices is not None:
-            raise ValueError('Use one of choices or state_choces value')
+            raise ValueError('Use one of choices or state_choices value')
 
         if state_choices is not None:
             choices = []
