@@ -3,4 +3,3 @@ dist
 django_fsm.egg-info
 reports
 .tox
-.idea
