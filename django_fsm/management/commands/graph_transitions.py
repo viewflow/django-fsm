@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.utils.encoding import smart_text
 
-from django_fsm import FSMFieldMixin, RETURN_VALUE
+from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
 
 try:
     from django.db.models import get_apps, get_app, get_models, get_model
@@ -44,7 +44,7 @@ def generate_dot(fields_data):
             else:
                 source_name = node_name(field, transition.source)
                 if transition.target is not None:
-                    if isinstance(transition.target, RETURN_VALUE):
+                    if isinstance(transition.target, GET_STATE) or isinstance(transition.target, RETURN_VALUE):
                         for transition_target_index, transition_target in enumerate(transition.target.allowed_states):
                             add_transition(transition.source, transition_target, transition.name,
                                            source_name, field, sources, targets, edges)
