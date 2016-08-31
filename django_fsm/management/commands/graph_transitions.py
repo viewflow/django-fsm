@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.utils.encoding import smart_text
 
-from django_fsm import FSMFieldMixin
+from django_fsm import FSMFieldMixin, RETURN_VALUE
 
 try:
     from django.db.models import get_apps, get_app, get_models, get_model
@@ -44,18 +44,13 @@ def generate_dot(fields_data):
             else:
                 source_name = node_name(field, transition.source)
                 if transition.target is not None:
-                    target_name = node_name(field, transition.target)
-                    if isinstance(transition.source, int):
-                        source_label = [smart_text(name[1]) for name in field.choices if name[0] == transition.source][0]
+                    if isinstance(transition.target, RETURN_VALUE):
+                        for transition_target_index, transition_target in enumerate(transition.target.allowed_states):
+                            add_transition(transition.source, transition_target, transition.name,
+                                           source_name, field, sources, targets, edges)
                     else:
-                        source_label = transition.source
-                    sources.add((source_name, source_label))
-                    if isinstance(transition.target, int):
-                        target_label = [smart_text(name[1]) for name in field.choices if name[0] == transition.target][0]
-                    else:
-                        target_label = transition.target
-                    targets.add((target_name, target_label))
-                    edges.add((source_name, target_name, (('label', transition.name),)))
+                        add_transition(transition.source, transition.target, transition.name,
+                                       source_name, field, sources, targets, edges)
             if transition.on_error:
                 on_error_name = node_name(field, transition.on_error)
                 targets.add((on_error_name, transition.on_error))
@@ -97,6 +92,21 @@ def generate_dot(fields_data):
         result.subgraph(subgraph)
 
     return result
+
+
+def add_transition(transition_source, transition_target, transition_name, source_name, field, sources, targets, edges):
+    target_name = node_name(field, transition_target)
+    if isinstance(transition_source, int):
+        source_label = [smart_text(name[1]) for name in field.choices if name[0] == transition_source][0]
+    else:
+        source_label = transition_source
+    sources.add((source_name, source_label))
+    if isinstance(transition_target, int):
+        target_label = [smart_text(name[1]) for name in field.choices if name[0] == transition_target][0]
+    else:
+        target_label = transition_target
+    targets.add((target_name, target_label))
+    edges.add((source_name, target_name, (('label', transition_name),)))
 
 
 class Command(BaseCommand):
