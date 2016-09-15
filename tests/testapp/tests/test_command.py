@@ -6,7 +6,7 @@ from django.test import TestCase
 
 class TestCommand(TestCase):
     def test_graph_transitions(self):
-        with NamedTemporaryFile(suffix='.png') as tmpfile:
+        with NamedTemporaryFile(suffix='.dot') as tmpfile:
             call_command('graph_transitions', 'testapp.Application',
                          outputfile=tmpfile.name)
 
