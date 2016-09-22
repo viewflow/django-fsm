@@ -155,7 +155,7 @@ on a model instance with a protected FSMField will cause an exception.
 `target`
 ~~~~~~~~
 
-`target` state parameter could points to the specific state or `django_fsm.State` implementation
+`target` state parameter could point to a specific state or `django_fsm.State` implementation
 
 .. code:: python
           
