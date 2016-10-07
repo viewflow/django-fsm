@@ -374,10 +374,10 @@ model.save()
         state = FSMField(default='new')
 
 For guaranteed protection against race conditions caused by concurrently
-executed transitions, make sure: \* Your transitions do not have any
-side effects except for changes in the database, \* You always run the
-save() method on the object within ``django.db.transaction.atomic()``
-block.
+executed transitions, make sure:
+
+- Your transitions do not have any side effects except for changes in the database,
+- You always run the save() method on the object within ``django.db.transaction.atomic()`` block.
 
 Following these recommendations, you can rely on
 ConcurrentTransitionMixin to cause a rollback of all the changes that
