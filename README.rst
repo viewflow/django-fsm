@@ -229,8 +229,8 @@ Permissions
 It is common to have permissions attached to each model transition.
 ``django-fsm`` handles this with ``permission`` keyword on the
 ``transition`` decorator. ``permission`` accepts a permission string, or
-callable that expects ``user`` argument and returns True if user can
-perform the transition
+callable that expects ``instance`` and ``user`` arguments and returns
+True if user can perform the transition.
 
 .. code:: python
 
