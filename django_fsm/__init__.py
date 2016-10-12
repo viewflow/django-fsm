@@ -323,6 +323,7 @@ class FSMFieldMixin(object):
                     next_state = next_state.get_state(
                         instance, transition, result,
                         args=args, kwargs=kwargs)
+                    signal_kwargs['target'] = next_state
                 self.set_proxy(instance, next_state)
                 self.set_state(instance, next_state)
         except Exception as exc:
