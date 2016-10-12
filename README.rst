@@ -164,7 +164,7 @@ on a model instance with a protected FSMField will cause an exception.
                 source='*',
                 target=RETURN_VALUE('for_moderators', 'published'))
     def publish(self, is_public=False):
-        return 'need_moderation' if is_public else 'published'
+        return 'for_moderators' if is_public else 'published'
 
     @transition(
         field=state,
