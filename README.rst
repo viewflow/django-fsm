@@ -1,7 +1,7 @@
 Django friendly finite state machine support
 ============================================
 
-|Build Status| |Downloads| |Gitter|
+|Build Status| |Gitter|
 
 django-fsm adds simple declarative states management for django models.
 
@@ -421,7 +421,5 @@ django-fsm 2.4.0 2016-05-14
 
 .. |Build Status| image:: https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master
    :target: https://travis-ci.org/kmmbvnr/django-fsm
-.. |Downloads| image:: https://img.shields.io/pypi/dm/django-fsm.svg
-   :target: https://pypi.python.org/pypi/django-fsm
 .. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/kmmbvnr/django-fsm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
