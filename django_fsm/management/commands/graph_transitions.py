@@ -14,6 +14,10 @@ except ImportError:
     from django.apps import apps
     NEW_META_API = True
 
+from django import VERSION
+
+HAS_ARGPARSE = VERSION >= (1, 10)
+
 
 def all_fsm_fields_data(model):
     if NEW_META_API:
@@ -112,18 +116,31 @@ def add_transition(transition_source, transition_target, transition_name, source
 class Command(BaseCommand):
     requires_system_checks = True
 
-    option_list = BaseCommand.option_list + (
-        make_option('--output', '-o', action='store', dest='outputfile',
-                    help=('Render output file. Type of output dependent on file extensions. '
-                          'Use png or jpg to render graph to image.')),
-        # NOQA
-        make_option('--layout', '-l', action='store', dest='layout', default='dot',
-                    help=('Layout to be used by GraphViz for visualization. '
-                          'Layouts: circo dot fdp neato nop nop1 nop2 twopi')),
-    )
+    if not HAS_ARGPARSE:
+        option_list = BaseCommand.option_list + (
+            make_option('--output', '-o', action='store', dest='outputfile',
+                        help=('Render output file. Type of output dependent on file extensions. '
+                              'Use png or jpg to render graph to image.')),
+            # NOQA
+            make_option('--layout', '-l', action='store', dest='layout', default='dot',
+                        help=('Layout to be used by GraphViz for visualization. '
+                              'Layouts: circo dot fdp neato nop nop1 nop2 twopi')),
+        )
+        args = "[appname[.model[.field]]]"
+    else:
+        def add_arguments(self, parser):
+            parser.add_argument(
+                '--output', '-o', action='store', dest='outputfile',
+                help=('Render output file. Type of output dependent on file extensions. '
+                      'Use png or jpg to render graph to image.'))
+            parser.add_argument(
+                '--layout', '-l', action='store', dest='layout', default='dot',
+                help=('Layout to be used by GraphViz for visualization. '
+                      'Layouts: circo dot fdp neato nop nop1 nop2 twopi'))
+            parser.add_argument('args', nargs='*',
+                                help=('[appname[.model[.field]]]'))
 
     help = ("Creates a GraphViz dot file with transitions for selected fields")
-    args = "[appname[.model[.field]]]"
 
     def render_output(self, graph, **options):
         filename, format = options['outputfile'].rsplit('.', 1)
