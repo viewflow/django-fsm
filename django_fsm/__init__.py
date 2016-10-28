@@ -222,7 +222,7 @@ class FSMFieldDescriptor(object):
 
     def __get__(self, instance, type=None):
         if instance is None:
-            raise AttributeError('Can only be accessed via an instance.')
+            return self.field
         return self.field.get_state(instance)
 
     def __set__(self, instance, value):
