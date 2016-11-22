@@ -112,15 +112,24 @@ def add_transition(transition_source, transition_target, transition_name, source
 class Command(BaseCommand):
     requires_system_checks = True
 
-    option_list = BaseCommand.option_list + (
-        make_option('--output', '-o', action='store', dest='outputfile',
-                    help=('Render output file. Type of output dependent on file extensions. '
-                          'Use png or jpg to render graph to image.')),
-        # NOQA
-        make_option('--layout', '-l', action='store', dest='layout', default='dot',
-                    help=('Layout to be used by GraphViz for visualization. '
-                          'Layouts: circo dot fdp neato nop nop1 nop2 twopi')),
-    )
+    def add_arguments(self, parser):
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--output', '-o',
+            action='store',
+            dest='outputfile',
+            help=('Render output file. Type of output dependent on file extensions. '
+                  'Use png or jpg to render graph to image.')
+        )
+        parser.add_argument(
+            '--layout', '-l',
+            action='store',
+            dest='layout',
+            default='dot',
+            help=('Layout to be used by GraphViz for visualization. '
+                  'Layouts: circo dot fdp neato nop nop1 nop2 twopi')
+        ),
 
     help = ("Creates a GraphViz dot file with transitions for selected fields")
     args = "[appname[.model[.field]]]"
