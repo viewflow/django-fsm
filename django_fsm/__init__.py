@@ -97,8 +97,6 @@ class Transition(object):
             return bool(self.permission(instance, user))
         elif user.has_perm(self.permission, instance):
             return True
-        elif user.has_perm(self.permission):
-            return True
         else:
             return False
 
