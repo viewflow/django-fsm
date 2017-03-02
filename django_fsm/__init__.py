@@ -6,6 +6,7 @@ import inspect
 import sys
 from functools import wraps
 
+import django
 from django.db import models
 from django.db.models.signals import class_prepared
 from django.utils.functional import curry
@@ -355,7 +356,10 @@ class FSMFieldMixin(object):
     def contribute_to_class(self, cls, name, virtual_only=False):
         self.base_cls = cls
 
-        super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
+        if django.VERSION >= (1, 10):
+            super(FSMFieldMixin, self).contribute_to_class(cls, name, private_only=virtual_only)
+        else:
+            super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, 'get_all_{0}_transitions'.format(self.name),
                 curry(get_all_FIELD_transitions, field=self))
