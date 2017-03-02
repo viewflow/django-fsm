@@ -352,10 +352,10 @@ class FSMFieldMixin(object):
             for transition in meta.transitions.values():
                 yield transition
 
-    def contribute_to_class(self, cls, name, virtual_only=False):
+    def contribute_to_class(self, cls, name, **kwargs):
         self.base_cls = cls
 
-        super(FSMFieldMixin, self).contribute_to_class(cls, name, virtual_only=virtual_only)
+        super(FSMFieldMixin, self).contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, 'get_all_{0}_transitions'.format(self.name),
                 curry(get_all_FIELD_transitions, field=self))
