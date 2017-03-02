@@ -1,6 +1,5 @@
 # -*- coding: utf-8; mode: django -*-
 import graphviz
-from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from django.utils.encoding import smart_text
@@ -112,18 +111,19 @@ def add_transition(transition_source, transition_target, transition_name, source
 class Command(BaseCommand):
     requires_system_checks = True
 
-    option_list = BaseCommand.option_list + (
-        make_option('--output', '-o', action='store', dest='outputfile',
-                    help=('Render output file. Type of output dependent on file extensions. '
-                          'Use png or jpg to render graph to image.')),
-        # NOQA
-        make_option('--layout', '-l', action='store', dest='layout', default='dot',
-                    help=('Layout to be used by GraphViz for visualization. '
-                          'Layouts: circo dot fdp neato nop nop1 nop2 twopi')),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--output', '-o', action='store', dest='outputfile',
+            help=('Render output file. Type of output dependent on file extensions. '
+                  'Use png or jpg to render graph to image.'))
+        parser.add_argument(
+            '--layout', '-l', action='store', dest='layout', default='dot',
+            help=('Layout to be used by GraphViz for visualization. '
+                  'Layouts: circo dot fdp neato nop nop1 nop2 twopi'))
+        parser.add_argument('args', nargs='*',
+                            help=('[appname[.model[.field]]]'))
 
     help = ("Creates a GraphViz dot file with transitions for selected fields")
-    args = "[appname[.model[.field]]]"
 
     def render_output(self, graph, **options):
         filename, format = options['outputfile'].rsplit('.', 1)
@@ -140,8 +140,8 @@ class Command(BaseCommand):
 
                 if len(field_spec) == 1:
                     if NEW_META_API:
-                        app = apps.get_app(field_spec[0])
-                        models = apps.get_models(app)
+                        app = apps.get_app_config(field_spec[0])
+                        models = app.get_models()
                     else:
                         app = get_app(field_spec[0])
                         models = get_models(app)
