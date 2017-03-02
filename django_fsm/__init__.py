@@ -529,7 +529,8 @@ def can_proceed(bound_method, check_conditions=True):
     conditions.
     """
     if not hasattr(bound_method, '_django_fsm'):
-        raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
+        im_func = getattr(bound_method, 'im_func', getattr(bound_method, '__func__'))
+        raise TypeError('%s method is not transition' % im_func.__name__)
 
     meta = bound_method._django_fsm
     im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
@@ -544,7 +545,8 @@ def has_transition_perm(bound_method, user):
     Returns True if model in state allows to call bound_method and user have rights on it
     """
     if not hasattr(bound_method, '_django_fsm'):
-        raise TypeError('%s method is not transition' % bound_method.im_func.__name__)
+        im_func = getattr(bound_method, 'im_func', getattr(bound_method, '__func__'))
+        raise TypeError('%s method is not transition' % im_func.__name__)
 
     meta = bound_method._django_fsm
     im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
