@@ -503,7 +503,7 @@ def transition(field, source='*', target=None, on_error=None, conditions=[], per
             fsm_meta = FSMMeta(field=field, method=func)
             setattr(func, '_django_fsm', fsm_meta)
 
-        if isinstance(source, (list, tuple)):
+        if isinstance(source, (list, tuple, set)):
             for state in source:
                 func._django_fsm.add_transition(func, state, target, on_error, conditions, permission, custom)
         else:
