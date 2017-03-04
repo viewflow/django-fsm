@@ -178,7 +178,7 @@ class FSMMeta(object):
 
         return False
 
-    def conditions_met(self, instance, state):
+    def conditions_met(self, instance, state, *args, **kwargs):
         """
         Check if all conditions have been met
         """
@@ -189,8 +189,9 @@ class FSMMeta(object):
         elif transition.conditions is None:
             return True
         else:
-            return all(map(lambda condition: condition(instance), transition.conditions))
-
+            return all(map(lambda condition:
+                           condition(instance, *args, **kwargs),
+                           transition.conditions))
     def has_transition_perm(self, instance, state, user):
         transition = self.get_transition(state)
 
@@ -297,7 +298,7 @@ class FSMFieldMixin(object):
             raise TransitionNotAllowed(
                 "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name),
                 object=instance, method=method)
-        if not meta.conditions_met(instance, current_state):
+        if not meta.conditions_met(instance, current_state, *args, **kwargs):
             raise TransitionNotAllowed(
                 "Transition conditions have not been met for method '{0}'".format(method_name),
                 object=instance, method=method)
