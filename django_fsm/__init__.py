@@ -308,6 +308,7 @@ class FSMFieldMixin(object):
             'sender': instance.__class__,
             'instance': instance,
             'name': method_name,
+            'field': meta.field,
             'source': current_state,
             'target': next_state,
             'method_args' : args,
