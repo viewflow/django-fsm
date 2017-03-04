@@ -411,11 +411,13 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
-django-fsm 2.4.0 2016-05-14
+django-fsm 2.5.0 2017-03-04
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- graph_transition command now works with multiple  FSM's per model
-- Add ability to set target state from transition return value or callable
+- graph_transition command fix for django 1.10
+- graph_transition command supports GET_STATE targets
+- signal data extended with method args/kwargs and field
+- sets allowed to be passed to the transition decorator
 
 
 

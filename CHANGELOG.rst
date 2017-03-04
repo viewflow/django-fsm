@@ -1,6 +1,15 @@
 Changelog
 =========
 
+django-fsm 2.5.0 2017-03-04
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- graph_transition command fix for django 1.10
+- graph_transition command supports GET_STATE targets
+- signal data extended with method args/kwargs and field
+- sets allowed to be passed to the transition decorator
+
+
 django-fsm 2.4.0 2016-05-14
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
