@@ -403,6 +403,13 @@ class FSMIntegerField(FSMFieldMixin, models.IntegerField):
     pass
 
 
+class FSMBooleanField(FSMFieldMixin, models.BooleanField):
+    """
+    Same as FSMField, but stores the state value in a BooleanField.
+    """
+    pass
+
+
 class FSMKeyField(FSMFieldMixin, models.ForeignKey):
     """
     State Machine support for Django model
