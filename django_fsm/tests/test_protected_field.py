@@ -28,3 +28,11 @@ class TestDirectAccessModels(TestCase):
         instance.publish()
         instance.save()
         self.assertEqual(instance.status, 'published')
+
+    def test_refresh_from_db(self):
+        instance = ProtectedAccessModel()
+        self.assertEqual(instance.status, 'new')
+
+        instance.save()
+        instance.refresh_from_db()
+        self.assertEqual(instance.status, 'new')
