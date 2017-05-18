@@ -365,6 +365,18 @@ class FSMFieldMixin(object):
         setattr(cls, 'get_available_user_{0}_transitions'.format(self.name),
                 curry(get_available_user_FIELD_transitions, field=self))
 
+        if hasattr(self.base_cls, 'refresh_from_db'):  # check for Django prior to v1.8
+            original_refresh_from_db = self.base_cls.refresh_from_db
+
+            @wraps(original_refresh_from_db)
+            def wrapper(self, using=None, fields=None):
+                for field in cls._meta.get_fields():
+                    if isinstance(field, FSMFieldMixin) and field.protected:
+                        del self.__dict__[field.name]
+                original_refresh_from_db(self, using, fields)
+
+            self.base_cls.refresh_from_db = wrapper
+
         class_prepared.connect(self._collect_transitions)
 
     def _collect_transitions(self, *args, **kwargs):
