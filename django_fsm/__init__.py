@@ -226,7 +226,8 @@ class FSMFieldDescriptor(object):
         return self.field.get_state(instance)
 
     def __set__(self, instance, value):
-        if self.field.protected and self.field.name in instance.__dict__:
+        override_protection_key = '_%s_override_protection' % self.field.name
+        if self.field.protected and self.field.name in instance.__dict__ and not instance.__dict__.get(override_protection_key):
             raise AttributeError('Direct {0} modification is not allowed'.format(self.field.name))
 
         # Update state
@@ -370,10 +371,15 @@ class FSMFieldMixin(object):
 
             @wraps(original_refresh_from_db)
             def wrapper(self, using=None, fields=None):
+                added_keys = []
                 for field in cls._meta.get_fields():
                     if isinstance(field, FSMFieldMixin) and field.protected:
-                        del self.__dict__[field.name]
+                        key = '_%s_override_protection' % field.name
+                        self.__dict__[key] = True
+                        added_keys.append(key)
                 original_refresh_from_db(self, using, fields)
+                for key in added_keys:
+                    del self.__dict__[key]
 
             self.base_cls.refresh_from_db = wrapper
 
