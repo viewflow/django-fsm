@@ -1,8 +1,11 @@
 import django
-import unittest
 
 from django.db import models
 from django.test import TestCase
+try:
+    from django.utils import unittest  # for python2.6
+except ImportError:
+    import unittest
 
 from django_fsm import FSMField, transition
 
