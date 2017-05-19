@@ -368,17 +368,15 @@ class FSMFieldMixin(object):
 
         if hasattr(self.base_cls, 'refresh_from_db'):  # check for Django prior to v1.8
             original_refresh_from_db = self.base_cls.refresh_from_db
+            field = self
 
             @wraps(original_refresh_from_db)
             def wrapper(self, using=None, fields=None):
-                added_keys = []
-                for field in cls._meta.get_fields():
-                    if isinstance(field, FSMFieldMixin) and field.protected:
-                        key = '_%s_override_protection' % field.name
-                        self.__dict__[key] = True
-                        added_keys.append(key)
+                if field.protected:
+                    key = '_%s_override_protection' % field.name
+                    self.__dict__[key] = True
                 original_refresh_from_db(self, using, fields)
-                for key in added_keys:
+                if field.protected:
                     del self.__dict__[key]
 
             self.base_cls.refresh_from_db = wrapper

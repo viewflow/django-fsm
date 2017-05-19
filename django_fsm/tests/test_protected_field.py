@@ -12,6 +12,7 @@ from django_fsm import FSMField, transition
 
 class ProtectedAccessModel(models.Model):
     status = FSMField(default='new', protected=True)
+    another_fsm_field = FSMField(default='new', protected=True)
 
     @transition(field=status, source='new', target='published')
     def publish(self):
