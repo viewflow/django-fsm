@@ -9,7 +9,9 @@ from functools import wraps
 from django.db import models
 from django.db.models.signals import class_prepared
 from django.utils.functional import curry
+
 from django_fsm.signals import pre_transition, post_transition
+
 
 try:
     from django.apps import apps as django_apps
@@ -101,6 +103,57 @@ class Transition(object):
             return True
         else:
             return False
+
+OVERRIDE_PROTECTION_KEY = '_fsm_field_protection_override'
+
+# It's better to inherit from contextlib.ContextDecorator or django.utils.decorators.ContextDecorator
+# But prior to django v1.8 there is no django.utils.decorators.ContextDecorator
+# And in python 2 there is no contextlib.ContextDecorator
+class override_protection(object):
+    def __init__(self, instance, *field_names):
+        self.instance = instance
+        self.field_names = field_names
+
+    # drop this method if inherited from ContextDecorator
+    def __call__(self, func):
+        import six
+        from functools import WRAPPER_ASSIGNMENTS
+
+        if six.PY3:
+            available_attrs = WRAPPER_ASSIGNMENTS
+        else:
+            available_attrs = tuple(a for a in WRAPPER_ASSIGNMENTS if hasattr(func, a))
+        
+        @wraps(func, assigned=available_attrs)
+        def inner(*args, **kwargs):
+            with self:
+                return func(*args, **kwargs)
+        return inner
+
+    def iter_fields(self):
+        if self.field_names:
+            for name in self.field_names:
+                yield name
+        else:
+            for field in self.instance._meta.fields:
+                if isinstance(field, FSMFieldMixin) and field.protected:
+                    yield field.name
+
+    def __enter__(self):
+        registry = self.instance.__dict__.setdefault(OVERRIDE_PROTECTION_KEY, {})
+        for name in self.iter_fields():
+            registry.setdefault(name, 0)
+            registry[name] += 1  # for nested wraps
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        registry = self.instance.__dict__[OVERRIDE_PROTECTION_KEY]
+        for name in self.iter_fields():
+            if registry[name] == 1:
+                del registry[name]  # clean
+            else:
+                registry[name] -= 1
+        if not registry:
+            del self.instance.__dict__[OVERRIDE_PROTECTION_KEY]  # registry clean
 
 
 def get_available_FIELD_transitions(instance, field):
@@ -226,8 +279,9 @@ class FSMFieldDescriptor(object):
         return self.field.get_state(instance)
 
     def __set__(self, instance, value):
-        override_protection_key = '_%s_override_protection' % self.field.name
-        if self.field.protected and self.field.name in instance.__dict__ and not instance.__dict__.get(override_protection_key):
+        if (self.field.protected
+                and self.field.name in instance.__dict__
+                and not instance.__dict__.get(OVERRIDE_PROTECTION_KEY, {}).get(self.field.name)):
             raise AttributeError('Direct {0} modification is not allowed'.format(self.field.name))
 
         # Update state
@@ -354,6 +408,15 @@ class FSMFieldMixin(object):
             for transition in meta.transitions.values():
                 yield transition
 
+    def override_protection_decorator(self, func):
+        field_name = self.name
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            with override_protection(self, field_name):
+                return func(self, *args, **kwargs)
+        return wrapper
+
     def contribute_to_class(self, cls, name, **kwargs):
         self.base_cls = cls
 
@@ -366,20 +429,8 @@ class FSMFieldMixin(object):
         setattr(cls, 'get_available_user_{0}_transitions'.format(self.name),
                 curry(get_available_user_FIELD_transitions, field=self))
 
-        if hasattr(self.base_cls, 'refresh_from_db'):  # check for Django prior to v1.8
-            original_refresh_from_db = self.base_cls.refresh_from_db
-            field = self
-
-            @wraps(original_refresh_from_db)
-            def wrapper(self, using=None, fields=None):
-                if field.protected:
-                    key = '_%s_override_protection' % field.name
-                    self.__dict__[key] = True
-                original_refresh_from_db(self, using, fields)
-                if field.protected:
-                    del self.__dict__[key]
-
-            self.base_cls.refresh_from_db = wrapper
+        if self.protected and hasattr(self.base_cls, 'refresh_from_db'):  # check for Django prior to v1.8
+            self.base_cls.refresh_from_db = self.override_protection_decorator(self.base_cls.refresh_from_db)
 
         class_prepared.connect(self._collect_transitions)
 
