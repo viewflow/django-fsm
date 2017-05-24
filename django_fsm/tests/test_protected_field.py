@@ -7,7 +7,7 @@ try:
 except ImportError:
     import unittest
 
-from django_fsm import FSMField, transition
+from django_fsm import FSMField, transition, override_protection
 
 
 class ProtectedAccessModel(models.Model):
@@ -51,3 +51,21 @@ class TestDirectAccessModels(TestCase):
         self.assertEqual(instance.status, 'new')
         instance.full_clean()
         self.assertEqual(instance.status, 'new')
+
+    def test_override_protection_per_field_isolation(self):
+        instance = ProtectedAccessModel()
+        with self.assertRaises(AttributeError):
+            with override_protection(instance, 'status'):
+                instance.another_fsm_field = 'new'
+
+    def test_override_protection_per_field(self):
+        instance = ProtectedAccessModel()
+        with override_protection(instance, 'status'):
+            instance.status = 'change'
+        self.assertEqual(instance.status, 'change')
+
+    def test_override_protection(self):
+        instance = ProtectedAccessModel()
+        with override_protection(instance):
+            instance.status = 'change'
+        self.assertEqual(instance.status, 'change')
