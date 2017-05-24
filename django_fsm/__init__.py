@@ -429,8 +429,10 @@ class FSMFieldMixin(object):
         setattr(cls, 'get_available_user_{0}_transitions'.format(self.name),
                 curry(get_available_user_FIELD_transitions, field=self))
 
-        if self.protected and hasattr(self.base_cls, 'refresh_from_db'):  # check for Django prior to v1.8
-            self.base_cls.refresh_from_db = self.override_protection_decorator(self.base_cls.refresh_from_db)
+        if self.protected:
+            if hasattr(self.base_cls, 'refresh_from_db'):  # check for Django prior to v1.8
+                self.base_cls.refresh_from_db = self.override_protection_decorator(self.base_cls.refresh_from_db)
+            self.base_cls.clean_fields = self.override_protection_decorator(self.base_cls.clean_fields)
 
         class_prepared.connect(self._collect_transitions)
 
