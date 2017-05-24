@@ -44,5 +44,10 @@ class TestDirectAccessModels(TestCase):
         ProtectedAccessModel.objects.all().update(status='change')
 
         instance.refresh_from_db()
-        # instance = ProtectedAccessModel.objects.all().get(pk=instance.pk)
         self.assertEqual(instance.status, 'change')
+
+    def test_model_clean(self):
+        instance = ProtectedAccessModel()
+        self.assertEqual(instance.status, 'new')
+        instance.full_clean()
+        self.assertEqual(instance.status, 'new')

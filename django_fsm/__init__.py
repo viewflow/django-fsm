@@ -123,7 +123,7 @@ class override_protection(object):
             available_attrs = WRAPPER_ASSIGNMENTS
         else:
             available_attrs = tuple(a for a in WRAPPER_ASSIGNMENTS if hasattr(func, a))
-        
+
         @wraps(func, assigned=available_attrs)
         def inner(*args, **kwargs):
             with self:
