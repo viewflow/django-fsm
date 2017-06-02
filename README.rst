@@ -126,13 +126,13 @@ Use the conditions like this:
 .. code:: python
 
     @transition(field=state, source='new', target='published', conditions=[can_publish])
-        def publish(self):
+    def publish(self):
         """
         Side effects galore
         """
 
     @transition(field=state, source='*', target='destroyed', conditions=[can_destroy])
-        def destroy(self):
+    def destroy(self):
         """
         Side effects galore
         """
