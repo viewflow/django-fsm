@@ -3,7 +3,7 @@ import graphviz
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from django.utils.encoding import smart_text
+from django.utils.encoding import force_text
 
 from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
 
@@ -101,12 +101,12 @@ def generate_dot(fields_data):
 def add_transition(transition_source, transition_target, transition_name, source_name, field, sources, targets, edges):
     target_name = node_name(field, transition_target)
     if isinstance(transition_source, int):
-        source_label = [smart_text(name[1]) for name in field.choices if name[0] == transition_source][0]
+        source_label = [force_text(name[1]) for name in field.choices if name[0] == transition_source][0]
     else:
         source_label = transition_source
     sources.add((source_name, source_label))
     if isinstance(transition_target, int):
-        target_label = [smart_text(name[1]) for name in field.choices if name[0] == transition_target][0]
+        target_label = [force_text(name[1]) for name in field.choices if name[0] == transition_target][0]
     else:
         target_label = transition_target
     targets.add((target_name, target_label))
