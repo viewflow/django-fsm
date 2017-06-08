@@ -1,5 +1,5 @@
 *.pyc
-dist
-django_fsm.egg-info
-reports
-.tox
+dist/
+build/
+django_fsm.egg-info/
+.tox/

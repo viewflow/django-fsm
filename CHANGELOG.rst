@@ -1,6 +1,13 @@
 Changelog
 =========
 
+django-fsm 2.6.0 2017-06-08
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix django 1.11 compatibility
+- Fix TypeError in `graph_transitions` command when using django's lazy translations
+
+
 django-fsm 2.5.0 2017-03-04
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

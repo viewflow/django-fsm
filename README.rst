@@ -411,15 +411,11 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
-django-fsm 2.5.0 2017-03-04
+django-fsm 2.6.0 2017-06-08
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- graph_transition command fix for django 1.10
-- graph_transition command supports GET_STATE targets
-- signal data extended with method args/kwargs and field
-- sets allowed to be passed to the transition decorator
-
-
+- Fix django 1.11 compatibility
+- Fix TypeError in `graph_transitions` command when using django's lazy translations
 
 .. |Build Status| image:: https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master
    :target: https://travis-ci.org/kmmbvnr/django-fsm
