@@ -32,6 +32,12 @@ def node_name(field, state):
     opts = field.model._meta
     return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(' ', '_'), field.name, state)
 
+def node_label(field, state):
+    if isinstance(state, int):
+        return force_text(dict(field.choices).get(state))
+    else:
+        return state
+
 
 def generate_dot(fields_data):
     result = graphviz.Digraph()
@@ -57,7 +63,9 @@ def generate_dot(fields_data):
                                        source_name, field, sources, targets, edges)
             if transition.on_error:
                 on_error_name = node_name(field, transition.on_error)
-                targets.add((on_error_name, transition.on_error))
+                targets.add(
+                    (on_error_name, node_label(field, transition.on_error))
+                )
                 edges.add((source_name, on_error_name, (('style', 'dotted'),)))
 
         for target, name in any_targets:
@@ -100,16 +108,8 @@ def generate_dot(fields_data):
 
 def add_transition(transition_source, transition_target, transition_name, source_name, field, sources, targets, edges):
     target_name = node_name(field, transition_target)
-    if isinstance(transition_source, int):
-        source_label = [force_text(name[1]) for name in field.choices if name[0] == transition_source][0]
-    else:
-        source_label = transition_source
-    sources.add((source_name, source_label))
-    if isinstance(transition_target, int):
-        target_label = [force_text(name[1]) for name in field.choices if name[0] == transition_target][0]
-    else:
-        target_label = transition_target
-    targets.add((target_name, target_label))
+    sources.add((source_name, node_label(field, transition_source)))
+    targets.add((target_name, node_label(field, transition_target)))
     edges.add((source_name, target_name, (('label', transition_name),)))
 
 
