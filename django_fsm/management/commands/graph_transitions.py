@@ -70,13 +70,13 @@ def generate_dot(fields_data):
 
         for target, name in any_targets:
             target_name = node_name(field, target)
-            targets.add((target_name, target))
+            targets.add((target_name, node_label(field, target)))
             for source_name, label in sources:
                 edges.add((source_name, target_name, (('label', name),)))
 
         for target, name in any_except_targets:
             target_name = node_name(field, target)
-            targets.add((target_name, target))
+            targets.add((target_name, node_label(field, target)))
             for source_name, label in sources:
                 if target_name == source_name:
                     continue
