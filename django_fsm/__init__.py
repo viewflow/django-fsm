@@ -59,6 +59,7 @@ class TransitionNotAllowed(Exception):
     """Raised when a transition is not allowed"""
 
     def __init__(self, *args, **kwargs):
+        self.detail = args[0] if len(args) > 0 else None
         self.object = kwargs.pop('object', None)
         self.method = kwargs.pop('method', None)
         super(TransitionNotAllowed, self).__init__(*args, **kwargs)
