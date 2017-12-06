@@ -335,7 +335,7 @@ class FSMFieldMixin(object):
                 signal_kwargs['target'] = exception_state
                 signal_kwargs['exception'] = exc
                 post_transition.send(**signal_kwargs)
-            raise
+            raise exc
         else:
             post_transition.send(**signal_kwargs)
 
