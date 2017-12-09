@@ -25,7 +25,7 @@ class DBState(models.Model):
 
 
 class FKBlogPost(models.Model):
-    state = FSMKeyField(DBState, default='new', protected=True)
+    state = FSMKeyField(DBState, default='new', protected=True, on_delete=models.CASCADE)
 
     @transition(field=state, source='new', target='published')
     def publish(self):
