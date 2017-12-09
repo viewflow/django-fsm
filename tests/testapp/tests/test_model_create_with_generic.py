@@ -20,7 +20,7 @@ class Task(models.Model):
         NEW = 'new'
         DONE = 'done'
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     causality = GenericForeignKey('content_type', 'object_id')
     state = FSMField(default=STATE.NEW)
