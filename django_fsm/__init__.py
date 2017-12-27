@@ -357,7 +357,7 @@ class FSMFieldMixin(object):
         self.base_cls = cls
 
         super(FSMFieldMixin, self).contribute_to_class(cls, name, **kwargs)
-        setattr(cls, self.name, self.descriptor_class(self))
+        setattr(cls, self.name + "_description", self.descriptor_class(self))
         setattr(cls, 'get_all_{0}_transitions'.format(self.name),
                 curry(get_all_FIELD_transitions, field=self))
         setattr(cls, 'get_available_{0}_transitions'.format(self.name),
