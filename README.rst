@@ -3,7 +3,7 @@ Django friendly finite state machine support
 
 |Build Status| |Gitter|
 
-django-fsm adds simple declarative states management for django models.
+django-fsm adds simple declarative state management for django models.
 
 If you need parallel task execution, view and background task code reuse
 over different flows - check my new project django-viewflow:
@@ -11,9 +11,9 @@ over different flows - check my new project django-viewflow:
 https://github.com/viewflow/viewflow
 
 
-Instead of adding some state field to a django model, and managing its
-values by hand, you could use FSMState field and mark model methods with
-the ``transition`` decorator. Your method could contain the side-effects
+Instead of adding a state field to a django model and managing its
+values by hand, you use ``FSMField`` and mark model methods with
+the ``transition`` decorator. These methods could contain side-effects
 of the state change.
 
 Nice introduction is available here:
@@ -75,7 +75,7 @@ Use the ``transition`` decorator to annotate model methods
         """
 
 ``source`` parameter accepts a list of states, or an individual state.
-You can use ``*`` for source, to allow switching to ``target`` from any
+You can use ``*`` for source to allow switching to ``target`` from any
 state. The ``field`` parameter accepts both a string attribute name or an
 actual field instance.
 
@@ -137,7 +137,7 @@ Use the conditions like this:
         Side effects galore
         """
 
-You could instantiate a field with protected=True option, that prevents
+You can instantiate a field with ``protected=True`` option to prevent
 direct state field modification.
 
 .. code:: python
@@ -196,7 +196,7 @@ Custom properties can be added by providing a dictionary to the
 ``on_error`` state
 ~~~~~~~~~~~~~~~~~~
 
-In case of transition method would raise exception, you can provide
+If the transition method raises an exception, you can provide a
 specific target state
 
 .. code:: python
@@ -210,13 +210,13 @@ specific target state
 ``state_choices``
 ~~~~~~~~~~~~~~~~~
 
-Instead of passing two elements list ``choices`` you could use three
-elements ``state_choices``, the last element states for string reference
-to model proxy class.
+Instead of passing a two-item iterable ``choices`` you can instead use the
+three-element ``state_choices``, the last element being a string reference
+to a model proxy class.
 
-Base class instance would be dynamically changed to corresponding Proxy
+The base class instance would be dynamically changed to the corresponding Proxy
 class instance, depending on the state. Even for queryset results, you
-will get Proxy class instances, even if QuerySet executed on base class.
+will get Proxy class instances, even if the QuerySet is executed on the base class.
 
 Check the `test
 case <https://github.com/kmmbvnr/django-fsm/blob/master/tests/testapp/tests/test_state_transitions.py>`__
@@ -230,7 +230,7 @@ It is common to have permissions attached to each model transition.
 ``django-fsm`` handles this with ``permission`` keyword on the
 ``transition`` decorator. ``permission`` accepts a permission string, or
 callable that expects ``instance`` and ``user`` arguments and returns
-True if user can perform the transition.
+True if the user can perform the transition.
 
 .. code:: python
 
@@ -350,7 +350,7 @@ Arguments sent with these signals:
 
 **sender** The model class.
 
-**instance** The actual instance being proceed
+**instance** The actual instance being processed
 
 **name** Transition name
 
