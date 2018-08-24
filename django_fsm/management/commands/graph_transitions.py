@@ -174,10 +174,9 @@ class Command(BaseCommand):
                 elif len(field_spec) == 3:
                     if NEW_META_API:
                         model = apps.get_model(field_spec[0], field_spec[1])
-                        fields_data.append((model._meta.get_field(field_spec[2])[0], model))
                     else:
                         model = get_model(field_spec[0], field_spec[1])
-                        fields_data.append((model._meta.get_field_by_name(field_spec[2])[0], model))
+                    fields_data += all_fsm_fields_data(model)
         else:
             if NEW_META_API:
                 for model in apps.get_models():
