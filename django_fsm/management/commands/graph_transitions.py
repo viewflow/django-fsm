@@ -55,9 +55,10 @@ def generate_dot(fields_data):
                 source_name = node_name(field, transition.source)
                 if transition.target is not None:
                     if isinstance(transition.target, GET_STATE) or isinstance(transition.target, RETURN_VALUE):
-                        for transition_target_index, transition_target in enumerate(transition.target.allowed_states):
-                            add_transition(transition.source, transition_target, transition.name,
-                                           source_name, field, sources, targets, edges)
+                        if transition.target.allowed_states:
+                            for transition_target_index, transition_target in enumerate(transition.target.allowed_states):
+                                add_transition(transition.source, transition_target, transition.name,
+                                               source_name, field, sources, targets, edges)
                     else:
                         add_transition(transition.source, transition.target, transition.name,
                                        source_name, field, sources, targets, edges)
