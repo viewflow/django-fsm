@@ -492,10 +492,10 @@ class ConcurrentTransitionMixin(object):
 
 def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}):
     """
-    Method decorator for mark allowed transitions
+    Method decorator to mark allowed transitions.
 
     Set target to None if current state needs to be validated and
-    has not changed after the function call
+    has not changed after the function call.
     """
     def inner_transition(func):
         wrapper_installed, fsm_meta = True, getattr(func, '_django_fsm', None)
