@@ -114,6 +114,15 @@ def add_transition(transition_source, transition_target, transition_name, source
     edges.add((source_name, target_name, (('label', transition_name),)))
 
 
+def get_graphviz_layouts():
+    try:
+        import graphviz
+
+        return graphviz.backend.ENGINES
+    except Exception:
+        return {'sfdp', 'circo', 'twopi', 'dot', 'neato', 'fdp', 'osage', 'patchwork'}
+
+
 class Command(BaseCommand):
     requires_system_checks = True
 
@@ -125,7 +134,7 @@ class Command(BaseCommand):
             # NOQA
             make_option('--layout', '-l', action='store', dest='layout', default='dot',
                         help=('Layout to be used by GraphViz for visualization. '
-                              'Layouts: circo dot fdp neato nop nop1 nop2 twopi')),
+                              'Layouts: %s.' % ' '.join(get_graphviz_layouts()))),
         )
         args = "[appname[.model[.field]]]"
     else:
@@ -137,7 +146,7 @@ class Command(BaseCommand):
             parser.add_argument(
                 '--layout', '-l', action='store', dest='layout', default='dot',
                 help=('Layout to be used by GraphViz for visualization. '
-                      'Layouts: circo dot fdp neato nop nop1 nop2 twopi'))
+                      'Layouts: %s.' % ' '.join(get_graphviz_layouts())))
             parser.add_argument('args', nargs='*',
                                 help=('[appname[.model[.field]]]'))
 
