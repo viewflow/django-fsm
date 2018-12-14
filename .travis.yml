@@ -10,24 +10,15 @@ matrix:
       - { python: "2.7" }
 
       - { python: "3.4" }
-      - { python: "3.4" }
 
-      - { python: "3.5" }
-      - { python: "3.5" }
-      - { python: "3.5" }
       - { python: "3.5" }
 
       - { python: "3.6" }
-      - { python: "3.6" }
-      - { python: "3.6" }
-      - { python: "3.6" }
 
       - { python: "3.7" }
-      - { python: "3.7" }
-      - { python: "3.7" }
+
+      - install:
+          - pip install tox
 
       - script:
           - tox --skip-missing-interpreters
-
-install:
-    - pip install tox
