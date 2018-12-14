@@ -1,6 +1,13 @@
 Changelog
 =========
 
+django-fsm 2.6.1 2018-12-14
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix the travis tests
+- Add compatibility test with python 3.7, remove 2.6 and 3.3
+- Add compatibility test with Django 2.0 and 2.1, remove 1.6, 1.8, 1.9 and 1.10
+
 django-fsm 2.6.0 2017-06-08
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
