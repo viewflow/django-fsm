@@ -1,15 +1,14 @@
 language: python
-sudo: false
 
 python:
-  - 2.7
-  - 3.4
-  - 3.5
-  - 3.6
-  - 3.7
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
 
 install:
-    - pip install tox==3.5.2
+    - pip install tox==3.6.0
 
 script:
     - tox --skip-missing-interpreters
