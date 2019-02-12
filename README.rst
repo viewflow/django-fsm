@@ -1,7 +1,7 @@
 Django friendly finite state machine support
 ============================================
 
-|Build Status|
+|Build Status| |Gitter|
 
 django-fsm adds simple declarative states management for django models.
 
@@ -408,5 +408,16 @@ your ``INSTALLED_APPS``:
     # Create a PNG image file only for specific model
     $ ./manage.py graph_transitions -o blog_transitions.png myapp.Blog
 
-.. |Build Status| image:: https://travis-ci.org/MDziwny/django-fsm.svg?branch=master
-   :target: https://travis-ci.org/MDziwny/django-fsm/
+Changelog
+---------
+
+django-fsm 2.6.0 2017-06-08
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix django 1.11 compatibility
+- Fix TypeError in `graph_transitions` command when using django's lazy translations
+
+.. |Build Status| image:: https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master
+   :target: https://travis-ci.org/kmmbvnr/django-fsm
+.. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/kmmbvnr/django-fsm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
