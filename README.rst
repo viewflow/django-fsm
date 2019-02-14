@@ -417,6 +417,15 @@ django-fsm 2.6.0 2017-06-08
 - Fix django 1.11 compatibility
 - Fix TypeError in `graph_transitions` command when using django's lazy translations
 
+
+django-fsm 2.7.0 2019-02-14
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add tests for Python 3.7, remove tests for deprecated Python versions (2.6 and 3.3)
+- Add tests for Django 2.0 and 2.1, remove tests for deprecated Django versions (1.6, 1.7, 1.8 and 1.10)
+- Fix the tests on TravisCI
+
+
 .. |Build Status| image:: https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master
    :target: https://travis-ci.org/kmmbvnr/django-fsm
 .. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
