@@ -7,10 +7,10 @@ except IOError:
 
 setup(
     name='django-fsa',
-    version='2.7.0',
+    version='2.7.1',
     description='Django friendly finite state machine support, forked from django-fsm',
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     author='Antoine Fontaine',
     author_email='antoine.fontaine@gmail.com',
     url='http://github.com/mdziwny/django-fsm',

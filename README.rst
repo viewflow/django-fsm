@@ -429,6 +429,11 @@ django-fsm 2.7.0 2019-02-14
 - Add tests for Django 2.0 and 2.1, remove tests for deprecated Django versions (1.6, 1.7, 1.8 and 1.10)
 - Fix the tests on TravisCI
 
+django-fsm 2.7.1 2019-03-04
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Delivery on Pypi
+
 
 .. |Build Status| image:: https://travis-ci.org/MDziwny/django-fsm.svg?branch=develop
    :target: https://travis-ci.org/MDziwny/django-fsm.svg

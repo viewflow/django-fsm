@@ -1,15 +1,20 @@
 language: python
 dist: xenial
-
 python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7"
-
+- '2.7'
+- '3.4'
+- '3.5'
+- '3.6'
+- '3.7'
 install:
-    - pip install tox==3.6.0 tox-travis==0.11
-
+- pip install tox==3.6.0 tox-travis==0.11
 script:
-    - tox
+- tox
+deploy:
+  provider: pypi
+  user: AntoineFontaine
+  password:
+    secure: Wz7jHw1w4BQ5DuGEsXdttoWCWjmlYj+V75xuHen4Em46UwRhkLl2UzlR7kwBUgYqIoZO/gFsgSzMqmQq8KBrl7l7YoXfsB/SANf7S5tx8qIXQu5vs6FJnCh2lxOK8hEalJgpEHhn9T9V4EUge3T34XWAelH/Kd28cIEHLSjC139WwsNzgcI7kCflnMQYIb6H2qEUOrpz8X6zKJn4U2qNwpGrT5HswE6X2ogxEnBHJMDbwzTornwYc0ACgSM5k7psqzYEcXLMw7yqSAxebs/EjQ2xVEWEhC/9DXDKeTPhBYLQAxToaa7GsjBQf+ZCIrOmTqH6yDA+QYnQVK507d3LSFV0MCptQuXX+h0u2NPCrx9ypgnieJqUsqlUnbiglrs1z4xvZ+rxN8axbn1fkVB10JFJiZDk+l4+piJfs8I0i0DMWlRTuYsk+VY442jdMrse5WhRnl0iGM6JvpiDv50PUyrZ6ikzwLnz+/Ay/0MW8EdWplgQOaHAskw2sJbFrbeFO+gH+QGZwZ2kcK8AC6McieAPNx/iqDPZcgZalUJKuwtSJDNjm6baKMuFLoXenAnCXPpc2a+lBPjUhrc+bIUW32rDX9ovxUez9M80g8PUrNzILRRS+slYJnS+kXBWnt1S9lPn5f3l8ss0wIT/q8tDMb2DVVJVTPHq/+gB5G6nmwQ=
+  on:
+    tags: true
+  skip_existing: true
