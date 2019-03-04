@@ -1,7 +1,11 @@
 Django friendly finite state machine support
 ============================================
 
-|Build Status| |Gitter|
+This is a friendly fork which aims to ensure that the tests are passing with
+the new python and django versions, the original django-fsm was written by
+Mikhail Podgurskiy (kmmbvnr@gmail.com), https://github.com/viewflow/django-fsm
+
+|Build Status|
 
 django-fsm adds simple declarative states management for django models.
 
@@ -426,7 +430,5 @@ django-fsm 2.7.0 2019-02-14
 - Fix the tests on TravisCI
 
 
-.. |Build Status| image:: https://travis-ci.org/kmmbvnr/django-fsm.svg?branch=master
-   :target: https://travis-ci.org/kmmbvnr/django-fsm
-.. |Gitter| image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/kmmbvnr/django-fsm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+.. |Build Status| image:: https://travis-ci.org/MDziwny/django-fsm.svg?branch=develop
+   :target: https://travis-ci.org/MDziwny/django-fsm.svg

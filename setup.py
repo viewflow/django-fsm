@@ -6,12 +6,14 @@ except IOError:
     long_description = ''
 
 setup(
-    name='django-fsm',
+    name='django-fsa',
     version='2.7.0',
-    description='Django friendly finite state machine support.',
-    author='Mikhail Podgurskiy',
-    author_email='kmmbvnr@gmail.com',
-    url='http://github.com/kmmbvnr/django-fsm',
+    description='Django friendly finite state machine support, forked from django-fsm',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    author='Antoine Fontaine',
+    author_email='antoine.fontaine@gmail.com',
+    url='http://github.com/mdziwny/django-fsm',
     keywords="django",
     packages=['django_fsm', 'django_fsm.management', 'django_fsm.management.commands'],
     include_package_data=True,

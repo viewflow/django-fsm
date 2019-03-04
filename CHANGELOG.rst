@@ -1,7 +1,7 @@
 Changelog
 =========
 
-django-fsm 2.6.1 2018-12-14
+django-fsm 2.7.0 2018-12-14
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Fix the travis tests
