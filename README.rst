@@ -5,7 +5,7 @@ This is a friendly fork which aims to ensure that the tests are passing with
 the new python and django versions, the original django-fsm was written by
 Mikhail Podgurskiy (kmmbvnr@gmail.com), https://github.com/viewflow/django-fsm
 
-|Build Status|
+|Build Status| |Pypi Status|
 
 django-fsm adds simple declarative states management for django models.
 
@@ -436,4 +436,6 @@ django-fsm 2.7.1 2019-03-04
 
 
 .. |Build Status| image:: https://travis-ci.org/MDziwny/django-fsm.svg?branch=develop
-   :target: https://travis-ci.org/MDziwny/django-fsm.svg
+   :target: https://travis-ci.org/MDziwny/django-fsm
+.. |Pypi Status| image:: https://badge.fury.io/py/django-fsa.svg
+   :target: https://badge.fury.io/py/django-fsa
