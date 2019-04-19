@@ -411,11 +411,12 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
-django-fsm 2.6.0 2017-06-08
+django-fsm 2.6.1 2019-04-19
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Fix django 1.11 compatibility
-- Fix TypeError in `graph_transitions` command when using django's lazy translations
+- Update pypi classifiers to latest django/python supported versions
+- Several fixes for graph_transition command
+
 
 .. |Build Status| image:: https://travis-ci.org/viewflow/django-fsm.svg?branch=master
    :target: https://travis-ci.org/viewflow/django-fsm

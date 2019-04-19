@@ -1,6 +1,13 @@
 Changelog
 =========
 
+django-fsm 2.6.1 2019-04-19
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Update pypi classifiers to latest django/python supported versions
+- Several fixes for graph_transition command
+
+
 django-fsm 2.6.0 2017-06-08
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
