@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-Empty file, mark package as valid django application
+Empty file to mark package as valid django application.
 """

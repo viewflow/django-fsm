@@ -108,6 +108,7 @@ class FSMKeyFieldTest(TestCase):
         self.model.moderate()
         self.assertEqual(self.model.state, 'moderated')
 
+
 """
 TODO FIX it
 class BlogPostStatus(models.Model):

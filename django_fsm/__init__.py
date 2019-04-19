@@ -311,8 +311,8 @@ class FSMFieldMixin(object):
             'field': meta.field,
             'source': current_state,
             'target': next_state,
-            'method_args' : args,
-            'method_kwargs' : kwargs
+            'method_args': args,
+            'method_kwargs': kwargs
         }
 
         pre_transition.send(**signal_kwargs)
@@ -492,7 +492,7 @@ class ConcurrentTransitionMixin(object):
 
 def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}):
     """
-    Method decorator for mark allowed transitions
+    Method decorator to mark allowed transitions.
 
     Set target to None if current state needs to be validated and
     has not changed after the function call

@@ -186,7 +186,6 @@ class TestFieldTransitionsInspect(TestCase):
                         ('+', 'blocked')])
         self.assertEqual(actual, expected)
 
-    
     def test_available_conditions_from_blocked(self):
         self.model.block()
         transitions = self.model.get_available_state_transitions()
@@ -194,7 +193,6 @@ class TestFieldTransitionsInspect(TestCase):
         expected = set([('*', 'moderated'),
                         ('*', '')])
         self.assertEqual(actual, expected)
-        
 
     def test_available_conditions_from_empty(self):
         self.model.empty()
@@ -204,11 +202,10 @@ class TestFieldTransitionsInspect(TestCase):
                         ('*', ''),
                         ('+', 'blocked')])
         self.assertEqual(actual, expected)
-        
 
     def test_all_conditions(self):
         transitions = self.model.get_all_state_transitions()
-        
+
         actual = set((transition.source, transition.target) for transition in transitions)
         expected = set([('*', 'moderated'),
                         ('new', 'published'),
