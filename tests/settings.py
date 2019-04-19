@@ -1,3 +1,5 @@
+import django
+
 PROJECT_APPS = ('django_fsm', 'testapp',)
 
 INSTALLED_APPS = (
@@ -19,5 +21,22 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
     }
 }
+
+if django.VERSION < (1, 9):
+    class DisableMigrations(object):
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return 'notmigrations'
+
+    MIGRATION_MODULES = DisableMigrations()
+else:
+    MIGRATION_MODULES = {
+    'auth': None,
+    'contenttypes': None,
+    'guardian': None,
+}
+
 
 ANONYMOUS_USER_ID = 0

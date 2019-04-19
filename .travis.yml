@@ -1,15 +1,15 @@
+dist: xenial
 language: python
 sudo: false
+cache: pip
 
 python:
-  - 2.6
   - 2.7
-  - 3.3
-  - 3.4
-  - 3.5
-
+  - 3.6
+  - 3.7
+  
 install:
-    - pip install tox
+    - pip install tox tox-travis
 
 script:
     - tox --skip-missing-interpreters
