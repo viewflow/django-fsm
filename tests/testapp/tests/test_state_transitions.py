@@ -1,52 +1,6 @@
-from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition
 
-
-class Insect(models.Model):
-    class STATE:
-        CATERPILLAR = 'CTR'
-        BUTTERFLY = 'BTF'
-
-    STATE_CHOICES = ((STATE.CATERPILLAR, 'Caterpillar', 'Caterpillar'),
-                     (STATE.BUTTERFLY, 'Butterfly', 'Butterfly'))
-
-    state = FSMField(default=STATE.CATERPILLAR, state_choices=STATE_CHOICES)
-
-    @transition(field=state, source=STATE.CATERPILLAR, target=STATE.BUTTERFLY)
-    def cocoon(self):
-        pass
-
-    def fly(self):
-        raise NotImplementedError
-
-    def crawl(self):
-        raise NotImplementedError
-
-    class Meta:
-        app_label = 'testapp'
-
-
-class Caterpillar(Insect):
-    def crawl(self):
-        """
-        Do crawl
-        """
-
-    class Meta:
-        app_label = 'testapp'
-        proxy = True
-
-
-class Butterfly(Insect):
-    def fly(self):
-        """
-        Do fly
-        """
-
-    class Meta:
-        app_label = 'testapp'
-        proxy = True
+from testapp.models import Insect, Caterpillar, Butterfly
 
 
 class TestStateProxy(TestCase):

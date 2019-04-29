@@ -6,8 +6,9 @@ python:
 - '3.5'
 - '3.6'
 - '3.7'
+- '3.8-dev'
 install:
-- pip install tox==3.6.0 tox-travis==0.11
+- pip install tox==3.9.0 tox-travis==0.12
 script:
 - tox
 deploy:

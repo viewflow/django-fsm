@@ -1,21 +1,7 @@
-from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition, can_proceed
 
-
-class TestExceptTargetTransitionShortcut(models.Model):
-    state = FSMField(default='new')
-
-    @transition(field=state, source='new', target='published')
-    def publish(self):
-        pass
-
-    @transition(field=state, source='+', target='removed')
-    def remove(self):
-        pass
-
-    class Meta:
-        app_label = 'testapp'
+from django_fsm import can_proceed
+from testapp.models import TestExceptTargetTransitionShortcut
 
 
 class Test(TestCase):

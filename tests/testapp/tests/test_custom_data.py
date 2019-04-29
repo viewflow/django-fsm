@@ -1,28 +1,6 @@
-from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition
 
-
-class BlogPostWithCustomData(models.Model):
-    state = FSMField(default='new')
-
-    @transition(field=state, source='new', target='published', conditions=[],
-                custom={'label': 'Publish', 'type': '*'})
-    def publish(self):
-        pass
-
-    @transition(field=state, source='published', target='destroyed',
-                custom=dict(label="Destroy", type='manual'))
-    def destroy(self):
-        pass
-
-    @transition(field=state, source='published', target='review',
-                custom=dict(label="Periodic review", type='automated'))
-    def review(self):
-        pass
-
-    class Meta:
-        app_label = 'testapp'
+from testapp.models import BlogPostWithCustomData
 
 
 class CustomTransitionDataTest(TestCase):

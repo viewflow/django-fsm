@@ -1,23 +1,6 @@
-from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition
 
-
-class WorkflowMixin(object):
-    @transition(field='state', source="*", target='draft')
-    def draft(self):
-        pass
-
-    @transition(field='state', source="draft", target='published')
-    def publish(self):
-        pass
-
-    class Meta:
-        app_label = 'testapp'
-
-
-class MixinSupportTestModel(WorkflowMixin, models.Model):
-    state = FSMField(default="new")
+from testapp.models import MixinSupportTestModel
 
 
 class Test(TestCase):

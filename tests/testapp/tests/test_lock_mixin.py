@@ -1,34 +1,7 @@
-from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, ConcurrentTransitionMixin, ConcurrentTransition, transition
 
-
-class LockedBlogPost(ConcurrentTransitionMixin, models.Model):
-    state = FSMField(default='new', protected=True)
-    text = models.CharField(max_length=50)
-
-    @transition(field=state, source='new', target='published')
-    def publish(self):
-        pass
-
-    @transition(field=state, source='published', target='removed')
-    def remove(self):
-        pass
-
-    class Meta:
-        app_label = 'testapp'
-
-
-class ExtendedBlogPost(LockedBlogPost):
-    review_state = FSMField(default='waiting', protected=True)
-    notes = models.CharField(max_length=50)
-
-    @transition(field=review_state, source='waiting', target='rejected')
-    def reject(self):
-        pass
-
-    class Meta:
-        app_label = 'testapp'
+from django_fsm import ConcurrentTransition
+from testapp.models import LockedBlogPost, ExtendedBlogPost
 
 
 class TestLockMixin(TestCase):

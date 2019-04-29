@@ -7,7 +7,7 @@ except IOError:
 
 setup(
     name='django-fsa',
-    version='2.7.1',
+    version='2.7.2',
     description='Django friendly finite state machine support, forked from django-fsm',
     long_description=long_description,
     long_description_content_type="text/x-rst",
@@ -29,6 +29,9 @@ setup(
         'Operating System :: OS Independent',
         "Framework :: Django",
         "Framework :: Django :: 1.11",
+        "Framework :: Django :: 2.0",
+        "Framework :: Django :: 2.1",
+        "Framework :: Django :: 2.2",
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
@@ -36,7 +39,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Framework :: Django',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ]
 )

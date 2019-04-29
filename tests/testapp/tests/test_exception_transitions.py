@@ -1,23 +1,8 @@
-from django.db import models
 from django.test import TestCase
 
-from django_fsm import FSMField, transition, can_proceed
+from django_fsm import can_proceed
 from django_fsm.signals import post_transition
-
-
-class ExceptionalBlogPost(models.Model):
-    state = FSMField(default='new')
-
-    @transition(field=state, source='new', target='published', on_error='crashed')
-    def publish(self):
-        raise Exception('Upss')
-
-    @transition(field=state, source='new', target='deleted')
-    def delete(self):
-        raise Exception('Upss')
-
-    class Meta:
-        app_label = 'testapp'
+from testapp.models import ExceptionalBlogPost
 
 
 class FSMFieldExceptionTest(TestCase):
