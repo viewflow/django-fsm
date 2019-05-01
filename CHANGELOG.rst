@@ -1,6 +1,13 @@
 Changelog
 =========
 
+django-fsm 2.7.2 2019-05-01
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add compatibility test with python 3.8
+- Add compatibility test with Django 2.2
+  - Refactor the models in tests, a migration 
+
 django-fsm 2.7.1 2019-03-04
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
