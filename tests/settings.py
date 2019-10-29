@@ -5,7 +5,6 @@ PROJECT_APPS = (
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
-    'guardian',
 ) + PROJECT_APPS
 SECRET_KEY = 'nokey'
 MIDDLEWARE_CLASSES = ()

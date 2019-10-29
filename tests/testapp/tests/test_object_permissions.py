@@ -1,15 +1,13 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.test import TestCase
 from django.test.utils import override_settings
-from guardian.shortcuts import assign_perm
 
 from django_fsm import has_transition_perm
 from testapp.models import ObjectPermissionTestModel
 
 
 @override_settings(
-    AUTHENTICATION_BACKENDS=('django.contrib.auth.backends.ModelBackend',
-                             'guardian.backends.ObjectPermissionBackend'))
+    AUTHENTICATION_BACKENDS=('django.contrib.auth.backends.ModelBackend',))
 class ObjectPermissionFSMFieldTest(TestCase):
     def setUp(self):
         super(ObjectPermissionFSMFieldTest, self).setUp()
@@ -17,7 +15,10 @@ class ObjectPermissionFSMFieldTest(TestCase):
 
         self.unprivileged = User.objects.create(username='unpriviledged')
         self.privileged = User.objects.create(username='object_only_privileged')
-        assign_perm('can_publish_objectpermissiontestmodel', self.privileged, self.model)
+        permission = Permission.objects.get(
+            codename='can_publish_objectpermissiontestmodel',
+        )
+        self.privileged.user_permissions.add(permission)
 
     def test_object_only_access_success(self):
         self.assertTrue(has_transition_perm(self.model.publish, self.privileged))

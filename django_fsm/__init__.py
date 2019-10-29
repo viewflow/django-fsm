@@ -3,12 +3,16 @@
 State tracking functionality for django models
 """
 import inspect
+import six
 import sys
 from functools import wraps
+if six.PY2:
+    from django.utils.functional import curry as partialmethod
+else:
+    from functools import partialmethod
 
 from django.db import models
 from django.db.models.signals import class_prepared
-from django.utils.functional import curry
 from django_fsm.signals import pre_transition, post_transition
 
 try:
@@ -361,11 +365,11 @@ class FSMFieldMixin(object):
         super(FSMFieldMixin, self).contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, 'get_all_{0}_transitions'.format(self.name),
-                curry(get_all_FIELD_transitions, field=self))
+                partialmethod(get_all_FIELD_transitions, field=self))
         setattr(cls, 'get_available_{0}_transitions'.format(self.name),
-                curry(get_available_FIELD_transitions, field=self))
+                partialmethod(get_available_FIELD_transitions, field=self))
         setattr(cls, 'get_available_user_{0}_transitions'.format(self.name),
-                curry(get_available_user_FIELD_transitions, field=self))
+                partialmethod(get_available_user_FIELD_transitions, field=self))
 
         class_prepared.connect(self._collect_transitions)
 
