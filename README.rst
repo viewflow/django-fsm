@@ -411,12 +411,11 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
-django-fsm 2.6.1 2019-04-19
+django-fsm 2.7.0 2019-12-03
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Update pypi classifiers to latest django/python supported versions
-- Several fixes for graph_transition command
-
+- Django 3.0 support
+- Test on Python 3.8
 
 .. |Build Status| image:: https://travis-ci.org/viewflow/django-fsm.svg?branch=master
    :target: https://travis-ci.org/viewflow/django-fsm
