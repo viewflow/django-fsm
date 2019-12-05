@@ -234,12 +234,12 @@ True if the user can perform the transition.
 
 .. code:: python
 
-    @transition(field=state, source='*', target='publish',
+    @transition(field=state, source='*', target='published',
                 permission=lambda instance, user: not user.has_perm('myapp.can_make_mistakes'))
     def publish(self):
         pass
 
-    @transition(field=state, source='*', target='publish',
+    @transition(field=state, source='*', target='removed',
                 permission='myapp.can_remove_post')
     def remove(self):
         pass
