@@ -180,7 +180,16 @@ You can use ``+`` for ``source`` to allow switching to ``target`` from any state
             lambda self, allowed: 'published' if allowed else 'rejected',
             states=['published', 'rejected']))
     def moderate(self, allowed):
-        self.allowed=allowed
+        pass
+
+    @transition(
+        field=state,
+        source='for_moderators',
+        target=GET_STATE(
+            lambda self, **kwargs: 'published' if kwargs.get("allowed", True) else 'rejected',
+            states=['published', 'rejected']))
+    def moderate(self, allowed=True):
+        pass
 
 
 ``custom`` properties
