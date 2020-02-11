@@ -28,8 +28,9 @@ except ImportError:
 
 __all__ = ['TransitionNotAllowed', 'ConcurrentTransition',
            'FSMFieldMixin', 'FSMField', 'FSMIntegerField',
-           'FSMKeyField', 'ConcurrentTransitionMixin', 'transition',
-           'can_proceed', 'has_transition_perm']
+           'FSMKeyField', 'ConcurrentTransitionMixin', 
+           'transition', 'can_proceed', 'has_transition_perm', 
+           'GET_STATE', 'RETURN_VALUE']
 
 if sys.version_info[:2] == (2, 6):
     # Backport of Python 2.7 inspect.getmembers,
