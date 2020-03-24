@@ -25,7 +25,7 @@ django admin.
 
 https://github.com/gadventures/django-fsm-admin
 
-Transition logging support could be achived with help of django-fsm-log
+Transition logging support could be achieved with help of django-fsm-log
 package
 
 https://github.com/gizmag/django-fsm-log
