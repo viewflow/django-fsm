@@ -62,15 +62,15 @@ def generate_dot(fields_data):
                 else:
                     source_name_pair = ((transition.source, node_name(field, transition.source)),)
                 for source, source_name in source_name_pair:
+                    if transition.on_error:
+                        on_error_name = node_name(field, transition.on_error)
+                        targets.add(
+                            (on_error_name, node_label(field, transition.on_error))
+                        )
+                        edges.add((source_name, on_error_name, (('style', 'dotted'),)))
                     for target in _targets:
                         add_transition(source, target, transition.name,
                                        source_name, field, sources, targets, edges)
-            if transition.on_error:
-                on_error_name = node_name(field, transition.on_error)
-                targets.add(
-                    (on_error_name, node_label(field, transition.on_error))
-                )
-                edges.add((source_name, on_error_name, (('style', 'dotted'),)))
 
         for target, name in any_targets:
             target_name = node_name(field, target)
