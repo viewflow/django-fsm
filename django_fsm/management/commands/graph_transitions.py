@@ -1,6 +1,7 @@
 # -*- coding: utf-8; mode: django -*-
 import graphviz
 from optparse import make_option
+from itertools import chain
 
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_text
@@ -71,18 +72,21 @@ def generate_dot(fields_data):
                         add_transition(source, target, transition.name,
                                        source_name, field, sources, targets, edges)
 
+        targets.update(set((node_name(field, target), node_label(field, target)
+                            for target, _ in chain(any_targets, any_except_targets))))
         for target, name in any_targets:
             target_name = node_name(field, target)
-            targets.add((target_name, node_label(field, target)))
-            for source_name, label in sources:
+            all_nodes = soruces | targets
+            for source_name, label in all_nodes:
+                sources.add((source_name, label))
                 edges.add((source_name, target_name, (('label', name),)))
 
         for target, name in any_except_targets:
             target_name = node_name(field, target)
-            targets.add((target_name, node_label(field, target)))
-            for source_name, label in sources:
-                if target_name == source_name:
-                    continue
+            all_nodes = soruces | targets
+            all_nodes.remove(((target_name, node_label(field, target))))
+            for source_name, label in all_nodes:
+                sources.add((source_name, label))
                 edges.add((source_name, target_name, (('label', name),)))
 
         # construct subgraph
