@@ -333,10 +333,16 @@ class FSMFieldMixin(object):
                 self.set_proxy(instance, next_state)
                 self.set_state(instance, next_state)
         except Exception as exc:
+            """
+            Check exception state if present and trigger instance save to
+            ensure the state is properly saved since an exception was raised.
+            Note: The save method under transition calls are not reached incase of an exception.
+            """
             exception_state = meta.exception_state(current_state)
             if exception_state:
                 self.set_proxy(instance, exception_state)
                 self.set_state(instance, exception_state)
+                instance.save()
                 signal_kwargs['target'] = exception_state
                 signal_kwargs['exception'] = exc
                 post_transition.send(**signal_kwargs)
