@@ -155,7 +155,11 @@ class FSMMeta(object):
             transition = self.transitions.get('+', None)
         return transition
 
-    def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}):
+    def add_transition(self, method, source, target, on_error=None, conditions=None, permission=None, custom=None):
+        if conditions is None:
+            conditions = []
+        if custom is None:
+            custom = {}
         if source in self.transitions:
             raise AssertionError('Duplicate transition for {0} state'.format(source))
 
@@ -463,7 +467,7 @@ class ConcurrentTransitionMixin(object):
         filter_on = filter(lambda field: field.model == base_qs.model, self.state_fields)
 
         # state filter will be used to narrow down the standard filter checking only PK
-        state_filter = dict((field.attname, self.__initial_states[field.attname]) for field in filter_on)
+        state_filter = {field.attname: self.__initial_states[field.attname] for field in filter_on}
 
         updated = super(ConcurrentTransitionMixin, self)._do_update(
             base_qs=base_qs.filter(**state_filter),
@@ -486,22 +490,24 @@ class ConcurrentTransitionMixin(object):
         return updated
 
     def _update_initial_state(self):
-        self.__initial_states = dict(
-            (field.attname, field.value_from_object(self)) for field in self.state_fields
-        )
+        self.__initial_states = {field.attname: field.value_from_object(self) for field in self.state_fields}
 
     def save(self, *args, **kwargs):
         super(ConcurrentTransitionMixin, self).save(*args, **kwargs)
         self._update_initial_state()
 
 
-def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}):
+def transition(field, source='*', target=None, on_error=None, conditions=None, permission=None, custom=None):
     """
     Method decorator to mark allowed transitions.
 
     Set target to None if current state needs to be validated and
     has not changed after the function call.
     """
+    if conditions is None:
+        conditions = []
+    if custom is None:
+        custom = {}
     def inner_transition(func):
         wrapper_installed, fsm_meta = True, getattr(func, '_django_fsm', None)
         if not fsm_meta:
