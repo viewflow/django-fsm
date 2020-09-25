@@ -14,3 +14,7 @@ install:
 
 script:
     - tox --skip-missing-interpreters
+
+arch:
+  - amd64
+  - ppc64le
