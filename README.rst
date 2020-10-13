@@ -411,11 +411,11 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
-django-fsm 2.7.0 2019-12-03
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Django 3.0 support
-- Test on Python 3.8
+django-fsm 2.7.1 2020-10-13
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix warnings on Django 3.1+
 
 .. |Build Status| image:: https://travis-ci.org/viewflow/django-fsm.svg?branch=master
    :target: https://travis-ci.org/viewflow/django-fsm
