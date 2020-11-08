@@ -1,7 +1,10 @@
+import unittest
+
+import django
 from django.db import models
 from django.test import TestCase
 
-from django_fsm import FSMField, transition
+from django_fsm import FSMField, FSMModelMixin, transition
 
 
 class ProtectedAccessModel(models.Model):
@@ -13,6 +16,10 @@ class ProtectedAccessModel(models.Model):
 
     class Meta:
         app_label = 'django_fsm'
+
+
+class RefreshableModel(FSMModelMixin, ProtectedAccessModel):
+    pass
 
 
 class TestDirectAccessModels(TestCase):
@@ -28,3 +35,10 @@ class TestDirectAccessModels(TestCase):
         instance.publish()
         instance.save()
         self.assertEqual(instance.status, 'published')
+
+    @unittest.skipIf(django.VERSION < (1, 8), "Django introduced refresh_from_db in 1.8")
+    def test_refresh_from_db(self):
+        instance = RefreshableModel()
+        instance.save()
+
+        instance.refresh_from_db()
