@@ -32,8 +32,9 @@ def node_name(field, state):
     opts = field.model._meta
     return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(' ', '_'), field.name, state)
 
+
 def node_label(field, state):
-    if isinstance(state, int):
+    if type(state) == int or (type(state) == bool and hasattr(field, 'choices'):
         return force_text(dict(field.choices).get(state))
     else:
         return state
