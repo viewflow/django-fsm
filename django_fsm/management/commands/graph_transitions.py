@@ -1,6 +1,7 @@
 # -*- coding: utf-8; mode: django -*-
 import graphviz
 from optparse import make_option
+from itertools import chain
 
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_text
@@ -32,8 +33,9 @@ def node_name(field, state):
     opts = field.model._meta
     return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(' ', '_'), field.name, state)
 
+
 def node_label(field, state):
-    if isinstance(state, int):
+    if type(state) == int or (type(state) == bool and hasattr(field, 'choices'):
         return force_text(dict(field.choices).get(state))
     else:
         return state
@@ -52,35 +54,40 @@ def generate_dot(fields_data):
             elif transition.source == '+':
                 any_except_targets.add((transition.target, transition.name))
             else:
-                source_name = node_name(field, transition.source)
-                if transition.target is not None:
-                    if isinstance(transition.target, GET_STATE) or isinstance(transition.target, RETURN_VALUE):
-                        if transition.target.allowed_states:
-                            for transition_target_index, transition_target in enumerate(transition.target.allowed_states):
-                                add_transition(transition.source, transition_target, transition.name,
-                                               source_name, field, sources, targets, edges)
-                    else:
-                        add_transition(transition.source, transition.target, transition.name,
+                _targets =\
+                    (state for state in transition.target.allowed_states)\
+                    if isinstance(transition.target, (GET_STATE, RETURN_VALUE))\
+                    else (transition.target,)
+                source_name_pair =\
+                    ((state, node_name(field, state)) for state in transition.source.allowed_states)\
+                    if isinstance(transition.source, (GET_STATE, RETURN_VALUE))\
+                    else ((transition.source, node_name(field, transition.source)),)
+                for source, source_name in source_name_pair:
+                    if transition.on_error:
+                        on_error_name = node_name(field, transition.on_error)
+                        targets.add(
+                            (on_error_name, node_label(field, transition.on_error))
+                        )
+                        edges.add((source_name, on_error_name, (('style', 'dotted'),)))
+                    for target in _targets:
+                        add_transition(source, target, transition.name,
                                        source_name, field, sources, targets, edges)
-            if transition.on_error:
-                on_error_name = node_name(field, transition.on_error)
-                targets.add(
-                    (on_error_name, node_label(field, transition.on_error))
-                )
-                edges.add((source_name, on_error_name, (('style', 'dotted'),)))
 
+        targets.update(set((node_name(field, target), node_label(field, target)
+                            for target, _ in chain(any_targets, any_except_targets))))
         for target, name in any_targets:
             target_name = node_name(field, target)
-            targets.add((target_name, node_label(field, target)))
-            for source_name, label in sources:
+            all_nodes = soruces | targets
+            for source_name, label in all_nodes:
+                sources.add((source_name, label))
                 edges.add((source_name, target_name, (('label', name),)))
 
         for target, name in any_except_targets:
             target_name = node_name(field, target)
-            targets.add((target_name, node_label(field, target)))
-            for source_name, label in sources:
-                if target_name == source_name:
-                    continue
+            all_nodes = soruces | targets
+            all_nodes.remove(((target_name, node_label(field, target))))
+            for source_name, label in all_nodes:
+                sources.add((source_name, label))
                 edges.add((source_name, target_name, (('label', name),)))
 
         # construct subgraph

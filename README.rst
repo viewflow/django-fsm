@@ -74,9 +74,7 @@ Use the ``transition`` decorator to annotate model methods
         The return value will be discarded.
         """
 
-``source`` parameter accepts a list of states, or an individual state.
-You can use ``*`` for source to allow switching to ``target`` from any
-state. The ``field`` parameter accepts both a string attribute name or an
+The ``field`` parameter accepts both a string attribute name or an
 actual field instance.
 
 If calling publish() succeeds without raising an exception, the state
@@ -152,10 +150,19 @@ Note that calling
 `refresh_from_db <https://docs.djangoproject.com/en/1.8/ref/models/instances/#django.db.models.Model.refresh_from_db>`_
 on a model instance with a protected FSMField will cause an exception.
 
-`target`
-~~~~~~~~
+``source`` state
+~~~~~~~~~~~~~~~~
 
-`target` state parameter could point to a specific state or `django_fsm.State` implementation
+``source`` parameter accepts a list of states, or an individual state or ``django_fsm.State`` implementation.
+
+You can use ``*`` for ``source`` to allow switching to ``target`` from any state. 
+
+You can use ``+`` for ``source`` to allow switching to ``target`` from any state exluding ``target`` state.
+
+``target`` state
+~~~~~~~~~~~~~~~~
+
+``target`` state parameter could point to a specific state or ``django_fsm.State`` implementation
 
 .. code:: python
           
@@ -173,7 +180,16 @@ on a model instance with a protected FSMField will cause an exception.
             lambda self, allowed: 'published' if allowed else 'rejected',
             states=['published', 'rejected']))
     def moderate(self, allowed):
-        self.allowed=allowed
+        pass
+
+    @transition(
+        field=state,
+        source='for_moderators',
+        target=GET_STATE(
+            lambda self, **kwargs: 'published' if kwargs.get("allowed", True) else 'rejected',
+            states=['published', 'rejected']))
+    def moderate(self, allowed=True):
+        pass
 
 
 ``custom`` properties
@@ -234,12 +250,12 @@ True if the user can perform the transition.
 
 .. code:: python
 
-    @transition(field=state, source='*', target='publish',
+    @transition(field=state, source='*', target='published',
                 permission=lambda instance, user: not user.has_perm('myapp.can_make_mistakes'))
     def publish(self):
         pass
 
-    @transition(field=state, source='*', target='publish',
+    @transition(field=state, source='*', target='removed',
                 permission='myapp.can_remove_post')
     def remove(self):
         pass
