@@ -242,6 +242,14 @@ class FSMFieldDescriptor(object):
         self.field.set_state(instance, value)
 
 
+class FSMForwardRelatedAccessor(FSMFieldDescriptor):
+    def __set__(self, instance, value):
+        if self.field.protected and self.field.attname in instance.__dict__:
+            raise AttributeError('Direct {0} modification is not allowed'.format(self.field.name))
+
+        super(FSMForwardRelatedAccessor).__set__(instance, value)
+
+
 class FSMFieldMixin(object):
     descriptor_class = FSMFieldDescriptor
 
@@ -434,6 +442,8 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
     """
     State Machine support for Django model
     """
+    forward_related_accessor_class = FSMForwardRelatedAccessor
+
     def get_state(self, instance):
         return instance.__dict__[self.attname]
 
