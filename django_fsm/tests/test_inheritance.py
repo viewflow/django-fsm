@@ -21,6 +21,23 @@ class InheritedModel(BaseModel):
         proxy = True
 
 
+class AbstractBaseModel(models.Model):
+    state = FSMField(default='new')
+
+    class Meta:
+        abstract = True
+
+    @transition(field=state, source='new', target='published')
+    def publish(self):
+        pass
+
+
+class AbstractInheritedModel(AbstractBaseModel):
+    @transition(field='state', source='published', target='sticked')
+    def stick(self):
+        pass
+
+
 class TestinheritedModel(TestCase):
     def setUp(self):
         self.model = InheritedModel()
@@ -50,3 +67,9 @@ class TestinheritedModel(TestCase):
         self.assertEqual(set([('new', 'published'),
                               ('published', 'sticked')]),
                          set((data.source, data.target) for data in transitions))
+
+
+class TestAbstractInheritedModel(TestinheritedModel):
+    def setUp(self):
+        self.model = AbstractInheritedModel()
+
