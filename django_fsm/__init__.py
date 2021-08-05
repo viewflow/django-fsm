@@ -405,7 +405,9 @@ class FSMFieldMixin(object):
                 and hasattr(attr, '_django_fsm') \
                 and (attr._django_fsm.field in [self, self.name] or \
                      (issubclass(self.model, attr._django_fsm.field.model) and\
-                      attr._django_fsm.field.name == self.name))
+                      attr._django_fsm.field.name == self.name and \
+                      attr._django_fsm.field.creation_counter == self.creation_counter))
+
 
         sender_transitions = {}
         transitions = inspect.getmembers(sender, predicate=is_field_transition_method)
