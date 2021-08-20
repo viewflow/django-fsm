@@ -403,8 +403,8 @@ class FSMFieldMixin(object):
         def is_field_transition_method(attr):
             return (inspect.ismethod(attr) or inspect.isfunction(attr)) \
                 and hasattr(attr, '_django_fsm') \
-                and attr._django_fsm.field in [self, self.name] \
-                or attr._django_fsm.field.creation_counter == self.creation_counter
+                and (attr._django_fsm.field in [self, self.name]
+                    or attr._django_fsm.field.creation_counter == self.creation_counter)
 
 
         sender_transitions = {}
