@@ -315,59 +315,6 @@ class FSMFieldMixin(object):
 
             instance.__class__ = model
 
-    def change_state(self, instance, method, *args, **kwargs):
-        meta = method._django_fsm
-        method_name = method.__name__
-        current_state = self.get_state(instance)
-
-        if not meta.has_transition(current_state):
-            raise TransitionNotAllowed(
-                "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name),
-                object=instance, method=method)
-        if not meta.conditions_met(instance, current_state):
-            raise TransitionNotAllowed(
-                "Transition conditions have not been met for method '{0}'".format(method_name),
-                object=instance, method=method)
-
-        next_state = meta.next_state(current_state)
-
-        signal_kwargs = {
-            'sender': instance.__class__,
-            'instance': instance,
-            'name': method_name,
-            'field': meta.field,
-            'source': current_state,
-            'target': next_state,
-            'method_args': args,
-            'method_kwargs': kwargs
-        }
-
-        pre_transition.send(**signal_kwargs)
-
-        try:
-            result = method(instance, *args, **kwargs)
-            if next_state is not None:
-                if hasattr(next_state, 'get_state'):
-                    next_state = next_state.get_state(
-                        instance, transition, result,
-                        args=args, kwargs=kwargs)
-                    signal_kwargs['target'] = next_state
-                self.set_proxy(instance, next_state)
-                self.set_state(instance, next_state)
-        except Exception as exc:
-            exception_state = meta.exception_state(current_state)
-            if exception_state:
-                self.set_proxy(instance, exception_state)
-                self.set_state(instance, exception_state)
-                signal_kwargs['target'] = exception_state
-                signal_kwargs['exception'] = exc
-                post_transition.send(**signal_kwargs)
-            raise
-        else:
-            post_transition.send(**signal_kwargs)
-
-        return result
-
     def get_all_transitions(self, instance_cls):
         """
         Returns [(source, target, name, method)] for all field transitions
@@ -375,10 +322,9 @@ class FSMFieldMixin(object):
         transitions = self.transitions[instance_cls]
 
         for name, transition in transitions.items():
-            meta = transition._django_fsm
-
-            for transition in meta.transitions.values():
-                yield transition
+            for meta in transition._django_fsm:
+                for transition in meta.transitions.values():
+                    yield transition
 
     def contribute_to_class(self, cls, name, **kwargs):
         self.base_cls = cls
@@ -402,14 +348,15 @@ class FSMFieldMixin(object):
 
         def is_field_transition_method(attr):
             return (inspect.ismethod(attr) or inspect.isfunction(attr)) \
-                and hasattr(attr, '_django_fsm') \
-                and attr._django_fsm.field in [self, self.name]
+                and hasattr(attr, '_django_fsm')
 
         sender_transitions = {}
         transitions = inspect.getmembers(sender, predicate=is_field_transition_method)
         for method_name, method in transitions:
-            method._django_fsm.field = self
-            sender_transitions[method_name] = method
+            for meta in method._django_fsm:
+                if meta.field in (self, self.name):
+                    meta.field = self
+                    sender_transitions[method_name] = method
 
         self.transitions[sender] = sender_transitions
 
@@ -517,6 +464,84 @@ class ConcurrentTransitionMixin(object):
         self._update_initial_state()
 
 
+def change_state(instance, method, *args, **kwargs):
+    method_name = method.__name__
+    state_map = {}
+
+    for meta in method._django_fsm:
+        current_state = meta.field.get_state(instance)
+
+        if not meta.has_transition(current_state):
+            raise TransitionNotAllowed(
+                "Can't switch from state '{0}' using method '{1}' for field '{2}')".format(
+                    current_state, method_name, meta.field.name),
+                object=instance, method=method)
+        if not meta.conditions_met(instance, current_state):
+            raise TransitionNotAllowed(
+                "Transition conditions have not been met for method '{0}' for field '{1}')".format(
+                    method_name, meta.field.name),
+                object=instance, method=method)
+
+        next_state = meta.next_state(current_state)
+
+        state_map[meta] = (current_state, next_state)
+
+        pre_transition.send(
+            sender=instance.__class__,
+            instance=instance,
+            name=method_name,
+            field=meta.field,
+            source=current_state,
+            target=next_state,
+            method_args=args,
+            method_kwargs=kwargs,
+        )
+
+    try:
+        result = method(instance, *args, **kwargs)
+        for meta, (current_state, next_state) in state_map.items():
+            if next_state is not None:
+                if hasattr(next_state, 'get_state'):
+                    next_state = next_state.get_state(
+                        instance, transition, result,
+                        args=args, kwargs=kwargs)
+                meta.field.set_proxy(instance, next_state)
+                meta.field.set_state(instance, next_state)
+    except Exception as exc:
+        for meta, (current_state, next_state) in state_map.items():
+            exception_state = meta.exception_state(current_state)
+            if exception_state:
+                meta.field.set_proxy(instance, exception_state)
+                meta.field.set_state(instance, exception_state)
+
+                post_transition.send(
+                    sender=instance.__class__,
+                    instance=instance,
+                    name=method_name,
+                    field=meta.field,
+                    source=current_state,
+                    target=exception_state,
+                    exception=exc,
+                    method_args=args,
+                    method_kwargs=kwargs,
+                )
+        raise
+    else:
+        for meta, (current_state, next_state) in state_map.items():
+            post_transition.send(
+                sender=instance.__class__,
+                instance=instance,
+                name=method_name,
+                field=meta.field,
+                source=current_state,
+                target=meta.field.get_state(instance),
+                method_args=args,
+                method_kwargs=kwargs,
+            )
+
+    return result
+
+
 def transition(field, source='*', target=None, on_error=None, conditions=[], permission=None, custom={}):
     """
     Method decorator to mark allowed transitions.
@@ -525,21 +550,23 @@ def transition(field, source='*', target=None, on_error=None, conditions=[], per
     has not changed after the function call.
     """
     def inner_transition(func):
-        wrapper_installed, fsm_meta = True, getattr(func, '_django_fsm', None)
-        if not fsm_meta:
-            wrapper_installed = False
-            fsm_meta = FSMMeta(field=field, method=func)
-            setattr(func, '_django_fsm', fsm_meta)
+        wrapper_installed = hasattr(func, '_django_fsm')
+        if not wrapper_installed:
+            setattr(func, '_django_fsm', [])
+
+        meta = FSMMeta(field=field, method=func)
 
         if isinstance(source, (list, tuple, set)):
             for state in source:
-                func._django_fsm.add_transition(func, state, target, on_error, conditions, permission, custom)
+                meta.add_transition(func, state, target, on_error, conditions, permission, custom)
         else:
-            func._django_fsm.add_transition(func, source, target, on_error, conditions, permission, custom)
+            meta.add_transition(func, source, target, on_error, conditions, permission, custom)
+
+        func._django_fsm.append(meta)
 
         @wraps(func)
         def _change_state(instance, *args, **kwargs):
-            return fsm_meta.field.change_state(instance, func, *args, **kwargs)
+            return change_state(instance, func, *args, **kwargs)
 
         if not wrapper_installed:
             return _change_state
@@ -560,12 +587,15 @@ def can_proceed(bound_method, check_conditions=True):
         im_func = getattr(bound_method, 'im_func', getattr(bound_method, '__func__'))
         raise TypeError('%s method is not transition' % im_func.__name__)
 
-    meta = bound_method._django_fsm
-    im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
-    current_state = meta.field.get_state(im_self)
+    for meta in bound_method._django_fsm:
+        im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
+        current_state = meta.field.get_state(im_self)
 
-    return meta.has_transition(current_state) and (
-        not check_conditions or meta.conditions_met(im_self, current_state))
+        if not meta.has_transition(current_state) or (
+           check_conditions and not meta.conditions_met(im_self, current_state)):
+            return False
+
+    return True
 
 
 def has_transition_perm(bound_method, user):
@@ -576,13 +606,16 @@ def has_transition_perm(bound_method, user):
         im_func = getattr(bound_method, 'im_func', getattr(bound_method, '__func__'))
         raise TypeError('%s method is not transition' % im_func.__name__)
 
-    meta = bound_method._django_fsm
-    im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
-    current_state = meta.field.get_state(im_self)
+    for meta in bound_method._django_fsm:
+        im_self = getattr(bound_method, 'im_self', getattr(bound_method, '__self__'))
+        current_state = meta.field.get_state(im_self)
 
-    return (meta.has_transition(current_state) and
-            meta.conditions_met(im_self, current_state) and
-            meta.has_transition_perm(im_self, current_state, user))
+        if (not meta.has_transition(current_state) or
+                not meta.conditions_met(im_self, current_state) or
+                not meta.has_transition_perm(im_self, current_state, user)):
+            return False
+
+    return True
 
 
 class State(object):
