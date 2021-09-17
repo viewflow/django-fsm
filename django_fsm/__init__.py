@@ -502,9 +502,14 @@ def change_state(instance, method, *args, **kwargs):
         for meta, (current_state, next_state) in state_map.items():
             if next_state is not None:
                 if hasattr(next_state, 'get_state'):
-                    next_state = next_state.get_state(
-                        instance, transition, result,
-                        args=args, kwargs=kwargs)
+                    if isinstance(result, dict):
+                        next_state = next_state.get_state(
+                            instance, transition, result[meta.field.name],
+                            args=args, kwargs=kwargs)
+                    else:
+                        next_state = next_state.get_state(
+                            instance, transition, result,
+                            args=args, kwargs=kwargs)
                 meta.field.set_proxy(instance, next_state)
                 meta.field.set_state(instance, next_state)
     except Exception as exc:
