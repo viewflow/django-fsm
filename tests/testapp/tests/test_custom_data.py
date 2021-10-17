@@ -32,7 +32,7 @@ class CustomTransitionDataTest(TestCase):
     def test_initial_state(self):
         self.assertEqual(self.model.state, 'new')
         transitions = list(self.model.get_available_state_transitions())
-        self.assertEquals(len(transitions), 1)
+        self.assertEqual(len(transitions), 1)
         self.assertEqual(transitions[0].target, 'published')
         self.assertDictEqual(transitions[0].custom, {'label': 'Publish', 'type': '*'})
 
