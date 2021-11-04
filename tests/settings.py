@@ -9,7 +9,7 @@ INSTALLED_APPS = (
 ) + PROJECT_APPS
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend', # this is default
+    'django.contrib.auth.backends.ModelBackend',  # this is default
     'guardian.backends.ObjectPermissionBackend',
 )
 
@@ -33,10 +33,12 @@ if django.VERSION < (1, 9):
     MIGRATION_MODULES = DisableMigrations()
 else:
     MIGRATION_MODULES = {
-    'auth': None,
-    'contenttypes': None,
-    'guardian': None,
-}
+        'auth': None,
+        'contenttypes': None,
+        'guardian': None,
+    }
 
 
 ANONYMOUS_USER_ID = 0
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

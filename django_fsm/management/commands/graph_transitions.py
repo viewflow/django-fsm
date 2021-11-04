@@ -35,7 +35,7 @@ def node_name(field, state):
 
 
 def node_label(field, state):
-    if type(state) == int or (type(state) == bool and hasattr(field, 'choices'):
+    if type(state) == int or (type(state) == bool and hasattr(field, 'choices')):
         return force_text(dict(field.choices).get(state))
     else:
         return state
@@ -73,18 +73,18 @@ def generate_dot(fields_data):
                         add_transition(source, target, transition.name,
                                        source_name, field, sources, targets, edges)
 
-        targets.update(set((node_name(field, target), node_label(field, target)
-                            for target, _ in chain(any_targets, any_except_targets))))
+        targets.update(set((node_name(field, target), node_label(field, target))
+                           for target, _ in chain(any_targets, any_except_targets)))
         for target, name in any_targets:
             target_name = node_name(field, target)
-            all_nodes = soruces | targets
+            all_nodes = sources | targets
             for source_name, label in all_nodes:
                 sources.add((source_name, label))
                 edges.add((source_name, target_name, (('label', name),)))
 
         for target, name in any_except_targets:
             target_name = node_name(field, target)
-            all_nodes = soruces | targets
+            all_nodes = sources | targets
             all_nodes.remove(((target_name, node_label(field, target))))
             for source_name, label in all_nodes:
                 sources.add((source_name, label))

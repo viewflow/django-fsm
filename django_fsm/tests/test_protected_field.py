@@ -15,7 +15,17 @@ class ProtectedAccessModel(models.Model):
         app_label = 'django_fsm'
 
 
+class MultiProtectedAccessModel(models.Model):
+    status1 = FSMField(default='new', protected=True)
+    status2 = FSMField(default='new', protected=True)
+
+
 class TestDirectAccessModels(TestCase):
+    def test_multi_protected_field_create(self):
+        obj = MultiProtectedAccessModel.objects.create()
+        self.assertEqual(obj.status1, 'new')
+        self.assertEqual(obj.status2, 'new')
+
     def test_no_direct_access(self):
         instance = ProtectedAccessModel()
         self.assertEqual(instance.status, 'new')
