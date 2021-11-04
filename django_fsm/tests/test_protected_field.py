@@ -19,6 +19,9 @@ class MultiProtectedAccessModel(models.Model):
     status1 = FSMField(default='new', protected=True)
     status2 = FSMField(default='new', protected=True)
 
+    class Meta:
+        app_label = 'django_fsm'
+
 
 class TestDirectAccessModels(TestCase):
     def test_multi_protected_field_create(self):

@@ -8,6 +8,7 @@ from functools import wraps
 
 import django
 from django.db import models
+from django.db.models import Field
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.signals import class_prepared
 from django_fsm.signals import pre_transition, post_transition
@@ -403,7 +404,14 @@ class FSMFieldMixin(object):
         def is_field_transition_method(attr):
             return (inspect.ismethod(attr) or inspect.isfunction(attr)) \
                 and hasattr(attr, '_django_fsm') \
-                and attr._django_fsm.field in [self, self.name]
+                and (
+                    attr._django_fsm.field in [self, self.name]
+                    or (
+                        isinstance(attr._django_fsm.field, Field)
+                        and issubclass(self.model, attr._django_fsm.field.model)
+                        and attr._django_fsm.field.name == self.name
+                        and attr._django_fsm.field.creation_counter == self.creation_counter
+                    ))
 
         sender_transitions = {}
         transitions = inspect.getmembers(sender, predicate=is_field_transition_method)
