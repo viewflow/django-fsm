@@ -48,6 +48,8 @@ class TestLockMixin(TestCase):
         post = LockedBlogPost.objects.get(pk=post.pk)
         self.assertEqual('test_crud_succeed2', post.text)
 
+        post.delete()
+
     def test_save_and_change_succeed(self):
         post = LockedBlogPost(text='test_crud_succeed')
         post.publish()
@@ -55,6 +57,8 @@ class TestLockMixin(TestCase):
 
         post.remove()
         post.save()
+
+        post.delete()
 
     def test_concurent_modifications_raise_exception(self):
         post1 = LockedBlogPost.objects.create()
