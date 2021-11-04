@@ -4,7 +4,7 @@ from django_fsm import FSMField, ConcurrentTransitionMixin, ConcurrentTransition
 
 
 class LockedBlogPost(ConcurrentTransitionMixin, models.Model):
-    state = FSMField(default='new', protected=True)
+    state = FSMField(default='new')
     text = models.CharField(max_length=50)
 
     @transition(field=state, source='new', target='published')
@@ -60,7 +60,7 @@ class TestLockMixin(TestCase):
 
         post.delete()
 
-    def test_concurent_modifications_raise_exception(self):
+    def test_concurrent_modifications_raise_exception(self):
         post1 = LockedBlogPost.objects.create()
         post2 = LockedBlogPost.objects.get(pk=post1.pk)
 
@@ -86,3 +86,14 @@ class TestLockMixin(TestCase):
         post = ExtendedBlogPost.objects.get(pk=post.pk)
         self.assertEqual('rejected', post.review_state)
         self.assertEqual('test_inheritance_crud_succeed2', post.text)
+
+    def test_concurrent_modifications_after_refresh_db_succeed(self):  # bug 255
+        post1 = LockedBlogPost.objects.create()
+        post2 = LockedBlogPost.objects.get(pk=post1.pk)
+
+        post1.publish()
+        post1.save()
+
+        post2.refresh_from_db()
+        post2.remove()
+        post2.save()

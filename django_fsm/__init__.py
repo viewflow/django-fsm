@@ -512,6 +512,10 @@ class ConcurrentTransitionMixin(object):
             (field.attname, field.value_from_object(self)) for field in self.state_fields
         )
 
+    def refresh_from_db(self, *args, **kwargs):
+        super(ConcurrentTransitionMixin, self).refresh_from_db(*args, **kwargs)
+        self._update_initial_state()
+    
     def save(self, *args, **kwargs):
         super(ConcurrentTransitionMixin, self).save(*args, **kwargs)
         self._update_initial_state()
