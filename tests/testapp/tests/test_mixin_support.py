@@ -4,16 +4,16 @@ from django_fsm import FSMField, transition
 
 
 class WorkflowMixin(object):
-    @transition(field='state', source="*", target='draft')
+    @transition(field="state", source="*", target="draft")
     def draft(self):
         pass
 
-    @transition(field='state', source="draft", target='published')
+    @transition(field="state", source="draft", target="published")
     def publish(self):
         pass
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
 
 
 class MixinSupportTestModel(WorkflowMixin, models.Model):
@@ -25,7 +25,7 @@ class Test(TestCase):
         model = MixinSupportTestModel()
 
         model.draft()
-        self.assertEqual(model.state, 'draft')
+        self.assertEqual(model.state, "draft")
 
         model.publish()
-        self.assertEqual(model.state, 'published')
+        self.assertEqual(model.state, "published")

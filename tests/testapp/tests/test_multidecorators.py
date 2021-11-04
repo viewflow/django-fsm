@@ -16,7 +16,7 @@ class TestModel(models.Model):
         self.counter += 1
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
 
 
 def count_calls(sender, instance, name, source, target, **kwargs):

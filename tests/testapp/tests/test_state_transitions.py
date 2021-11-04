@@ -5,11 +5,10 @@ from django_fsm import FSMField, transition
 
 class Insect(models.Model):
     class STATE:
-        CATERPILLAR = 'CTR'
-        BUTTERFLY = 'BTF'
+        CATERPILLAR = "CTR"
+        BUTTERFLY = "BTF"
 
-    STATE_CHOICES = ((STATE.CATERPILLAR, 'Caterpillar', 'Caterpillar'),
-                     (STATE.BUTTERFLY, 'Butterfly', 'Butterfly'))
+    STATE_CHOICES = ((STATE.CATERPILLAR, "Caterpillar", "Caterpillar"), (STATE.BUTTERFLY, "Butterfly", "Butterfly"))
 
     state = FSMField(default=STATE.CATERPILLAR, state_choices=STATE_CHOICES)
 
@@ -24,7 +23,7 @@ class Insect(models.Model):
         raise NotImplementedError
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
 
 
 class Caterpillar(Insect):
@@ -34,7 +33,7 @@ class Caterpillar(Insect):
         """
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
         proxy = True
 
 
@@ -45,7 +44,7 @@ class Butterfly(Insect):
         """
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
         proxy = True
 
 

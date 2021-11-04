@@ -10,19 +10,18 @@ from django_fsm import FSMField, transition
 
 
 class Ticket(models.Model):
-
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
 
 
 class Task(models.Model):
     class STATE:
-        NEW = 'new'
-        DONE = 'done'
+        NEW = "new"
+        DONE = "done"
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    causality = GenericForeignKey('content_type', 'object_id')
+    causality = GenericForeignKey("content_type", "object_id")
     state = FSMField(default=STATE.NEW)
 
     @transition(field=state, source=STATE.NEW, target=STATE.DONE)
@@ -30,7 +29,7 @@ class Task(models.Model):
         pass
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
 
 
 class Test(TestCase):

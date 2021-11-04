@@ -5,40 +5,34 @@ from django_fsm.signals import pre_transition, post_transition
 
 
 class MultiResultTest(models.Model):
-    state = FSMField(default='new')
+    state = FSMField(default="new")
 
-    @transition(
-        field=state,
-        source='new',
-        target=RETURN_VALUE('for_moderators', 'published'))
+    @transition(field=state, source="new", target=RETURN_VALUE("for_moderators", "published"))
     def publish(self, is_public=False):
-        return 'published' if is_public else 'for_moderators'
+        return "published" if is_public else "for_moderators"
 
     @transition(
         field=state,
-        source='for_moderators',
-        target=GET_STATE(
-            lambda self, allowed: 'published' if allowed else 'rejected',
-            states=['published', 'rejected']
-        )
+        source="for_moderators",
+        target=GET_STATE(lambda self, allowed: "published" if allowed else "rejected", states=["published", "rejected"]),
     )
     def moderate(self, allowed):
         pass
 
     class Meta:
-        app_label = 'testapp'
+        app_label = "testapp"
 
 
 class Test(TestCase):
     def test_return_state_succeed(self):
         instance = MultiResultTest()
         instance.publish(is_public=True)
-        self.assertEqual(instance.state, 'published')
+        self.assertEqual(instance.state, "published")
 
     def test_get_state_succeed(self):
-        instance = MultiResultTest(state='for_moderators')
+        instance = MultiResultTest(state="for_moderators")
         instance.moderate(allowed=False)
-        self.assertEqual(instance.state, 'rejected')
+        self.assertEqual(instance.state, "rejected")
 
 
 class TestSignals(TestCase):
@@ -57,7 +51,7 @@ class TestSignals(TestCase):
         self.post_transition_called = True
 
     def test_signals_called_with_get_state(self):
-        instance = MultiResultTest(state='for_moderators')
+        instance = MultiResultTest(state="for_moderators")
         instance.moderate(allowed=False)
         self.assertTrue(self.pre_transition_called)
         self.assertTrue(self.post_transition_called)
