@@ -428,10 +428,11 @@ Changelog
 ---------
 
 
-django-fsm 2.7.1 2020-10-13
+django-fsm 2.8.0 2021-11-05
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Fix warnings on Django 3.1+
+- Fix get_available_FIELD_transition on django>=3.2
+- Fix refresh_from_db for ConcurrentTransitionMixin
 
 .. |Build Status| image:: https://travis-ci.org/viewflow/django-fsm.svg?branch=master
    :target: https://travis-ci.org/viewflow/django-fsm
