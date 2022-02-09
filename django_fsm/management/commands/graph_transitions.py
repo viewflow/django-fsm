@@ -4,7 +4,10 @@ from optparse import make_option
 from itertools import chain
 
 from django.core.management.base import BaseCommand
-from django.utils.encoding import force_text
+try:
+    from django.utils.encoding import force_text
+except ImportError:  # Django >= 4.0
+    from django.utils.encoding import force_str as force_text
 
 from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
 
