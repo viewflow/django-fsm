@@ -123,6 +123,17 @@ class Transition(object):
         else:
             return False
 
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return other == self.name
+        if isinstance(other, Transition):
+            return other.name == self.name
+
+        return False
+
 
 def get_available_FIELD_transitions(instance, field):
     """

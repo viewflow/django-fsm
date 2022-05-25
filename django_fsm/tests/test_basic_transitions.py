@@ -1,7 +1,7 @@
 from django.db import models
 from django.test import TestCase
 
-from django_fsm import FSMField, TransitionNotAllowed, transition, can_proceed
+from django_fsm import FSMField, TransitionNotAllowed, transition, can_proceed, Transition
 from django_fsm.signals import pre_transition, post_transition
 
 
@@ -142,6 +142,29 @@ class StateSignalsTests(TestCase):
 class TestFieldTransitionsInspect(TestCase):
     def setUp(self):
         self.model = BlogPost()
+
+    def test_in_operator_for_available_transitions(self):
+        # store the generator in a list, so we can reuse the generator and do multiple asserts
+        transitions = list(self.model.get_available_state_transitions())
+
+        self.assertIn("publish", transitions)
+        self.assertNotIn("xyz", transitions)
+
+        # inline method for faking the name of the transition
+        def publish():
+            pass
+
+        obj = Transition(
+            method=publish,
+            source="",
+            target="",
+            on_error="",
+            conditions="",
+            permission="",
+            custom="",
+        )
+
+        self.assertTrue(obj in transitions)
 
     def test_available_conditions_from_new(self):
         transitions = self.model.get_available_state_transitions()
