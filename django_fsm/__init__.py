@@ -61,7 +61,7 @@ class TransitionNotAllowed(Exception):
     def __init__(self, *args, **kwargs):
         self.object = kwargs.pop("object", None)
         self.method = kwargs.pop("method", None)
-        super(TransitionNotAllowed, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class InvalidResultState(Exception):
@@ -256,10 +256,10 @@ class FSMFieldMixin(object):
                 self.state_proxy[state] = proxy_cls_ref
             kwargs["choices"] = choices
 
-        super(FSMFieldMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(FSMFieldMixin, self).deconstruct()
+        name, path, args, kwargs = super().deconstruct()
         if self.protected:
             kwargs["protected"] = self.protected
         return name, path, args, kwargs
@@ -377,7 +377,7 @@ class FSMFieldMixin(object):
     def contribute_to_class(self, cls, name, **kwargs):
         self.base_cls = cls
 
-        super(FSMFieldMixin, self).contribute_to_class(cls, name, **kwargs)
+        super().contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, "get_all_{0}_transitions".format(self.name), partialmethod(get_all_FIELD_transitions, field=self))
         setattr(
@@ -427,7 +427,7 @@ class FSMField(FSMFieldMixin, models.CharField):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("max_length", 50)
-        super(FSMField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class FSMIntegerField(FSMFieldMixin, models.IntegerField):
@@ -477,7 +477,7 @@ class ConcurrentTransitionMixin(object):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ConcurrentTransitionMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._update_initial_state()
 
     @property
@@ -494,7 +494,7 @@ class ConcurrentTransitionMixin(object):
         # state filter will be used to narrow down the standard filter checking only PK
         state_filter = dict((field.attname, self.__initial_states[field.attname]) for field in filter_on)
 
-        updated = super(ConcurrentTransitionMixin, self)._do_update(
+        updated = super()._do_update(
             base_qs=base_qs.filter(**state_filter),
             using=using,
             pk_val=pk_val,
@@ -518,11 +518,11 @@ class ConcurrentTransitionMixin(object):
         self.__initial_states = dict((field.attname, field.value_from_object(self)) for field in self.state_fields)
 
     def refresh_from_db(self, *args, **kwargs):
-        super(ConcurrentTransitionMixin, self).refresh_from_db(*args, **kwargs)
+        super().refresh_from_db(*args, **kwargs)
         self._update_initial_state()
 
     def save(self, *args, **kwargs):
-        super(ConcurrentTransitionMixin, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         self._update_initial_state()
 
 
