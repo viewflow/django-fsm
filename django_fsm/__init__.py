@@ -76,7 +76,7 @@ class ConcurrentTransition(Exception):
     """
 
 
-class Transition(object):
+class Transition:
     def __init__(self, method, source, target, on_error, conditions, permission, custom):
         self.method = method
         self.source = source
@@ -134,7 +134,7 @@ def get_available_user_FIELD_transitions(instance, user, field):
             yield transition
 
 
-class FSMMeta(object):
+class FSMMeta:
     """
     Models methods transitions meta information
     """
@@ -213,12 +213,12 @@ class FSMMeta(object):
         transition = self.get_transition(current_state)
 
         if transition is None:
-            raise TransitionNotAllowed("No transition from {0}".format(current_state))
+            raise TransitionNotAllowed(f"No transition from {current_state}")
 
         return transition.on_error
 
 
-class FSMFieldDescriptor(object):
+class FSMFieldDescriptor:
     def __init__(self, field):
         self.field = field
 
@@ -229,14 +229,14 @@ class FSMFieldDescriptor(object):
 
     def __set__(self, instance, value):
         if self.field.protected and self.field.name in instance.__dict__:
-            raise AttributeError("Direct {0} modification is not allowed".format(self.field.name))
+            raise AttributeError(f"Direct {self.field.name} modification is not allowed")
 
         # Update state
         self.field.set_proxy(instance, value)
         self.field.set_state(instance, value)
 
 
-class FSMFieldMixin(object):
+class FSMFieldMixin:
     descriptor_class = FSMFieldDescriptor
 
     def __init__(self, *args, **kwargs):
@@ -450,7 +450,7 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
         instance.__dict__[self.attname] = self.to_python(state)
 
 
-class ConcurrentTransitionMixin(object):
+class ConcurrentTransitionMixin:
     """
     Protects a Model from undesirable effects caused by concurrently executed transitions,
     e.g. running the same transition multiple times at the same time, or running different
@@ -594,7 +594,7 @@ def has_transition_perm(bound_method, user):
     )
 
 
-class State(object):
+class State:
     def get_state(self, model, transition, result, args=[], kwargs={}):
         raise NotImplementedError
 

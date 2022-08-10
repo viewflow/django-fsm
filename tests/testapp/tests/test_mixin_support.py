@@ -3,7 +3,7 @@ from django.test import TestCase
 from django_fsm import FSMField, transition
 
 
-class WorkflowMixin(object):
+class WorkflowMixin:
     @transition(field="state", source="*", target="draft")
     def draft(self):
         pass
