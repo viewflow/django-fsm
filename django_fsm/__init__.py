@@ -2,7 +2,7 @@
 State tracking functionality for django models
 """
 import inspect
-from functools import wraps
+from functools import partialmethod, wraps
 
 import django
 from django.db import models
@@ -10,12 +10,6 @@ from django.db.models import Field
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.signals import class_prepared
 from django_fsm.signals import pre_transition, post_transition
-
-try:
-    from functools import partialmethod
-except ImportError:
-    # python 2.7, so we are on django<=1.11
-    from django.utils.functional import curry as partialmethod
 
 try:
     from django.apps import apps as django_apps
