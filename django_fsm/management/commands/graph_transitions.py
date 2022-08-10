@@ -33,7 +33,7 @@ def all_fsm_fields_data(model):
 
 def node_name(field, state):
     opts = field.model._meta
-    return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state)
+    return "{}.{}.{}.{}".format(opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state)
 
 
 def node_label(field, state):
@@ -95,8 +95,8 @@ def generate_dot(fields_data):
         # construct subgraph
         opts = field.model._meta
         subgraph = graphviz.Digraph(
-            name="cluster_%s_%s_%s" % (opts.app_label, opts.object_name, field.name),
-            graph_attr={"label": "%s.%s.%s" % (opts.app_label, opts.object_name, field.name)},
+            name=f"cluster_{opts.app_label}_{opts.object_name}_{field.name}",
+            graph_attr={"label": f"{opts.app_label}.{opts.object_name}.{field.name}"},
         )
 
         final_states = targets - sources

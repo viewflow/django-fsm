@@ -153,7 +153,7 @@ class FSMMeta:
 
     def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}):
         if source in self.transitions:
-            raise AssertionError("Duplicate transition for {0} state".format(source))
+            raise AssertionError(f"Duplicate transition for {source} state")
 
         self.transitions[source] = Transition(
             method=method,
@@ -205,7 +205,7 @@ class FSMMeta:
         transition = self.get_transition(current_state)
 
         if transition is None:
-            raise TransitionNotAllowed("No transition from {0}".format(current_state))
+            raise TransitionNotAllowed(f"No transition from {current_state}")
 
         return transition.target
 
@@ -305,7 +305,7 @@ class FSMFieldMixin:
 
             model = get_model(app_label, model_name)
             if model is None:
-                raise ValueError("No model found {0}".format(state_proxy))
+                raise ValueError(f"No model found {state_proxy}")
 
             instance.__class__ = model
 
@@ -316,13 +316,13 @@ class FSMFieldMixin:
 
         if not meta.has_transition(current_state):
             raise TransitionNotAllowed(
-                "Can't switch from state '{0}' using method '{1}'".format(current_state, method_name),
+                f"Can't switch from state '{current_state}' using method '{method_name}'",
                 object=instance,
                 method=method,
             )
         if not meta.conditions_met(instance, current_state):
             raise TransitionNotAllowed(
-                "Transition conditions have not been met for method '{0}'".format(method_name), object=instance, method=method
+                f"Transition conditions have not been met for method '{method_name}'", object=instance, method=method
             )
 
         next_state = meta.next_state(current_state)
@@ -379,13 +379,13 @@ class FSMFieldMixin:
 
         super().contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
-        setattr(cls, "get_all_{0}_transitions".format(self.name), partialmethod(get_all_FIELD_transitions, field=self))
+        setattr(cls, f"get_all_{self.name}_transitions", partialmethod(get_all_FIELD_transitions, field=self))
         setattr(
-            cls, "get_available_{0}_transitions".format(self.name), partialmethod(get_available_FIELD_transitions, field=self)
+            cls, f"get_available_{self.name}_transitions", partialmethod(get_available_FIELD_transitions, field=self)
         )
         setattr(
             cls,
-            "get_available_user_{0}_transitions".format(self.name),
+            f"get_available_user_{self.name}_transitions",
             partialmethod(get_available_user_FIELD_transitions, field=self),
         )
 
@@ -606,7 +606,7 @@ class RETURN_VALUE(State):
     def get_state(self, model, transition, result, args=[], kwargs={}):
         if self.allowed_states is not None:
             if result not in self.allowed_states:
-                raise InvalidResultState("{} is not in list of allowed states\n{}".format(result, self.allowed_states))
+                raise InvalidResultState(f"{result} is not in list of allowed states\n{self.allowed_states}")
         return result
 
 
@@ -619,5 +619,5 @@ class GET_STATE(State):
         result_state = self.func(model, *args, **kwargs)
         if self.allowed_states is not None:
             if result_state not in self.allowed_states:
-                raise InvalidResultState("{} is not in list of allowed states\n{}".format(result, self.allowed_states))
+                raise InvalidResultState(f"{result} is not in list of allowed states\n{self.allowed_states}")
         return result_state
