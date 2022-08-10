@@ -492,7 +492,7 @@ class ConcurrentTransitionMixin:
         filter_on = filter(lambda field: field.model == base_qs.model, self.state_fields)
 
         # state filter will be used to narrow down the standard filter checking only PK
-        state_filter = dict((field.attname, self.__initial_states[field.attname]) for field in filter_on)
+        state_filter = {field.attname: self.__initial_states[field.attname] for field in filter_on}
 
         updated = super()._do_update(
             base_qs=base_qs.filter(**state_filter),
@@ -515,7 +515,7 @@ class ConcurrentTransitionMixin:
         return updated
 
     def _update_initial_state(self):
-        self.__initial_states = dict((field.attname, field.value_from_object(self)) for field in self.state_fields)
+        self.__initial_states = {field.attname: field.value_from_object(self) for field in self.state_fields}
 
     def refresh_from_db(self, *args, **kwargs):
         super().refresh_from_db(*args, **kwargs)

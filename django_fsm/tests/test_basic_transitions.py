@@ -145,62 +145,59 @@ class TestFieldTransitionsInspect(TestCase):
 
     def test_available_conditions_from_new(self):
         transitions = self.model.get_available_state_transitions()
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set([("*", "moderated"), ("new", "published"), ("new", "removed"), ("*", ""), ("+", "blocked")])
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {("*", "moderated"), ("new", "published"), ("new", "removed"), ("*", ""), ("+", "blocked")}
         self.assertEqual(actual, expected)
 
     def test_available_conditions_from_published(self):
         self.model.publish()
         transitions = self.model.get_available_state_transitions()
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set(
-            [
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {
                 ("*", "moderated"),
                 ("published", None),
                 ("published", "hidden"),
                 ("published", "stolen"),
                 ("*", ""),
                 ("+", "blocked"),
-            ]
-        )
+        }
         self.assertEqual(actual, expected)
 
     def test_available_conditions_from_hidden(self):
         self.model.publish()
         self.model.hide()
         transitions = self.model.get_available_state_transitions()
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set([("*", "moderated"), ("hidden", "stolen"), ("*", ""), ("+", "blocked")])
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {("*", "moderated"), ("hidden", "stolen"), ("*", ""), ("+", "blocked")}
         self.assertEqual(actual, expected)
 
     def test_available_conditions_from_stolen(self):
         self.model.publish()
         self.model.steal()
         transitions = self.model.get_available_state_transitions()
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set([("*", "moderated"), ("*", ""), ("+", "blocked")])
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {("*", "moderated"), ("*", ""), ("+", "blocked")}
         self.assertEqual(actual, expected)
 
     def test_available_conditions_from_blocked(self):
         self.model.block()
         transitions = self.model.get_available_state_transitions()
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set([("*", "moderated"), ("*", "")])
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {("*", "moderated"), ("*", "")}
         self.assertEqual(actual, expected)
 
     def test_available_conditions_from_empty(self):
         self.model.empty()
         transitions = self.model.get_available_state_transitions()
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set([("*", "moderated"), ("*", ""), ("+", "blocked")])
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {("*", "moderated"), ("*", ""), ("+", "blocked")}
         self.assertEqual(actual, expected)
 
     def test_all_conditions(self):
         transitions = self.model.get_all_state_transitions()
 
-        actual = set((transition.source, transition.target) for transition in transitions)
-        expected = set(
-            [
+        actual = {(transition.source, transition.target) for transition in transitions}
+        expected = {
                 ("*", "moderated"),
                 ("new", "published"),
                 ("new", "removed"),
@@ -210,6 +207,5 @@ class TestFieldTransitionsInspect(TestCase):
                 ("hidden", "stolen"),
                 ("*", ""),
                 ("+", "blocked"),
-            ]
-        )
+        }
         self.assertEqual(actual, expected)
