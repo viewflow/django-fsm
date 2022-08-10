@@ -63,4 +63,4 @@ class TestStateProxy(TestCase):
         Insect.objects.create(state=Insect.STATE.BUTTERFLY)
 
         insects = Insect.objects.all()
-        self.assertEqual(set([Caterpillar, Butterfly]), set(insect.__class__ for insect in insects))
+        self.assertEqual({Caterpillar, Butterfly}, {insect.__class__ for insect in insects})

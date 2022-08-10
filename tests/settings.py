@@ -27,7 +27,7 @@ DATABASES = {
 
 if django.VERSION < (1, 9):
 
-    class DisableMigrations(object):
+    class DisableMigrations:
         def __contains__(self, item):
             return True
 
