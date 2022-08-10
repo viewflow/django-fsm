@@ -1,4 +1,3 @@
-# -*- coding: utf-8; mode: django -*-
 import graphviz
 from optparse import make_option
 from itertools import chain

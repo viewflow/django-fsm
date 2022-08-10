@@ -48,8 +48,6 @@ Or, for the latest git version
 
     $ pip install -e git://github.com/kmmbvnr/django-fsm.git#egg=django-fsm
 
-The library has full Python 3 support
-
 Usage
 -----
 
