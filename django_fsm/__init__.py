@@ -567,14 +567,13 @@ def can_proceed(bound_method, check_conditions=True):
     conditions.
     """
     if not hasattr(bound_method, "_django_fsm"):
-        im_func = getattr(bound_method, "im_func", getattr(bound_method, "__func__"))
-        raise TypeError("%s method is not transition" % im_func.__name__)
+        raise TypeError("%s method is not transition" % bound_method.__func__.__name__)
 
     meta = bound_method._django_fsm
-    im_self = getattr(bound_method, "im_self", getattr(bound_method, "__self__"))
-    current_state = meta.field.get_state(im_self)
+    self = bound_method.__self__
+    current_state = meta.field.get_state(self)
 
-    return meta.has_transition(current_state) and (not check_conditions or meta.conditions_met(im_self, current_state))
+    return meta.has_transition(current_state) and (not check_conditions or meta.conditions_met(self, current_state))
 
 
 def has_transition_perm(bound_method, user):
@@ -582,17 +581,16 @@ def has_transition_perm(bound_method, user):
     Returns True if model in state allows to call bound_method and user have rights on it
     """
     if not hasattr(bound_method, "_django_fsm"):
-        im_func = getattr(bound_method, "im_func", getattr(bound_method, "__func__"))
-        raise TypeError("%s method is not transition" % im_func.__name__)
+        raise TypeError("%s method is not transition" % bound_method.__func__.__name__)
 
     meta = bound_method._django_fsm
-    im_self = getattr(bound_method, "im_self", getattr(bound_method, "__self__"))
-    current_state = meta.field.get_state(im_self)
+    self = bound_method.__self__
+    current_state = meta.field.get_state(self)
 
     return (
         meta.has_transition(current_state)
-        and meta.conditions_met(im_self, current_state)
-        and meta.has_transition_perm(im_self, current_state, user)
+        and meta.conditions_met(self, current_state)
+        and meta.has_transition_perm(self, current_state, user)
     )
 
 
