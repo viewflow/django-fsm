@@ -1,6 +1,12 @@
 Changelog
 =========
 
+django-fsm 2.8.1 2022-08-15
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Improve fix for get_available_FIELD_transition
+
+
 django-fsm 2.8.0 2021-11-05
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
