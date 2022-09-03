@@ -157,7 +157,7 @@ on a model instance with a protected FSMField will cause an exception.
 
 You can use ``*`` for ``source`` to allow switching to ``target`` from any state. 
 
-You can use ``+`` for ``source`` to allow switching to ``target`` from any state exluding ``target`` state.
+You can use ``+`` for ``source`` to allow switching to ``target`` from any state excluding ``target`` state.
 
 ``target`` state
 ~~~~~~~~~~~~~~~~
