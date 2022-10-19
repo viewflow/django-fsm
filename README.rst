@@ -403,7 +403,7 @@ Drawing transitions
 
 Renders a graphical overview of your models states transitions
 
-You need ``pip install graphviz>=0.4`` library and add ``django_fsm`` to
+You need ``pip install "graphviz>=0.4"`` library and add ``django_fsm`` to
 your ``INSTALLED_APPS``:
 
 .. code:: python
