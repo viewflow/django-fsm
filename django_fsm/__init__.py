@@ -503,7 +503,7 @@ class ConcurrentTransitionMixin:
         # INSERT if UPDATE fails.
         # Thus, we need to make sure we only catch the case when the object *is* in the DB, but with changed state; and
         # mimic standard _do_update behavior otherwise. Django will pick it up and execute _do_insert.
-        if not updated and base_qs.filter(pk=pk_val).exists():
+        if not updated and base_qs.filter(pk=pk_val).using(using).exists():
             raise ConcurrentTransition("Cannot save object! The state has been changed since fetched from the database!")
 
         return updated
