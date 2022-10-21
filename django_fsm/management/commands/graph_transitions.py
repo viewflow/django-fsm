@@ -5,8 +5,11 @@ from itertools import chain
 from django.core.management.base import BaseCommand
 try:
     from django.utils.encoding import force_text
+    _requires_system_checks = True
 except ImportError:  # Django >= 4.0
     from django.utils.encoding import force_str as force_text
+    from django.core.management.base import ALL_CHECKS
+    _requires_system_checks = ALL_CHECKS
 
 from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
 
@@ -134,7 +137,7 @@ def get_graphviz_layouts():
 
 
 class Command(BaseCommand):
-    requires_system_checks = True
+    requires_system_checks = _requires_system_checks
 
     if not HAS_ARGPARSE:
         option_list = BaseCommand.option_list + (
