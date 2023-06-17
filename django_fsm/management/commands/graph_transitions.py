@@ -1,11 +1,10 @@
-# -*- coding: utf-8; mode: django -*-
 import graphviz
 from optparse import make_option
 from itertools import chain
 
 from django.core.management.base import BaseCommand
 try:
-    from django.utils.encoding import force_text
+    from django.utils.encoding import force_str
     _requires_system_checks = True
 except ImportError:  # Django >= 4.0
     from django.utils.encoding import force_str as force_text
@@ -37,12 +36,12 @@ def all_fsm_fields_data(model):
 
 def node_name(field, state):
     opts = field.model._meta
-    return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state)
+    return "{}.{}.{}.{}".format(opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state)
 
 
 def node_label(field, state):
     if type(state) == int or (type(state) == bool and hasattr(field, "choices")):
-        return force_text(dict(field.choices).get(state))
+        return force_str(dict(field.choices).get(state))
     else:
         return state
 
@@ -79,7 +78,7 @@ def generate_dot(fields_data):
                         add_transition(source, target, transition.name, source_name, field, sources, targets, edges)
 
         targets.update(
-            set((node_name(field, target), node_label(field, target)) for target, _ in chain(any_targets, any_except_targets))
+            {(node_name(field, target), node_label(field, target)) for target, _ in chain(any_targets, any_except_targets)}
         )
         for target, name in any_targets:
             target_name = node_name(field, target)
@@ -91,7 +90,7 @@ def generate_dot(fields_data):
         for target, name in any_except_targets:
             target_name = node_name(field, target)
             all_nodes = sources | targets
-            all_nodes.remove(((target_name, node_label(field, target))))
+            all_nodes.remove((target_name, node_label(field, target)))
             for source_name, label in all_nodes:
                 sources.add((source_name, label))
                 edges.add((source_name, target_name, (("label", name),)))
@@ -99,8 +98,8 @@ def generate_dot(fields_data):
         # construct subgraph
         opts = field.model._meta
         subgraph = graphviz.Digraph(
-            name="cluster_%s_%s_%s" % (opts.app_label, opts.object_name, field.name),
-            graph_attr={"label": "%s.%s.%s" % (opts.app_label, opts.object_name, field.name)},
+            name=f"cluster_{opts.app_label}_{opts.object_name}_{field.name}",
+            graph_attr={"label": f"{opts.app_label}.{opts.object_name}.{field.name}"},
         )
 
         final_states = targets - sources

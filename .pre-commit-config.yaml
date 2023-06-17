@@ -1,0 +1,38 @@
+default_language_version:
+  python: python3.8
+  python_venv: python3.8 # Optional
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=700"]
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - "--py38-plus"
+
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: 1.15.0
+    hooks:
+      - id: django-upgrade
+        args: [--target-version, "3.2"]
+
+  # - repo: https://github.com/astral-sh/ruff-pre-commit
+  #   rev: v0.0.291
+  #   hooks:
+  #     - id: ruff-format
+  #     - id: ruff

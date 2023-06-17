@@ -2,7 +2,7 @@ from setuptools import setup
 
 try:
     long_description = open('README.rst').read()
-except IOError:
+except OSError:
     long_description = ''
 
 setup(

@@ -3,7 +3,7 @@ from django.test import TestCase
 from django_fsm import FSMIntegerField, TransitionNotAllowed, transition
 
 
-class BlogPostStateEnum(object):
+class BlogPostStateEnum:
     NEW = 10
     PUBLISHED = 20
     HIDDEN = 30

@@ -25,22 +25,11 @@ DATABASES = {
     }
 }
 
-if django.VERSION < (1, 9):
-
-    class DisableMigrations(object):
-        def __contains__(self, item):
-            return True
-
-        def __getitem__(self, item):
-            return "notmigrations"
-
-    MIGRATION_MODULES = DisableMigrations()
-else:
-    MIGRATION_MODULES = {
-        "auth": None,
-        "contenttypes": None,
-        "guardian": None,
-    }
+MIGRATION_MODULES = {
+    "auth": None,
+    "contenttypes": None,
+    "guardian": None,
+}
 
 
 ANONYMOUS_USER_ID = 0

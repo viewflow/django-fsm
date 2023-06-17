@@ -20,14 +20,14 @@ class PermissionFSMFieldTest(TestCase):
         self.assertTrue(has_transition_perm(self.model.remove, self.priviledged))
 
         transitions = self.model.get_available_user_state_transitions(self.priviledged)
-        self.assertEqual(set(["publish", "remove", "moderate"]), set(transition.name for transition in transitions))
+        self.assertEqual({"publish", "remove", "moderate"}, {transition.name for transition in transitions})
 
     def test_unpriviledged_access_prohibited(self):
         self.assertFalse(has_transition_perm(self.model.publish, self.unpriviledged))
         self.assertFalse(has_transition_perm(self.model.remove, self.unpriviledged))
 
         transitions = self.model.get_available_user_state_transitions(self.unpriviledged)
-        self.assertEqual(set(["moderate"]), set(transition.name for transition in transitions))
+        self.assertEqual({"moderate"}, {transition.name for transition in transitions})
 
     def test_permission_instance_method(self):
         self.assertFalse(has_transition_perm(self.model.restore, self.unpriviledged))
