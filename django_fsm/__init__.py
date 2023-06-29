@@ -642,5 +642,5 @@ class GET_STATE(State):
         result_state = self.func(model, *args, **kwargs)
         if self.allowed_states is not None:
             if result_state not in self.allowed_states:
-                raise InvalidResultState("{} is not in list of allowed states\n{}".format(result, self.allowed_states))
+                raise InvalidResultState("{} is not in list of allowed states\n{}".format(result_state, self.allowed_states))
         return result_state
