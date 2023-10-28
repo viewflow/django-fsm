@@ -32,9 +32,7 @@ class Insect(models.Model):
 
 class Caterpillar(Insect):
     def crawl(self):
-        """
-        Do crawl
-        """
+        """Do crawl"""
 
     class Meta:
         app_label = "testapp"
@@ -43,9 +41,7 @@ class Caterpillar(Insect):
 
 class Butterfly(Insect):
     def fly(self):
-        """
-        Do fly
-        """
+        """Do fly"""
 
     class Meta:
         app_label = "testapp"

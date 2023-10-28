@@ -4,8 +4,7 @@ from django_fsm import FSMField, FSMKeyField, transition
 
 
 class Application(models.Model):
-    """
-    Student application need to be approved by dept chair and dean.
+    """Student application need to be approved by dept chair and dean.
     Test workflow
     """
 
@@ -37,8 +36,7 @@ class Application(models.Model):
 
 
 class FKApplication(models.Model):
-    """
-    Student application need to be approved by dept chair and dean.
+    """Student application need to be approved by dept chair and dean.
     Test workflow for FSMKeyField
     """
 
@@ -70,9 +68,7 @@ class FKApplication(models.Model):
 
 
 class DbState(models.Model):
-    """
-    States in DB
-    """
+    """States in DB"""
 
     id = models.CharField(primary_key=True, max_length=50)
 
@@ -83,9 +79,7 @@ class DbState(models.Model):
 
 
 class BlogPost(models.Model):
-    """
-    Test workflow
-    """
+    """Test workflow"""
 
     state = FSMField(default="new", protected=True)
 

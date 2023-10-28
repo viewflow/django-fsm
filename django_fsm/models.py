@@ -1,3 +1,2 @@
-"""
-Empty file to mark package as valid django application.
+"""Empty file to mark package as valid django application.
 """

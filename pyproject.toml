@@ -3,7 +3,7 @@ line-length = 100
 target-version = "py38"
 
 [tool.ruff.lint]
-select = [
+extend-select = [
   # https://beta.ruff.rs/docs/rules/
   "F",  # Pyflakes
   "E",  # pycodestyle
@@ -13,7 +13,7 @@ select = [
   # "D",  # pydocstyle
   "UP",  # pyupgrade
   # "N",  # pep8-naming
-  # "YTT",  # flake8-2020
+  "YTT",  # flake8-2020
   # "ANN",  # flake8-annotations
   # "S",  # flake8-bandit
   # "BLE",  # flake8-blind-except
@@ -25,29 +25,33 @@ select = [
   # "EM",  # flake8-errmsg
   # "ISC",  # flake8-implicit-str-concat
   # "ICN",  # flake8-import-conventions
-  # "T20",  # flake8-print
+  "T20",  # flake8-print
   # "PT",  # flake8-pytest-style
   # "Q",  # flake8-quotes
-  # "RET",  # flake8-return
+  "RET",  # flake8-return
   # "SIM",  # flake8-simplify
   "TID",  # flake8-tidy-imports
   # "ARG",  # flake8-unused-arguments
-  # "DTZ",  # flake8-datetimez
+  "DTZ",  # flake8-datetimez
   # "ERA",  # eradicate
-  # "PD",  # pandas-vet
   "PGH",  # pygrep-hooks
-  # "PLC",  # Pylint
-  # "PLE",  # Pylint
-  # "PLR",  # Pylint
-  # "PLW",  # Pylint
+  "PLC",  # Pylint
+  "PLE",  # Pylint
+#   "PLR",  # Pylint
+  "PLW",  # Pylint
   # "PIE",  # flake8-pie
   # "COM",  # flake8-commas
   "INP",  # flake8-no-pep420
-  # "RUF",  # Ruff-specific rules
+  "RUF",  # Ruff-specific rules
   # "PTH",  # flake8-use-pathlib
-  # "DJ",  # flake8-django
+  "DJ",  # flake8-django
 ]
-ignore = []
+ignore = [
+    "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
+    "DJ008",  # Model does not define `__str__` method
+    # FIXME
+    "DJ012",  # Order of model's inner classes, methods, and fields does not follow the Django Style Guide
+]
 fixable = ["ALL"]
 unfixable = ["B"]
 

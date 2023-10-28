@@ -1,33 +1,17 @@
 from itertools import chain
-from optparse import make_option
 
 import graphviz
+from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_str
 
 from django_fsm import GET_STATE, RETURN_VALUE, FSMFieldMixin
 
-try:
-    from django.db.models import get_app, get_apps, get_model, get_models
-
-    NEW_META_API = False
-except ImportError:
-    from django.apps import apps
-
-    NEW_META_API = True
-
-from django import VERSION
-
-HAS_ARGPARSE = VERSION >= (1, 10)
-
 
 def all_fsm_fields_data(model):
-    if NEW_META_API:
-        return [
-            (field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)
-        ]
-    else:
-        return [(field, model) for field in model._meta.fields if isinstance(field, FSMFieldMixin)]
+    return [
+        (field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)
+    ]
 
 
 def node_name(field, state):
@@ -40,8 +24,7 @@ def node_name(field, state):
 def node_label(field, state):
     if isinstance(state, int) == int or (isinstance(state, bool) and hasattr(field, "choices")):
         return force_str(dict(field.choices).get(state))
-    else:
-        return state
+    return state
 
 
 def generate_dot(fields_data):  # noqa: C901
@@ -156,56 +139,29 @@ def get_graphviz_layouts():
 
 
 class Command(BaseCommand):
-    if not HAS_ARGPARSE:
-        option_list = BaseCommand.option_list + (
-            make_option(
-                "--output",
-                "-o",
-                action="store",
-                dest="outputfile",
-                help=(
-                    "Render output file. Type of output dependent on file extensions. "
-                    "Use png or jpg to render graph to image."
-                ),
-            ),
-            make_option(
-                "--layout",
-                "-l",
-                action="store",
-                dest="layout",
-                default="dot",
-                help=(
-                    "Layout to be used by GraphViz for visualization. "
-                    "Layouts: %s." % " ".join(get_graphviz_layouts())
-                ),
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--output",
+            "-o",
+            action="store",
+            dest="outputfile",
+            help=(
+                "Render output file. Type of output dependent on file extensions. "
+                "Use png or jpg to render graph to image."
             ),
         )
-        args = "[appname[.model[.field]]]"
-    else:
-
-        def add_arguments(self, parser):
-            parser.add_argument(
-                "--output",
-                "-o",
-                action="store",
-                dest="outputfile",
-                help=(
-                    "Render output file. Type of output dependent on file extensions. "
-                    "Use png or jpg to render graph to image."
-                ),
-            )
-            parser.add_argument(
-                "--layout",
-                "-l",
-                action="store",
-                dest="layout",
-                default="dot",
-                help=(
-                    "Layout to be used by GraphViz for visualization. "
-                    "Layouts: %s." % " ".join(get_graphviz_layouts())
-                ),
-            )
-            parser.add_argument("args", nargs="*", help=("[appname[.model[.field]]]"))
+        parser.add_argument(
+            "--layout",
+            "-l",
+            action="store",
+            dest="layout",
+            default="dot",
+            help=(
+                "Layout to be used by GraphViz for visualization. "
+                "Layouts: %s." % " ".join(get_graphviz_layouts())
+            ),
+        )
+        parser.add_argument("args", nargs="*", help=("[appname[.model[.field]]]"))
 
     help = "Creates a GraphViz dot file with transitions for selected fields"
 
@@ -216,45 +172,29 @@ class Command(BaseCommand):
         graph.format = format
         graph.render(filename)
 
-    def handle(self, *args, **options):  # noqa: C901
+    def handle(self, *args, **options):
         fields_data = []
         if len(args) != 0:
             for arg in args:
                 field_spec = arg.split(".")
-
                 if len(field_spec) == 1:
-                    if NEW_META_API:
-                        app = apps.get_app(field_spec[0])
-                        models = apps.get_models(app)
-                    else:
-                        app = get_app(field_spec[0])
-                        models = get_models(app)
+                    app = apps.get_app(field_spec[0])
+                    models = apps.get_models(app)
                     for model in models:
                         fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 2:
-                    if NEW_META_API:
-                        model = apps.get_model(field_spec[0], field_spec[1])
-                    else:
-                        model = get_model(field_spec[0], field_spec[1])
+                    model = apps.get_model(field_spec[0], field_spec[1])
                     fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 3:
-                    if NEW_META_API:
-                        model = apps.get_model(field_spec[0], field_spec[1])
-                    else:
-                        model = get_model(field_spec[0], field_spec[1])
+                    model = apps.get_model(field_spec[0], field_spec[1])
                     fields_data += all_fsm_fields_data(model)
         else:
-            if NEW_META_API:
-                for model in apps.get_models():
-                    fields_data += all_fsm_fields_data(model)
-            else:
-                for app in get_apps():
-                    for model in get_models(app):
-                        fields_data += all_fsm_fields_data(model)
+            for model in apps.get_models():
+                fields_data += all_fsm_fields_data(model)
 
         dotdata = generate_dot(fields_data)
 
         if options["outputfile"]:
             self.render_output(dotdata, **options)
         else:
-            print(dotdata)
+            print(dotdata)  # noqa: T201

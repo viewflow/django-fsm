@@ -1,10 +1,8 @@
-"""
-State tracking functionality for django models
+"""State tracking functionality for django models
 """
 import inspect
 from functools import partialmethod, wraps
 
-import django
 from django.db import models
 from django.db.models import Field
 from django.db.models.query_utils import DeferredAttribute
@@ -64,8 +62,7 @@ class InvalidResultState(Exception):
 
 
 class ConcurrentTransition(Exception):
-    """
-    Raised when the transition cannot be executed because the
+    """Raised when the transition cannot be executed because the
     object has become stale (state has been changed since it
     was fetched from the database).
     """
@@ -88,19 +85,17 @@ class Transition:
     def has_perm(self, instance, user):
         if not self.permission:
             return True
-        elif callable(self.permission):
+        if callable(self.permission):
             return bool(self.permission(instance, user))
-        elif user.has_perm(self.permission, instance):
+        if user.has_perm(self.permission, instance):
             return True
-        elif user.has_perm(self.permission):
+        if user.has_perm(self.permission):
             return True
-        else:
-            return False
+        return False
 
 
 def get_available_FIELD_transitions(instance, field):
-    """
-    List of transitions available in current model state
+    """List of transitions available in current model state
     with all conditions met
     """
     curr_state = field.get_state(instance)
@@ -113,15 +108,12 @@ def get_available_FIELD_transitions(instance, field):
 
 
 def get_all_FIELD_transitions(instance, field):
-    """
-    List of all transitions available in current model state
-    """
+    """List of all transitions available in current model state"""
     return field.get_all_transitions(instance.__class__)
 
 
 def get_available_user_FIELD_transitions(instance, user, field):
-    """
-    List of transitions available in current model state
+    """List of transitions available in current model state
     with all conditions met and user have rights on it
     """
     for transition in get_available_FIELD_transitions(instance, field):
@@ -130,9 +122,7 @@ def get_available_user_FIELD_transitions(instance, user, field):
 
 
 class FSMMeta:
-    """
-    Models methods transitions meta information
-    """
+    """Models methods transitions meta information"""
 
     def __init__(self, field, method):
         self.field = field
@@ -163,9 +153,7 @@ class FSMMeta:
         )
 
     def has_transition(self, state):
-        """
-        Lookup if any transition exists from current model state using current method
-        """
+        """Lookup if any transition exists from current model state using current method"""
         if state in self.transitions:
             return True
 
@@ -178,25 +166,21 @@ class FSMMeta:
         return False
 
     def conditions_met(self, instance, state):
-        """
-        Check if all conditions have been met
-        """
+        """Check if all conditions have been met"""
         transition = self.get_transition(state)
 
         if transition is None:
             return False
-        elif transition.conditions is None:
+        if transition.conditions is None:
             return True
-        else:
-            return all(map(lambda condition: condition(instance), transition.conditions))
+        return all(map(lambda condition: condition(instance), transition.conditions))
 
     def has_transition_perm(self, instance, state, user):
         transition = self.get_transition(state)
 
         if not transition:
             return False
-        else:
-            return transition.has_perm(instance, user)
+        return transition.has_perm(instance, user)
 
     def next_state(self, current_state):
         transition = self.get_transition(current_state)
@@ -270,26 +254,13 @@ class FSMFieldMixin:
         # would be copying the latest implementation of DeferredAttribute to
         # django_fsm, but this comes with the added responsibility of keeping
         # the copied code up to date.
-        if django.VERSION[:3] >= (3, 0, 0):
-            return DeferredAttribute(self).__get__(instance)
-        elif django.VERSION[:3] >= (2, 1, 0):
-            return DeferredAttribute(self.name).__get__(instance)
-        elif django.VERSION[:3] >= (1, 10, 0):
-            return DeferredAttribute(self.name, model=None).__get__(instance)
-        else:
-            # The field was either not deferred (in which case we can return it
-            # right away) or ir was, but we are running on an unknown version
-            # of Django and we do not know the appropriate DeferredAttribute
-            # interface, and accessing the field will raise KeyError.
-            return instance.__dict__[self.name]
+        return DeferredAttribute(self).__get__(instance)
 
     def set_state(self, instance, state):
         instance.__dict__[self.name] = state
 
     def set_proxy(self, instance, state):
-        """
-        Change class
-        """
+        """Change class"""
         if state in self.state_proxy:
             state_proxy = self.state_proxy[state]
 
@@ -364,16 +335,11 @@ class FSMFieldMixin:
         return result
 
     def get_all_transitions(self, instance_cls):
-        """
-        Returns [(source, target, name, method)] for all field transitions
-        """
+        """Returns [(source, target, name, method)] for all field transitions"""
         transitions = self.transitions[instance_cls]
 
-        for name, transition in transitions.items():
-            meta = transition._django_fsm
-
-            for transition in meta.transitions.values():
-                yield transition
+        for _name, transition in transitions.items():
+            yield from transition._django_fsm.transitions.values()
 
     def contribute_to_class(self, cls, name, **kwargs):
         self.base_cls = cls
@@ -428,9 +394,7 @@ class FSMFieldMixin:
 
 
 class FSMField(FSMFieldMixin, models.CharField):
-    """
-    State Machine support for Django model as CharField
-    """
+    """State Machine support for Django model as CharField"""
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("max_length", 50)
@@ -438,17 +402,13 @@ class FSMField(FSMFieldMixin, models.CharField):
 
 
 class FSMIntegerField(FSMFieldMixin, models.IntegerField):
-    """
-    Same as FSMField, but stores the state value in an IntegerField.
-    """
+    """Same as FSMField, but stores the state value in an IntegerField."""
 
     pass
 
 
 class FSMKeyField(FSMFieldMixin, models.ForeignKey):
-    """
-    State Machine support for Django model
-    """
+    """State Machine support for Django model"""
 
     def get_state(self, instance):
         return instance.__dict__[self.attname]
@@ -458,8 +418,7 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
 
 
 class ConcurrentTransitionMixin:
-    """
-    Protects a Model from undesirable effects caused by concurrently executed transitions,
+    """Protects a Model from undesirable effects caused by concurrently executed transitions,
     e.g. running the same transition multiple times at the same time, or running different
     transitions with the same SOURCE state at the same time.
 
@@ -543,8 +502,7 @@ class ConcurrentTransitionMixin:
 def transition(
     field, source="*", target=None, on_error=None, conditions=[], permission=None, custom={}
 ):
-    """
-    Method decorator to mark allowed transitions.
+    """Method decorator to mark allowed transitions.
 
     Set target to None if current state needs to be validated and
     has not changed after the function call.
@@ -580,8 +538,7 @@ def transition(
 
 
 def can_proceed(bound_method, check_conditions=True):
-    """
-    Returns True if model in state allows to call bound_method
+    """Returns True if model in state allows to call bound_method
 
     Set ``check_conditions`` argument to ``False`` to skip checking
     conditions.
@@ -599,9 +556,7 @@ def can_proceed(bound_method, check_conditions=True):
 
 
 def has_transition_perm(bound_method, user):
-    """
-    Returns True if model in state allows to call bound_method and user have rights on it
-    """
+    """Returns True if model in state allows to call bound_method and user have rights on it"""
     if not hasattr(bound_method, "_django_fsm"):
         raise TypeError("%s method is not transition" % bound_method.__func__.__name__)
 

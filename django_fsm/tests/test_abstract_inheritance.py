@@ -16,8 +16,7 @@ class BaseAbstractModel(models.Model):
 
 
 class AnotherFromAbstractModel(BaseAbstractModel):
-    """
-    This class exists to trigger a regression when multiple concrete classes
+    """This class exists to trigger a regression when multiple concrete classes
     inherit from a shared abstract class (example: BaseAbstractModel).
     Don't try to remove it.
     """
