@@ -1,8 +1,8 @@
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.test import TestCase
+from testapp.models import BlogPost
 
 from django_fsm import has_transition_perm
-from testapp.models import BlogPost
 
 
 class PermissionFSMFieldTest(TestCase):
@@ -12,15 +12,21 @@ class PermissionFSMFieldTest(TestCase):
         self.priviledged = User.objects.create(username="priviledged")
         self.staff = User.objects.create(username="staff", is_staff=True)
 
-        self.priviledged.user_permissions.add(Permission.objects.get_by_natural_key("can_publish_post", "testapp", "blogpost"))
-        self.priviledged.user_permissions.add(Permission.objects.get_by_natural_key("can_remove_post", "testapp", "blogpost"))
+        self.priviledged.user_permissions.add(
+            Permission.objects.get_by_natural_key("can_publish_post", "testapp", "blogpost")
+        )
+        self.priviledged.user_permissions.add(
+            Permission.objects.get_by_natural_key("can_remove_post", "testapp", "blogpost")
+        )
 
     def test_proviledged_access_succed(self):
         self.assertTrue(has_transition_perm(self.model.publish, self.priviledged))
         self.assertTrue(has_transition_perm(self.model.remove, self.priviledged))
 
         transitions = self.model.get_available_user_state_transitions(self.priviledged)
-        self.assertEqual({"publish", "remove", "moderate"}, {transition.name for transition in transitions})
+        self.assertEqual(
+            {"publish", "remove", "moderate"}, {transition.name for transition in transitions}
+        )
 
     def test_unpriviledged_access_prohibited(self):
         self.assertFalse(has_transition_perm(self.model.publish, self.unpriviledged))

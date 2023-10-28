@@ -1,5 +1,6 @@
 from django.db import models
 from django.test import TestCase
+
 from django_fsm import FSMField, transition
 
 

@@ -1,8 +1,8 @@
 from django.db import models
 from django.test import TestCase
 
-from django_fsm import FSMField, TransitionNotAllowed, transition, can_proceed
-from django_fsm.signals import pre_transition, post_transition
+from django_fsm import FSMField, TransitionNotAllowed, can_proceed, transition
+from django_fsm.signals import post_transition, pre_transition
 
 
 class BlogPost(models.Model):
@@ -146,7 +146,13 @@ class TestFieldTransitionsInspect(TestCase):
     def test_available_conditions_from_new(self):
         transitions = self.model.get_available_state_transitions()
         actual = {(transition.source, transition.target) for transition in transitions}
-        expected = {("*", "moderated"), ("new", "published"), ("new", "removed"), ("*", ""), ("+", "blocked")}
+        expected = {
+            ("*", "moderated"),
+            ("new", "published"),
+            ("new", "removed"),
+            ("*", ""),
+            ("+", "blocked"),
+        }
         self.assertEqual(actual, expected)
 
     def test_available_conditions_from_published(self):
@@ -154,12 +160,12 @@ class TestFieldTransitionsInspect(TestCase):
         transitions = self.model.get_available_state_transitions()
         actual = {(transition.source, transition.target) for transition in transitions}
         expected = {
-                ("*", "moderated"),
-                ("published", None),
-                ("published", "hidden"),
-                ("published", "stolen"),
-                ("*", ""),
-                ("+", "blocked"),
+            ("*", "moderated"),
+            ("published", None),
+            ("published", "hidden"),
+            ("published", "stolen"),
+            ("*", ""),
+            ("+", "blocked"),
         }
         self.assertEqual(actual, expected)
 
@@ -198,14 +204,14 @@ class TestFieldTransitionsInspect(TestCase):
 
         actual = {(transition.source, transition.target) for transition in transitions}
         expected = {
-                ("*", "moderated"),
-                ("new", "published"),
-                ("new", "removed"),
-                ("published", None),
-                ("published", "hidden"),
-                ("published", "stolen"),
-                ("hidden", "stolen"),
-                ("*", ""),
-                ("+", "blocked"),
+            ("*", "moderated"),
+            ("new", "published"),
+            ("new", "removed"),
+            ("published", None),
+            ("published", "hidden"),
+            ("published", "stolen"),
+            ("hidden", "stolen"),
+            ("*", ""),
+            ("+", "blocked"),
         }
         self.assertEqual(actual, expected)

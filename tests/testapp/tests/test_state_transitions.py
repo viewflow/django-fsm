@@ -1,5 +1,6 @@
 from django.db import models
 from django.test import TestCase
+
 from django_fsm import FSMField, transition
 
 
@@ -8,7 +9,10 @@ class Insect(models.Model):
         CATERPILLAR = "CTR"
         BUTTERFLY = "BTF"
 
-    STATE_CHOICES = ((STATE.CATERPILLAR, "Caterpillar", "Caterpillar"), (STATE.BUTTERFLY, "Butterfly", "Butterfly"))
+    STATE_CHOICES = (
+        (STATE.CATERPILLAR, "Caterpillar", "Caterpillar"),
+        (STATE.BUTTERFLY, "Butterfly", "Butterfly"),
+    )
 
     state = FSMField(default=STATE.CATERPILLAR, state_choices=STATE_CHOICES)
 

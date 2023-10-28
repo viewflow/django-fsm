@@ -1,20 +1,14 @@
-import graphviz
-from optparse import make_option
 from itertools import chain
+from optparse import make_option
 
+import graphviz
 from django.core.management.base import BaseCommand
-try:
-    from django.utils.encoding import force_str
-    _requires_system_checks = True
-except ImportError:  # Django >= 4.0
-    from django.utils.encoding import force_str as force_text
-    from django.core.management.base import ALL_CHECKS
-    _requires_system_checks = ALL_CHECKS
+from django.utils.encoding import force_str
 
-from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
+from django_fsm import GET_STATE, RETURN_VALUE, FSMFieldMixin
 
 try:
-    from django.db.models import get_apps, get_app, get_models, get_model
+    from django.db.models import get_app, get_apps, get_model, get_models
 
     NEW_META_API = False
 except ImportError:
@@ -29,24 +23,28 @@ HAS_ARGPARSE = VERSION >= (1, 10)
 
 def all_fsm_fields_data(model):
     if NEW_META_API:
-        return [(field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)]
+        return [
+            (field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)
+        ]
     else:
         return [(field, model) for field in model._meta.fields if isinstance(field, FSMFieldMixin)]
 
 
 def node_name(field, state):
     opts = field.model._meta
-    return "{}.{}.{}.{}".format(opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state)
+    return "{}.{}.{}.{}".format(
+        opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state
+    )
 
 
 def node_label(field, state):
-    if type(state) == int or (type(state) == bool and hasattr(field, "choices")):
+    if isinstance(state, int) == int or (isinstance(state, bool) and hasattr(field, "choices")):
         return force_str(dict(field.choices).get(state))
     else:
         return state
 
 
-def generate_dot(fields_data):
+def generate_dot(fields_data):  # noqa: C901
     result = graphviz.Digraph()
 
     for field, model in fields_data:
@@ -75,10 +73,22 @@ def generate_dot(fields_data):
                         targets.add((on_error_name, node_label(field, transition.on_error)))
                         edges.add((source_name, on_error_name, (("style", "dotted"),)))
                     for target in _targets:
-                        add_transition(source, target, transition.name, source_name, field, sources, targets, edges)
+                        add_transition(
+                            source,
+                            target,
+                            transition.name,
+                            source_name,
+                            field,
+                            sources,
+                            targets,
+                            edges,
+                        )
 
         targets.update(
-            {(node_name(field, target), node_label(field, target)) for target, _ in chain(any_targets, any_except_targets)}
+            {
+                (node_name(field, target), node_label(field, target))
+                for target, _ in chain(any_targets, any_except_targets)
+            }
         )
         for target, name in any_targets:
             target_name = node_name(field, target)
@@ -120,7 +130,16 @@ def generate_dot(fields_data):
     return result
 
 
-def add_transition(transition_source, transition_target, transition_name, source_name, field, sources, targets, edges):
+def add_transition(
+    transition_source,
+    transition_target,
+    transition_name,
+    source_name,
+    field,
+    sources,
+    targets,
+    edges,
+):
     target_name = node_name(field, transition_target)
     sources.add((source_name, node_label(field, transition_source)))
     targets.add((target_name, node_label(field, transition_target)))
@@ -137,8 +156,6 @@ def get_graphviz_layouts():
 
 
 class Command(BaseCommand):
-    requires_system_checks = _requires_system_checks
-
     if not HAS_ARGPARSE:
         option_list = BaseCommand.option_list + (
             make_option(
@@ -147,17 +164,20 @@ class Command(BaseCommand):
                 action="store",
                 dest="outputfile",
                 help=(
-                    "Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."
+                    "Render output file. Type of output dependent on file extensions. "
+                    "Use png or jpg to render graph to image."
                 ),
             ),
-            # NOQA
             make_option(
                 "--layout",
                 "-l",
                 action="store",
                 dest="layout",
                 default="dot",
-                help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
+                help=(
+                    "Layout to be used by GraphViz for visualization. "
+                    "Layouts: %s." % " ".join(get_graphviz_layouts())
+                ),
             ),
         )
         args = "[appname[.model[.field]]]"
@@ -170,7 +190,8 @@ class Command(BaseCommand):
                 action="store",
                 dest="outputfile",
                 help=(
-                    "Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."
+                    "Render output file. Type of output dependent on file extensions. "
+                    "Use png or jpg to render graph to image."
                 ),
             )
             parser.add_argument(
@@ -179,7 +200,10 @@ class Command(BaseCommand):
                 action="store",
                 dest="layout",
                 default="dot",
-                help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
+                help=(
+                    "Layout to be used by GraphViz for visualization. "
+                    "Layouts: %s." % " ".join(get_graphviz_layouts())
+                ),
             )
             parser.add_argument("args", nargs="*", help=("[appname[.model[.field]]]"))
 
@@ -192,7 +216,7 @@ class Command(BaseCommand):
         graph.format = format
         graph.render(filename)
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options):  # noqa: C901
         fields_data = []
         if len(args) != 0:
             for arg in args:

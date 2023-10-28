@@ -1,6 +1,7 @@
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, TransitionNotAllowed, transition, can_proceed
+
+from django_fsm import FSMField, TransitionNotAllowed, can_proceed, transition
 
 
 def condition_func(instance):
@@ -16,11 +17,18 @@ class BlogPostWithConditions(models.Model):
     def unmet_condition(self):
         return False
 
-    @transition(field=state, source="new", target="published", conditions=[condition_func, model_condition])
+    @transition(
+        field=state, source="new", target="published", conditions=[condition_func, model_condition]
+    )
     def publish(self):
         pass
 
-    @transition(field=state, source="published", target="destroyed", conditions=[condition_func, unmet_condition])
+    @transition(
+        field=state,
+        source="published",
+        target="destroyed",
+        conditions=[condition_func, unmet_condition],
+    )
     def destroy(self):
         pass
 

@@ -2,10 +2,9 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.test import TestCase
 from django.test.utils import override_settings
-
 from guardian.shortcuts import assign_perm
 
-from django_fsm import FSMField, transition, has_transition_perm
+from django_fsm import FSMField, has_transition_perm, transition
 
 
 class ObjectPermissionTestModel(models.Model):
@@ -30,7 +29,10 @@ class ObjectPermissionTestModel(models.Model):
 
 
 @override_settings(
-    AUTHENTICATION_BACKENDS=("django.contrib.auth.backends.ModelBackend", "guardian.backends.ObjectPermissionBackend")
+    AUTHENTICATION_BACKENDS=(
+        "django.contrib.auth.backends.ModelBackend",
+        "guardian.backends.ObjectPermissionBackend",
+    )
 )
 class ObjectPermissionFSMFieldTest(TestCase):
     def setUp(self):

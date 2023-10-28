@@ -1,3 +1,56 @@
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+  # https://beta.ruff.rs/docs/rules/
+  "F",  # Pyflakes
+  "E",  # pycodestyle
+  "W",  # pycodestyle
+  "C90",  # mccabe
+  "I",  # isort
+  # "D",  # pydocstyle
+  "UP",  # pyupgrade
+  # "N",  # pep8-naming
+  # "YTT",  # flake8-2020
+  # "ANN",  # flake8-annotations
+  # "S",  # flake8-bandit
+  # "BLE",  # flake8-blind-except
+  # "FBT",  # flake8-boolean-trap
+  # "B",  # flake8-bugbear
+  # "A",  # flake8-builtins
+  # "C4",  # flake8-comprehensions
+  # "T10",  # flake8-debugger
+  # "EM",  # flake8-errmsg
+  # "ISC",  # flake8-implicit-str-concat
+  # "ICN",  # flake8-import-conventions
+  # "T20",  # flake8-print
+  # "PT",  # flake8-pytest-style
+  # "Q",  # flake8-quotes
+  # "RET",  # flake8-return
+  # "SIM",  # flake8-simplify
+  "TID",  # flake8-tidy-imports
+  # "ARG",  # flake8-unused-arguments
+  # "DTZ",  # flake8-datetimez
+  # "ERA",  # eradicate
+  # "PD",  # pandas-vet
+  "PGH",  # pygrep-hooks
+  # "PLC",  # Pylint
+  # "PLE",  # Pylint
+  # "PLR",  # Pylint
+  # "PLW",  # Pylint
+  # "PIE",  # flake8-pie
+  # "COM",  # flake8-commas
+  "INP",  # flake8-no-pep420
+  # "RUF",  # Ruff-specific rules
+  # "PTH",  # flake8-use-pathlib
+  # "DJ",  # flake8-django
+]
+ignore = []
+fixable = ["ALL"]
+unfixable = ["B"]
+
 [tool.poetry]
 name = "django-fsm"
 version = "2.8.1"

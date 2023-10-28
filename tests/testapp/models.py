@@ -1,4 +1,5 @@
 from django.db import models
+
 from django_fsm import FSMField, FSMKeyField, transition
 
 
@@ -91,7 +92,13 @@ class BlogPost(models.Model):
     def can_restore(self, user):
         return user.is_superuser or user.is_staff
 
-    @transition(field=state, source="new", target="published", on_error="failed", permission="testapp.can_publish_post")
+    @transition(
+        field=state,
+        source="new",
+        target="published",
+        on_error="failed",
+        permission="testapp.can_publish_post",
+    )
     def publish(self):
         pass
 
@@ -118,7 +125,9 @@ class BlogPost(models.Model):
     def remove(self):
         raise Exception("No rights to delete %s" % self)
 
-    @transition(field=state, source="new", target="restored", on_error="failed", permission=can_restore)
+    @transition(
+        field=state, source="new", target="restored", on_error="failed", permission=can_restore
+    )
     def restore(self):
         pass
 

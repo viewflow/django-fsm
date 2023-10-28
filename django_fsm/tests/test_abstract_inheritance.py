@@ -1,7 +1,7 @@
 from django.db import models
 from django.test import TestCase
 
-from django_fsm import FSMField, transition, can_proceed
+from django_fsm import FSMField, can_proceed, transition
 
 
 class BaseAbstractModel(models.Model):
@@ -21,6 +21,7 @@ class AnotherFromAbstractModel(BaseAbstractModel):
     inherit from a shared abstract class (example: BaseAbstractModel).
     Don't try to remove it.
     """
+
     @transition(field="state", source="published", target="sticked")
     def stick(self):
         pass
@@ -54,5 +55,6 @@ class TestinheritedModel(TestCase):
     def test_field_all_transitions_works(self):
         transitions = self.model.get_all_state_transitions()
         self.assertEqual(
-            {("new", "published"), ("published", "sticked")}, {(data.source, data.target) for data in transitions}
+            {("new", "published"), ("published", "sticked")},
+            {(data.source, data.target) for data in transitions},
         )

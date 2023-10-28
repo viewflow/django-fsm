@@ -9,7 +9,8 @@ from django.db import models
 from django.db.models import Field
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.signals import class_prepared
-from django_fsm.signals import pre_transition, post_transition
+
+from django_fsm.signals import post_transition, pre_transition
 
 try:
     from django.apps import apps as django_apps
@@ -145,7 +146,9 @@ class FSMMeta:
             transition = self.transitions.get("+", None)
         return transition
 
-    def add_transition(self, method, source, target, on_error=None, conditions=[], permission=None, custom={}):
+    def add_transition(
+        self, method, source, target, on_error=None, conditions=[], permission=None, custom={}
+    ):
         if source in self.transitions:
             raise AssertionError(f"Duplicate transition for {source} state")
 
@@ -316,7 +319,9 @@ class FSMFieldMixin:
             )
         if not meta.conditions_met(instance, current_state):
             raise TransitionNotAllowed(
-                f"Transition conditions have not been met for method '{method_name}'", object=instance, method=method
+                f"Transition conditions have not been met for method '{method_name}'",
+                object=instance,
+                method=method,
             )
 
         next_state = meta.next_state(current_state)
@@ -338,7 +343,9 @@ class FSMFieldMixin:
             result = method(instance, *args, **kwargs)
             if next_state is not None:
                 if hasattr(next_state, "get_state"):
-                    next_state = next_state.get_state(instance, transition, result, args=args, kwargs=kwargs)
+                    next_state = next_state.get_state(
+                        instance, transition, result, args=args, kwargs=kwargs
+                    )
                     signal_kwargs["target"] = next_state
                 self.set_proxy(instance, next_state)
                 self.set_state(instance, next_state)
@@ -373,9 +380,15 @@ class FSMFieldMixin:
 
         super().contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
-        setattr(cls, f"get_all_{self.name}_transitions", partialmethod(get_all_FIELD_transitions, field=self))
         setattr(
-            cls, f"get_available_{self.name}_transitions", partialmethod(get_available_FIELD_transitions, field=self)
+            cls,
+            f"get_all_{self.name}_transitions",
+            partialmethod(get_all_FIELD_transitions, field=self),
+        )
+        setattr(
+            cls,
+            f"get_available_{self.name}_transitions",
+            partialmethod(get_available_FIELD_transitions, field=self),
         )
         setattr(
             cls,
@@ -480,7 +493,8 @@ class ConcurrentTransitionMixin:
 
     def _do_update(self, base_qs, using, pk_val, values, update_fields, forced_update):
         # _do_update is called once for each model class in the inheritance hierarchy.
-        # We can only filter the base_qs on state fields (can be more than one!) present in this particular model.
+        # We can only filter the base_qs on state fields (can be more than one!) present
+        # in this particular model.
 
         # Select state fields to filter on
         filter_on = filter(lambda field: field.model == base_qs.model, self.state_fields)
@@ -497,19 +511,25 @@ class ConcurrentTransitionMixin:
             forced_update=forced_update,
         )
 
-        # It may happen that nothing was updated in the original _do_update method not because of unmatching state,
-        # but because of missing PK. This codepath is possible when saving a new model instance with *preset PK*.
-        # In this case Django does not know it has to do INSERT operation, so it tries UPDATE first and falls back to
-        # INSERT if UPDATE fails.
-        # Thus, we need to make sure we only catch the case when the object *is* in the DB, but with changed state; and
-        # mimic standard _do_update behavior otherwise. Django will pick it up and execute _do_insert.
+        # It may happen that nothing was updated in the original _do_update method not because of
+        # unmatching state, but because of missing PK.
+        # This codepath is possible when saving a new model instance with *preset PK*.
+        # In this case Django does not know it has to do INSERT operation, so it tries UPDATE first
+        # and falls back to INSERT if UPDATE fails.
+        # Thus, we need to make sure we only catch the case when the object *is* in the DB,
+        # but with changed state; and mimic standard _do_update behavior otherwise.
+        # Django will pick it up and execute _do_insert.
         if not updated and base_qs.filter(pk=pk_val).using(using).exists():
-            raise ConcurrentTransition("Cannot save object! The state has been changed since fetched from the database!")
+            raise ConcurrentTransition(
+                "Cannot save object! The state has been changed since fetched from the database!"
+            )
 
         return updated
 
     def _update_initial_state(self):
-        self.__initial_states = {field.attname: field.value_from_object(self) for field in self.state_fields}
+        self.__initial_states = {
+            field.attname: field.value_from_object(self) for field in self.state_fields
+        }
 
     def refresh_from_db(self, *args, **kwargs):
         super().refresh_from_db(*args, **kwargs)
@@ -520,7 +540,9 @@ class ConcurrentTransitionMixin:
         self._update_initial_state()
 
 
-def transition(field, source="*", target=None, on_error=None, conditions=[], permission=None, custom={}):
+def transition(
+    field, source="*", target=None, on_error=None, conditions=[], permission=None, custom={}
+):
     """
     Method decorator to mark allowed transitions.
 
@@ -537,9 +559,13 @@ def transition(field, source="*", target=None, on_error=None, conditions=[], per
 
         if isinstance(source, (list, tuple, set)):
             for state in source:
-                func._django_fsm.add_transition(func, state, target, on_error, conditions, permission, custom)
+                func._django_fsm.add_transition(
+                    func, state, target, on_error, conditions, permission, custom
+                )
         else:
-            func._django_fsm.add_transition(func, source, target, on_error, conditions, permission, custom)
+            func._django_fsm.add_transition(
+                func, source, target, on_error, conditions, permission, custom
+            )
 
         @wraps(func)
         def _change_state(instance, *args, **kwargs):
@@ -567,7 +593,9 @@ def can_proceed(bound_method, check_conditions=True):
     self = bound_method.__self__
     current_state = meta.field.get_state(self)
 
-    return meta.has_transition(current_state) and (not check_conditions or meta.conditions_met(self, current_state))
+    return meta.has_transition(current_state) and (
+        not check_conditions or meta.conditions_met(self, current_state)
+    )
 
 
 def has_transition_perm(bound_method, user):
@@ -600,7 +628,9 @@ class RETURN_VALUE(State):
     def get_state(self, model, transition, result, args=[], kwargs={}):
         if self.allowed_states is not None:
             if result not in self.allowed_states:
-                raise InvalidResultState(f"{result} is not in list of allowed states\n{self.allowed_states}")
+                raise InvalidResultState(
+                    f"{result} is not in list of allowed states\n{self.allowed_states}"
+                )
         return result
 
 
@@ -613,5 +643,7 @@ class GET_STATE(State):
         result_state = self.func(model, *args, **kwargs)
         if self.allowed_states is not None:
             if result_state not in self.allowed_states:
-                raise InvalidResultState(f"{result} is not in list of allowed states\n{self.allowed_states}")
+                raise InvalidResultState(
+                    f"{result} is not in list of allowed states\n{self.allowed_states}"
+                )
         return result_state

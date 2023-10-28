@@ -1,7 +1,8 @@
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition, RETURN_VALUE, GET_STATE
-from django_fsm.signals import pre_transition, post_transition
+
+from django_fsm import GET_STATE, RETURN_VALUE, FSMField, transition
+from django_fsm.signals import post_transition, pre_transition
 
 
 class MultiResultTest(models.Model):
@@ -14,7 +15,10 @@ class MultiResultTest(models.Model):
     @transition(
         field=state,
         source="for_moderators",
-        target=GET_STATE(lambda self, allowed: "published" if allowed else "rejected", states=["published", "rejected"]),
+        target=GET_STATE(
+            lambda self, allowed: "published" if allowed else "rejected",
+            states=["published", "rejected"],
+        ),
     )
     def moderate(self, allowed):
         pass
