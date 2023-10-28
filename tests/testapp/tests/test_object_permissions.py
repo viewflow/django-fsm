@@ -34,7 +34,7 @@ class ObjectPermissionTestModel(models.Model):
 )
 class ObjectPermissionFSMFieldTest(TestCase):
     def setUp(self):
-        super(ObjectPermissionFSMFieldTest, self).setUp()
+        super().setUp()
         self.model = ObjectPermissionTestModel.objects.create()
 
         self.unprivileged = User.objects.create(username="unpriviledged")
