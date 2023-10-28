@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "django-fsm"
+version = "2.8.1"
+description = "Django friendly finite state machine support."
+authors = ["Mikhail Podgurskiy <kmmbvnr@gmail.com>"]
+license = "MIT License"
+readme = "README.md"
+homepage = "http://github.com/kmmbvnr/django-fsm"
+repository = "http://github.com/kmmbvnr/django-fsm"
+documentation = "http://github.com/kmmbvnr/django-fsm"
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Web Environment',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Framework :: Django',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+]
+packages = [{ include = "django_fsm" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+django = ">=3.2"
+
+[tool.poetry.group.graphviz.dependencies]
+graphviz = "*"
+
+[tool.poetry.group.dev.dependencies]
+coverage = "*"
+django-guardian = "*"
+graphviz = "*"
+pre-commit = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
