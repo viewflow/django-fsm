@@ -2,7 +2,7 @@
 persistent=yes
 
 [MESSAGES CONTROL]
-# C0111 = Missing docstring 
+# C0111 = Missing docstring
 # I0011 =  # Warning locally suppressed using disable-msg
 # I0012 =  # Warning locally suppressed using disable-msg
 disable=I0011,I0012
@@ -60,4 +60,3 @@ max-parents=7
 max-attributes=7
 min-public-methods=0
 max-public-methods=20
-
