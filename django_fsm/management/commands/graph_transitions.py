@@ -4,10 +4,10 @@ from itertools import chain
 
 from django.core.management.base import BaseCommand
 try:
-    from django.utils.encoding import force_text
+    from django.utils.encoding import force_str
     _requires_system_checks = True
 except ImportError:  # Django >= 4.0
-    from django.utils.encoding import force_str as force_text
+    from django.utils.encoding import force_str
     from django.core.management.base import ALL_CHECKS
     _requires_system_checks = ALL_CHECKS
 
@@ -41,7 +41,7 @@ def node_name(field, state):
 
 def node_label(field, state):
     if type(state) == int or (type(state) == bool and hasattr(field, "choices")):
-        return force_text(dict(field.choices).get(state))
+        return force_str(dict(field.choices).get(state))
     else:
         return state
 

@@ -1,8 +1,9 @@
 name: django-fsm testing
 
 on:
-  - push
-  - pull_request
+  pull_request:
+  push:
+    branches: [main]
 
 jobs:
   build:
@@ -10,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
     - uses: actions/checkout@v1

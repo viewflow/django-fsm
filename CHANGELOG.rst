@@ -4,9 +4,13 @@ Changelog
 django-fsm unreleased
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- add support for django 4.2
-- add support for python 3.11
-- Drop support for Python < 3.7.
+- Drop support for Python < 3.8.
+- Add support for python 3.11
+- Add support for python 3.12
+- Drop support for django < 3.2
+- Add support for django 4.2
+- Add support for django 5.0
+- Enable Github actions for testing
 
 django-fsm 2.8.1 2022-08-15
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
