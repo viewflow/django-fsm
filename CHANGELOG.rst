@@ -11,6 +11,7 @@ django-fsm unreleased
 - Add support for django 4.2
 - Add support for django 5.0
 - Enable Github actions for testing
+- Remove South support...if exists
 
 django-fsm 2.8.1 2022-08-15
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

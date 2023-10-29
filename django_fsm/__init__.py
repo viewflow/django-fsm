@@ -5,22 +5,13 @@ import inspect
 from functools import partialmethod, wraps
 
 import django
+from django.apps import apps as django_apps
 from django.db import models
 from django.db.models import Field
 from django.db.models.query_utils import DeferredAttribute
 from django.db.models.signals import class_prepared
+
 from django_fsm.signals import pre_transition, post_transition
-
-try:
-    from django.apps import apps as django_apps
-
-    def get_model(app_label, model_name):
-        app = django_apps.get_app_config(app_label)
-        return app.get_model(model_name)
-
-
-except ImportError:
-    from django.db.models.loading import get_model
 
 
 __all__ = [
@@ -37,16 +28,6 @@ __all__ = [
     "GET_STATE",
     "RETURN_VALUE",
 ]
-
-# South support; see http://south.aeracode.org/docs/tutorial/part4.html#simple-inheritance
-try:
-    from south.modelsinspector import add_introspection_rules
-except ImportError:
-    pass
-else:
-    add_introspection_rules([], [r"^django_fsm\.FSMField"])
-    add_introspection_rules([], [r"^django_fsm\.FSMIntegerField"])
-    add_introspection_rules([], [r"^django_fsm\.FSMKeyField"])
 
 
 class TransitionNotAllowed(Exception):
@@ -308,7 +289,8 @@ class FSMFieldMixin:
                 app_label = instance._meta.app_label
                 model_name = state_proxy
 
-            model = get_model(app_label, model_name)
+            model = django_apps.get_app_config(app_label).get_model(model_name)
+
             if model is None:
                 raise ValueError(f"No model found {state_proxy}")
 
@@ -385,9 +367,7 @@ class FSMFieldMixin:
         super().contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
         setattr(cls, f"get_all_{self.name}_transitions", partialmethod(get_all_FIELD_transitions, field=self))
-        setattr(
-            cls, f"get_available_{self.name}_transitions", partialmethod(get_available_FIELD_transitions, field=self)
-        )
+        setattr(cls, f"get_available_{self.name}_transitions", partialmethod(get_available_FIELD_transitions, field=self))
         setattr(
             cls,
             f"get_available_user_{self.name}_transitions",

@@ -1,37 +1,15 @@
 import graphviz
-from optparse import make_option
 from itertools import chain
 
+from django.apps import apps
 from django.core.management.base import BaseCommand
-try:
-    from django.utils.encoding import force_str
-    _requires_system_checks = True
-except ImportError:  # Django >= 4.0
-    from django.utils.encoding import force_str
-    from django.core.management.base import ALL_CHECKS
-    _requires_system_checks = ALL_CHECKS
+from django.utils.encoding import force_str
 
 from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
 
-try:
-    from django.db.models import get_apps, get_app, get_models, get_model
-
-    NEW_META_API = False
-except ImportError:
-    from django.apps import apps
-
-    NEW_META_API = True
-
-from django import VERSION
-
-HAS_ARGPARSE = VERSION >= (1, 10)
-
 
 def all_fsm_fields_data(model):
-    if NEW_META_API:
-        return [(field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)]
-    else:
-        return [(field, model) for field in model._meta.fields if isinstance(field, FSMFieldMixin)]
+    return [(field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)]
 
 
 def node_name(field, state):
@@ -40,7 +18,7 @@ def node_name(field, state):
 
 
 def node_label(field, state):
-    if type(state) == int or (type(state) == bool and hasattr(field, "choices")):
+    if isinstance(state, int) or (isinstance(state, bool) and hasattr(field, "choices")):
         return force_str(dict(field.choices).get(state))
     else:
         return state
@@ -137,53 +115,25 @@ def get_graphviz_layouts():
 
 
 class Command(BaseCommand):
-    requires_system_checks = _requires_system_checks
-
-    if not HAS_ARGPARSE:
-        option_list = BaseCommand.option_list + (
-            make_option(
-                "--output",
-                "-o",
-                action="store",
-                dest="outputfile",
-                help=(
-                    "Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."
-                ),
-            ),
-            # NOQA
-            make_option(
-                "--layout",
-                "-l",
-                action="store",
-                dest="layout",
-                default="dot",
-                help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
-            ),
-        )
-        args = "[appname[.model[.field]]]"
-    else:
-
-        def add_arguments(self, parser):
-            parser.add_argument(
-                "--output",
-                "-o",
-                action="store",
-                dest="outputfile",
-                help=(
-                    "Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."
-                ),
-            )
-            parser.add_argument(
-                "--layout",
-                "-l",
-                action="store",
-                dest="layout",
-                default="dot",
-                help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
-            )
-            parser.add_argument("args", nargs="*", help=("[appname[.model[.field]]]"))
-
     help = "Creates a GraphViz dot file with transitions for selected fields"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--output",
+            "-o",
+            action="store",
+            dest="outputfile",
+            help=("Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."),
+        )
+        parser.add_argument(
+            "--layout",
+            "-l",
+            action="store",
+            dest="layout",
+            default="dot",
+            help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
+        )
+        parser.add_argument("args", nargs="*", help=("[appname[.model[.field]]]"))
 
     def render_output(self, graph, **options):
         filename, format = options["outputfile"].rsplit(".", 1)
@@ -199,35 +149,19 @@ class Command(BaseCommand):
                 field_spec = arg.split(".")
 
                 if len(field_spec) == 1:
-                    if NEW_META_API:
-                        app = apps.get_app(field_spec[0])
-                        models = apps.get_models(app)
-                    else:
-                        app = get_app(field_spec[0])
-                        models = get_models(app)
+                    app = apps.get_app(field_spec[0])
+                    models = apps.get_models(app)
                     for model in models:
                         fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 2:
-                    if NEW_META_API:
-                        model = apps.get_model(field_spec[0], field_spec[1])
-                    else:
-                        model = get_model(field_spec[0], field_spec[1])
+                    model = apps.get_model(field_spec[0], field_spec[1])
                     fields_data += all_fsm_fields_data(model)
                 elif len(field_spec) == 3:
-                    if NEW_META_API:
-                        model = apps.get_model(field_spec[0], field_spec[1])
-                    else:
-                        model = get_model(field_spec[0], field_spec[1])
+                    model = apps.get_model(field_spec[0], field_spec[1])
                     fields_data += all_fsm_fields_data(model)
         else:
-            if NEW_META_API:
-                for model in apps.get_models():
-                    fields_data += all_fsm_fields_data(model)
-            else:
-                for app in get_apps():
-                    for model in get_models(app):
-                        fields_data += all_fsm_fields_data(model)
-
+            for model in apps.get_models():
+                fields_data += all_fsm_fields_data(model)
         dotdata = generate_dot(fields_data)
 
         if options["outputfile"]:

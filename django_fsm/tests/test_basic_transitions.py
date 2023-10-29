@@ -177,12 +177,12 @@ class TestFieldTransitionsInspect(TestCase):
         transitions = self.model.get_available_state_transitions()
         actual = {(transition.source, transition.target) for transition in transitions}
         expected = {
-                ("*", "moderated"),
-                ("published", None),
-                ("published", "hidden"),
-                ("published", "stolen"),
-                ("*", ""),
-                ("+", "blocked"),
+            ("*", "moderated"),
+            ("published", None),
+            ("published", "hidden"),
+            ("published", "stolen"),
+            ("*", ""),
+            ("+", "blocked"),
         }
         self.assertEqual(actual, expected)
 
@@ -221,14 +221,14 @@ class TestFieldTransitionsInspect(TestCase):
 
         actual = {(transition.source, transition.target) for transition in transitions}
         expected = {
-                ("*", "moderated"),
-                ("new", "published"),
-                ("new", "removed"),
-                ("published", None),
-                ("published", "hidden"),
-                ("published", "stolen"),
-                ("hidden", "stolen"),
-                ("*", ""),
-                ("+", "blocked"),
+            ("*", "moderated"),
+            ("new", "published"),
+            ("new", "removed"),
+            ("published", None),
+            ("published", "hidden"),
+            ("published", "stolen"),
+            ("hidden", "stolen"),
+            ("*", ""),
+            ("+", "blocked"),
         }
         self.assertEqual(actual, expected)

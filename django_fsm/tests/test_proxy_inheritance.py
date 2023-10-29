@@ -46,6 +46,4 @@ class TestinheritedModel(TestCase):
 
     def test_field_all_transitions_works(self):
         transitions = self.model.get_all_state_transitions()
-        self.assertEqual(
-            {("new", "published"), ("published", "sticked")}, {(data.source, data.target) for data in transitions}
-        )
+        self.assertEqual({("new", "published"), ("published", "sticked")}, {(data.source, data.target) for data in transitions})
