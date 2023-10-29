@@ -1,8 +1,11 @@
-from django.contrib.auth.models import User, Permission
+from __future__ import annotations
+
+from django.contrib.auth.models import Permission
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from django_fsm import has_transition_perm
-from testapp.models import BlogPost
+from tests.testapp.models import BlogPost
 
 
 class PermissionFSMFieldTest(TestCase):

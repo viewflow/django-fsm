@@ -153,7 +153,7 @@ on a model instance with a protected FSMField will cause an exception.
 
 ``source`` parameter accepts a list of states, or an individual state or ``django_fsm.State`` implementation.
 
-You can use ``*`` for ``source`` to allow switching to ``target`` from any state. 
+You can use ``*`` for ``source`` to allow switching to ``target`` from any state.
 
 You can use ``+`` for ``source`` to allow switching to ``target`` from any state excluding ``target`` state.
 
@@ -163,7 +163,7 @@ You can use ``+`` for ``source`` to allow switching to ``target`` from any state
 ``target`` state parameter could point to a specific state or ``django_fsm.State`` implementation
 
 .. code:: python
-          
+
     from django_fsm import FSMField, transition, RETURN_VALUE, GET_STATE
     @transition(field=state,
                 source='*',

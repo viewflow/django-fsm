@@ -1,6 +1,10 @@
+from __future__ import annotations
+
+USE_TZ = True
+
 PROJECT_APPS = (
     "django_fsm",
-    "testapp",
+    "tests.testapp",
 )
 
 INSTALLED_APPS = (

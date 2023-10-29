@@ -34,12 +34,16 @@ repos:
   - repo: https://github.com/python-poetry/poetry
     rev: 1.6.1
     hooks:
-    -   id: poetry-check
-    -   id: poetry-lock
-    -   id: poetry-export
+      - id: poetry-check
+        additional_dependencies:
+          - poetry-plugin-sort==0.2.0
+      # FIXME: poetry lock export more platform on the CI
+      # - id: poetry-lock
+      #   args: ["--no-update"]
+      - id: poetry-export
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.291
+    rev: v0.1.9
     hooks:
       - id: ruff-format
       - id: ruff

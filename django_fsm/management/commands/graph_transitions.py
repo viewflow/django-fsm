@@ -1,11 +1,15 @@
-import graphviz
+from __future__ import annotations
+
 from itertools import chain
 
+import graphviz
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_str
 
-from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
+from django_fsm import GET_STATE
+from django_fsm import RETURN_VALUE
+from django_fsm import FSMFieldMixin
 
 
 def all_fsm_fields_data(model):

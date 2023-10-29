@@ -1,8 +1,15 @@
+from __future__ import annotations
+
 from django.db import models
 from django.test import TestCase
 
-from django_fsm import FSMField, TransitionNotAllowed, transition, can_proceed, Transition
-from django_fsm.signals import pre_transition, post_transition
+from django_fsm import FSMField
+from django_fsm import Transition
+from django_fsm import TransitionNotAllowed
+from django_fsm import can_proceed
+from django_fsm import transition
+from django_fsm.signals import post_transition
+from django_fsm.signals import pre_transition
 
 
 class BlogPost(models.Model):

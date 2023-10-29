@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition, can_proceed
+
+from django_fsm import FSMField
+from django_fsm import can_proceed
+from django_fsm import transition
 
 
 class DeferrableModel(models.Model):

@@ -1,7 +1,12 @@
+from __future__ import annotations
+
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMKeyField, TransitionNotAllowed, transition, can_proceed
 
+from django_fsm import FSMKeyField
+from django_fsm import TransitionNotAllowed
+from django_fsm import can_proceed
+from django_fsm import transition
 
 FK_AVAILABLE_STATES = (
     ("New", "_NEW_"),

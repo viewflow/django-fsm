@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 try:
     from django.contrib.contenttypes.fields import GenericForeignKey
 except ImportError:
@@ -6,7 +8,9 @@ except ImportError:
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition
+
+from django_fsm import FSMField
+from django_fsm import transition
 
 
 class Ticket(models.Model):

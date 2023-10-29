@@ -1,7 +1,14 @@
+from __future__ import annotations
+
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, transition, RETURN_VALUE, GET_STATE
-from django_fsm.signals import pre_transition, post_transition
+
+from django_fsm import GET_STATE
+from django_fsm import RETURN_VALUE
+from django_fsm import FSMField
+from django_fsm import transition
+from django_fsm.signals import post_transition
+from django_fsm.signals import pre_transition
 
 
 class MultiResultTest(models.Model):

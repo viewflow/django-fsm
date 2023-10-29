@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMIntegerField, TransitionNotAllowed, transition
+
+from django_fsm import FSMIntegerField
+from django_fsm import TransitionNotAllowed
+from django_fsm import transition
 
 
 class BlogPostStateEnum:

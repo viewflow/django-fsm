@@ -1,22 +1,10 @@
-[tool.ruff]
-line-length = 130
-target-version = "py38"
-
-[tool.ruff.lint]
-extend-select = [
-    "F",  # Pyflakes
-    "E",  # pycodestyle
-    "W",  # pycodestyle
-    "UP",  # pyupgrade
-]
-
 [tool.poetry]
 name = "django-fsm"
 version = "2.8.1"
 description = "Django friendly finite state machine support."
 authors = ["Mikhail Podgurskiy <kmmbvnr@gmail.com>"]
 license = "MIT License"
-readme = "README.md"
+readme = "README.rst"
 homepage = "http://github.com/kmmbvnr/django-fsm"
 repository = "http://github.com/kmmbvnr/django-fsm"
 documentation = "http://github.com/kmmbvnr/django-fsm"
@@ -54,6 +42,32 @@ coverage = "*"
 django-guardian = "*"
 graphviz = "*"
 pre-commit = "*"
+pytest = "*"
+pytest-cov = "^4.1.0"
+pytest-django = "*"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+
+[tool.ruff]
+line-length = 130
+target-version = "py38"
+fix = true
+
+[tool.ruff.lint]
+extend-select = [
+    "F",  # Pyflakes
+    "E",  # pycodestyle
+    "W",  # pycodestyle
+    "UP",  # pyupgrade
+    "I",  # isort
+]
+fixable = ["I"]
+
+
+[tool.ruff.isort]
+force-single-line = true
+required-imports = ["from __future__ import annotations"]
 
 [build-system]
 requires = ["poetry-core"]

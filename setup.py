@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from setuptools import setup
 
 try:
@@ -18,7 +20,7 @@ setup(
     zip_safe=False,
     license="MIT License",
     platforms=["any"],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",

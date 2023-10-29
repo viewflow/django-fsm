@@ -1,9 +1,12 @@
-import unittest
+from __future__ import annotations
 
-import django
 from django.db import models
 from django.test import TestCase
-from django_fsm import FSMField, ConcurrentTransitionMixin, ConcurrentTransition, transition
+
+from django_fsm import ConcurrentTransition
+from django_fsm import ConcurrentTransitionMixin
+from django_fsm import FSMField
+from django_fsm import transition
 
 
 class LockedBlogPost(ConcurrentTransitionMixin, models.Model):
@@ -90,7 +93,6 @@ class TestLockMixin(TestCase):
         self.assertEqual("rejected", post.review_state)
         self.assertEqual("test_inheritance_crud_succeed2", post.text)
 
-    @unittest.skipIf(django.VERSION[:3] < (1, 8, 0), "Available on django 1.8+")
     def test_concurrent_modifications_after_refresh_db_succeed(self):  # bug 255
         post1 = LockedBlogPost.objects.create()
         post2 = LockedBlogPost.objects.get(pk=post1.pk)

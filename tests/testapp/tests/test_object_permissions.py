@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.test import TestCase
 from django.test.utils import override_settings
-
 from guardian.shortcuts import assign_perm
 
-from django_fsm import FSMField, transition, has_transition_perm
+from django_fsm import FSMField
+from django_fsm import has_transition_perm
+from django_fsm import transition
 
 
 class ObjectPermissionTestModel(models.Model):

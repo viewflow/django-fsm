@@ -1,5 +1,10 @@
+from __future__ import annotations
+
 from django.db import models
-from django_fsm import FSMField, FSMKeyField, transition
+
+from django_fsm import FSMField
+from django_fsm import FSMKeyField
+from django_fsm import transition
 
 
 class Application(models.Model):
