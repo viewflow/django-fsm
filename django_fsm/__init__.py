@@ -471,6 +471,32 @@ class FSMKeyField(FSMFieldMixin, models.ForeignKey):
         instance.__dict__[self.attname] = self.to_python(state)
 
 
+class FSMModelMixin(object):
+    """
+    Mixin that allows refresh_from_db for models with fsm protected fields
+    """
+
+    def _get_protected_fsm_fields(self):
+        def is_fsm_and_protected(f):
+            return isinstance(f, FSMFieldMixin) and f.protected
+        protected_fields = filter(is_fsm_and_protected, self._meta.concrete_fields)
+        return {f.attname for f in protected_fields}
+
+    def refresh_from_db(self, *args, **kwargs):
+        fields = kwargs.pop("fields", None)
+
+        # Use provided fields, if not set then reload all non-deferred fields.0
+        if not fields:
+            deferred_fields = self.get_deferred_fields()
+            protected_fields = self._get_protected_fsm_fields()
+            skipped_fields = deferred_fields.union(protected_fields)
+
+            fields = [f.attname for f in self._meta.concrete_fields
+                      if f.attname not in skipped_fields]
+
+        kwargs['fields'] = fields
+        super(FSMModelMixin, self).refresh_from_db(*args, **kwargs)
+
 class ConcurrentTransitionMixin(object):
     """
     Protects a Model from undesirable effects caused by concurrently executed transitions,
