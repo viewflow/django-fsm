@@ -157,7 +157,7 @@ on a model instance with a protected FSMField will cause an exception.
 
 You can use ``*`` for ``source`` to allow switching to ``target`` from any state. 
 
-You can use ``+`` for ``source`` to allow switching to ``target`` from any state exluding ``target`` state.
+You can use ``+`` for ``source`` to allow switching to ``target`` from any state excluding ``target`` state.
 
 ``target`` state
 ~~~~~~~~~~~~~~~~
@@ -405,7 +405,7 @@ Drawing transitions
 
 Renders a graphical overview of your models states transitions
 
-You need ``pip install graphviz>=0.4`` library and add ``django_fsm`` to
+You need ``pip install "graphviz>=0.4"`` library and add ``django_fsm`` to
 your ``INSTALLED_APPS``:
 
 .. code:: python
