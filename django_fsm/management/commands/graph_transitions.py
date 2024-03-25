@@ -105,9 +105,9 @@ def generate_dot(fields_data):
 
         final_states = targets - sources
         for name, label in final_states:
-            subgraph.node(name, label=label, shape="doublecircle")
+            subgraph.node(name, label=str(label), shape="doublecircle")
         for name, label in (sources | targets) - final_states:
-            subgraph.node(name, label=label, shape="circle")
+            subgraph.node(name, label=str(label), shape="circle")
             if field.default:  # Adding initial state notation
                 if label == field.default:
                     initial_name = node_name(field, "_initial")
