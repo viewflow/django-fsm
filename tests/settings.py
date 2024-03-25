@@ -11,7 +11,8 @@ INSTALLED_APPS = (
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "guardian",
-) + PROJECT_APPS
+    *PROJECT_APPS,
+)
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",  # this is default

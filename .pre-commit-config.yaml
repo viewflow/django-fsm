@@ -18,21 +18,21 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+    rev: v3.15.2
     hooks:
       - id: pyupgrade
         args:
           - "--py38-plus"
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.15.0
+    rev: 1.16.0
     hooks:
       - id: django-upgrade
         args: [--target-version, "3.2"]
 
 
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.6.1
+    rev: 1.8.0
     hooks:
       - id: poetry-check
         additional_dependencies:
@@ -43,7 +43,7 @@ repos:
       - id: poetry-export
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.3.4
     hooks:
       - id: ruff-format
       - id: ruff

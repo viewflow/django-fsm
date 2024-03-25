@@ -55,6 +55,7 @@ target-version = "py38"
 fix = true
 
 [tool.ruff.lint]
+
 extend-select = [
     "F",  # Pyflakes
     "E",  # pycodestyle
