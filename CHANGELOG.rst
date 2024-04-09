@@ -1,6 +1,15 @@
 Changelog
 =========
 
+django-fsm 2.8.2 2024-04-09
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix graph_transitions commnad for Django>=4.0
+- Preserve chosen "using" DB in ConcurentTransitionMixin
+- Fix error message in GET_STATE
+- Implement Transition __hash__ and __eq__ for 'in' operator
+
+
 django-fsm 2.8.1 2022-08-15
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

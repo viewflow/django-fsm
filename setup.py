@@ -7,7 +7,7 @@ except IOError:
 
 setup(
     name="django-fsm",
-    version="2.8.2",
+    version="3.0.0",
     description="Django friendly finite state machine support.",
     author="Mikhail Podgurskiy",
     author_email="kmmbvnr@gmail.com",
@@ -19,7 +19,7 @@ setup(
     license="MIT License",
     platforms=["any"],
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 7 - Inactive",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
