@@ -427,11 +427,13 @@ your ``INSTALLED_APPS``:
 Changelog
 ---------
 
-
-django-fsm 2.8.1 2022-08-15
+django-fsm 2.8.2 2024-04-09
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Improve fix for get_available_FIELD_transition
+- Fix graph_transitions commnad for Django>=4.0
+- Preserve chosen "using" DB in ConcurentTransitionMixin
+- Fix error message in GET_STATE
+- Implement Transition __hash__ and __eq__ for 'in' operator
 
 .. |Build Status| image:: https://travis-ci.org/viewflow/django-fsm.svg?branch=master
    :target: https://travis-ci.org/viewflow/django-fsm
