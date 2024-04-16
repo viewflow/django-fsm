@@ -5,7 +5,7 @@ Django-fsm first came out in 2010 and had a big update in 2.0 release at 2014, m
 
 This new version has a different API that doesn't work with the old one but is better suited for today's needs.
 
-Migarion guide:
+Migration guide:
 
 https://github.com/viewflow/viewflow/wiki/django%E2%80%90fsm-to-viewflow.fsm-Migration-Guide
 
@@ -29,7 +29,7 @@ All things are buit around :class:`viewflow.fsm.State`. It is the special class
 slot, that can take a value only from a specific `python enum`_ or `django
 enumeration type`_   and that value can't be changed with simple assignement.
 
-.. code ::
+.. python ::
 
    from enum import Enum
    from viewflow.fsm import State
