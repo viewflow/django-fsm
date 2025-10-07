@@ -1,6 +1,15 @@
 Changelog
 =========
 
+django-fsm 3.0.1 2025-10-07
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add Django 6.0 support
+- Update tox.ini to test against latest Django versions (5.1, 5.2, 6.0a1)
+- Fix ConcurrentTransitionMixin._do_update() for Django 6.0 compatibility
+- Update Django versions in tox.ini to latest patch releases
+
+
 django-fsm 2.8.2 2024-04-09
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
