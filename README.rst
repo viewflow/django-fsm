@@ -25,9 +25,9 @@ implement simple persistent workflow process with quickly bootstrapped UI.
 Quick start
 ===========
 
-All things are buit around :class:`viewflow.fsm.State`. It is the special class
+All things are built around :class:`viewflow.fsm.State`. It is the special class
 slot, that can take a value only from a specific `python enum`_ or `django
-enumeration type`_   and that value can't be changed with simple assignement.
+enumeration type`_   and that value can't be changed with simple assignment.
 
 .. code::
 
