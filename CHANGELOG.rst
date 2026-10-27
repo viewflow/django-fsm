@@ -1,21 +1,23 @@
 Changelog
 =========
 
-django-fsm 5.0.0 (unreleased)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+django-fsm 5.0.0 2026-10-27
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Restore django-fsm as an independently maintained package using the
-  viewflow.fsm transition engine, with no Viewflow dependency in the core.
-- Add State, forward references, DOT charts and optional Viewflow/DRF modules.
-- Keep model-backed char, integer and foreign-key fields, conditions,
-  permissions, transition discovery, signals, error targets, proxy switching
-  and optimistic state checks through ConcurrentTransitionMixin.
-- Ordinary targets and GET_STATE are applied before the method runs.
-  RETURN_VALUE is resolved afterwards; invalid targets raise InvalidTargetState.
-- Preserve original tests and add coverage for the extracted implementation.
-- Require Python 3.10+ and Django 5.2+; Django 6.0+ requires Python 3.12+.
-- Use AGPL-3.0-or-later with the Viewflow Library Exception, as django-jsonstore
-  does; retain the original MIT notice in LICENSE_LEGACY.
+- Restore django-fsm as an independently maintained package with Viewflow FSM
+  engine under the hood.
+- Make Django dependency optional: the pure-Python ``State`` API, ``chart()``,
+  ``can_proceed()``, and ``has_transition_perm()`` work without Django installed.
+- Django model adapters (``FSMField``, ``FSMIntegerField``, ``FSMKeyField``) and
+  ``@transition(field=...)`` are available with Django installed or via
+  ``pip install 'django-fsm[django]'``.
+- Add ``State``, forward references (``this``), dynamic targets (``RETURN_VALUE``,
+  ``GET_STATE``), and optional Viewflow Pro / DRF modules.
+- Preserve backward-compatible APIs for model-backed fields, conditions, permissions,
+  signals, error targets, and optimistic locking (``ConcurrentTransitionMixin``).
+- Require Python 3.10+; Django 5.2+ / 6.0+ supported.
+- Use AGPL-3.0-or-later with the Viewflow Library Exception, retaining the original
+  MIT notice in LICENSE_LEGACY.
 
 
 django-fsm 3.0.1 2025-10-07
