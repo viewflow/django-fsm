@@ -6,13 +6,13 @@ ROOT = Path(__file__).resolve().parent
 
 setuptools.setup(
     name="django-fsm",
-    version="5.0.0",
+    version="5.0.1",
     description="State machines for Python objects and Django models.",
     long_description=(ROOT / "README.rst").read_text(encoding="utf-8"),
     long_description_content_type="text/x-rst",
     author="Mikhail Podgurskiy",
     author_email="kmmbvnr@gmail.com",
-    url="https://github.com/kmmbvnr/django-fsm",
+    url="https://github.com/viewflow/django-fsm",
     license="AGPL-3.0-or-later WITH viewflow-library-exception",
     license_files=["LICENSE", "LICENSE_EXCEPTION", "LICENSE_LEGACY"],
     platforms=["Any"],

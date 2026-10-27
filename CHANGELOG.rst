@@ -1,6 +1,17 @@
 Changelog
 =========
 
+django-fsm 5.0.1 2026-10-27
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Fix ``from django_fsm import *`` without Django installed by exporting only
+  the available core API, and add regression tests for both import modes.
+- Document the 5.0 transition timing change and clarify that direct transition
+  calls do not check user permissions automatically.
+- Include CONTRIBUTING.rst in source distributions and link to it on GitHub.
+- Update the package homepage to https://github.com/viewflow/django-fsm.
+
+
 django-fsm 5.0.0 2026-10-27
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -15,6 +26,9 @@ django-fsm 5.0.0 2026-10-27
   ``GET_STATE``), and optional Viewflow Pro / DRF modules.
 - Preserve backward-compatible APIs for model-backed fields, conditions, permissions,
   signals, error targets, and optimistic locking (``ConcurrentTransitionMixin``).
+- Change transition timing: ordinary targets and ``GET_STATE`` apply before
+  the method body runs, unlike django-fsm 3.x. ``RETURN_VALUE`` applies after
+  the method returns. Restoring state in memory does not roll back database writes.
 - Require Python 3.10+; Django 5.2+ / 6.0+ supported.
 - Use AGPL-3.0-or-later with the Viewflow Library Exception, retaining the original
   MIT notice in LICENSE_LEGACY.

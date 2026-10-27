@@ -6,10 +6,10 @@ Django-friendly finite state machine support.
 ``django-fsm`` adds simple, declarative state management for Django models
 and plain Python objects.
 
-Instead of managing states with ad-hoc string fields and writing error-prone
-assignments across views and models, you define states and transitions
-explicitly. Transitions validate source and target states, enforce business
-conditions, check user permissions, and keep side-effects clean.
+Define states and transitions explicitly instead of spreading state
+assignments across views and models. Transitions check source states and
+business conditions before running a method. Permissions are checked
+explicitly with ``has_transition_perm()`` or by UI/REST integrations.
 
 
 Installation
@@ -102,6 +102,10 @@ You can guard transitions with permissions and verify them using
         def publish(self):
             pass
 
+A direct call such as ``post.publish()`` does not check user permissions.
+Use ``has_transition_perm()`` before calling it, as below, or use an
+integration that performs the check.
+
 In your view:
 
 .. code-block:: python
@@ -157,6 +161,24 @@ or settings:
     assert review.state == 'published'
 
 
+Upgrading from django-fsm 3.x
+-----------------------------
+
+Version 5.0 uses the Viewflow transition engine. Ordinary targets are now
+applied **before the method body runs**; django-fsm 3.x applied them after
+the method returned. Code that reads ``self.state`` inside a transition
+therefore observes the target state in 5.0.
+
+``GET_STATE`` also computes and applies its target before the method runs.
+``RETURN_VALUE`` applies the target after the method returns.
+
+If the method raises, the adapter restores the source state in memory, or
+applies ``on_error`` when specified. This does not undo database writes or
+external side effects performed by the method. Use ``transaction.atomic()``
+around the transition and ``save()`` when those database writes must roll
+back together.
+
+
 Viewflow Pro Integrations
 -------------------------
 
@@ -171,7 +193,7 @@ Documentation & Contributing
 ----------------------------
 
 - Full documentation: https://docs.viewflow.io/fsm/index.html
-- Contributing & development instructions: see `CONTRIBUTING.rst <CONTRIBUTING.rst>`_
+- Contributing & development instructions: see `CONTRIBUTING.rst <https://github.com/viewflow/django-fsm/blob/master/CONTRIBUTING.rst>`_
 
 
 License

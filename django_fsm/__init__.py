@@ -33,7 +33,7 @@ except ImportError:
     _DJANGO_AVAILABLE = False
 
 
-__all__ = (
+__all__: tuple[str, ...] = (
     "TransitionNotAllowed",
     "NoTransition",
     "TransitionConditionsUnmet",
@@ -42,23 +42,27 @@ __all__ = (
     "this",
     "chart",
     "Transition",
-    "FSMField",
-    "FSMFieldMixin",
-    "FSMIntegerField",
-    "FSMKeyField",
-    "FSMModelMixin",
-    "ConcurrentTransition",
-    "ConcurrentTransitionMixin",
     "RETURN_VALUE",
     "GET_STATE",
-    "NonInitialStateOnCreate",
-    "transition",
     "can_proceed",
     "has_transition_perm",
 )
 
+if _DJANGO_AVAILABLE:
+    __all__ += (
+        "FSMField",
+        "FSMFieldMixin",
+        "FSMIntegerField",
+        "FSMKeyField",
+        "FSMModelMixin",
+        "ConcurrentTransition",
+        "ConcurrentTransitionMixin",
+        "NonInitialStateOnCreate",
+        "transition",
+    )
 
-__version__ = "5.0.0"
+
+__version__ = "5.0.1"
 
 _DJANGO_ATTRIBUTES = {
     "ConcurrentTransition",

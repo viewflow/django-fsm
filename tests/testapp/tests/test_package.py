@@ -13,10 +13,67 @@ from .test_fsm__legacy_fields import DynamicLegacyJob
 
 
 class PackageTests(SimpleTestCase):
+    def test_star_import_without_django_exports_only_core_api(self):
+        code = """
+import sys
+from importlib.abc import MetaPathFinder
+
+class WithoutDjango(MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == 'django' or fullname.startswith('django.'):
+            raise ModuleNotFoundError('Django is unavailable in this test', name=fullname)
+
+sys.meta_path.insert(0, WithoutDjango())
+import django_fsm
+namespace = {}
+exec('from django_fsm import *', namespace)
+assert 'FSMField' not in namespace
+assert 'transition' not in namespace
+assert 'State' in namespace
+assert 'chart' in namespace
+assert 'can_proceed' in namespace
+assert 'has_transition_perm' in namespace
+assert set(django_fsm.__all__) == set(namespace) - {'__builtins__'}
+class Flow:
+    state = namespace['State'](None, default='new')
+    @state.transition('new', 'done')
+    def finish(self):
+        pass
+flow = Flow()
+flow.finish()
+assert flow.state == 'done'
+try:
+    exec('from django_fsm import FSMField', {})
+except ImportError as exc:
+    assert 'requires Django' in str(exc)
+else:
+    raise AssertionError('Django model fields should require Django')
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_star_import_with_django_keeps_model_api(self):
+        namespace = {}
+        exec("from django_fsm import *", namespace)
+        for name in (
+            "State",
+            "FSMField",
+            "FSMIntegerField",
+            "FSMKeyField",
+            "ConcurrentTransitionMixin",
+            "transition",
+        ):
+            with self.subTest(name=name):
+                self.assertIn(name, namespace)
+
     def test_legacy_metadata_has_consistent_name_hash(self):
         job = DynamicLegacyJob()
         item = next(iter(job.get_available_status_transitions()))
-        expected = Transition(method=item.method, source=item.source, target=item.target)
+        expected = Transition(
+            method=item.method, source=item.source, target=item.target
+        )
         self.assertEqual(item, expected)
         self.assertEqual(hash(item), hash(expected))
         self.assertIn(expected, {item})
