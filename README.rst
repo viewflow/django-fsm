@@ -19,6 +19,13 @@ Installation
 
     python -m pip install django-fsm
 
+For plain Python classes, no other dependencies are required. To use with Django models, make sure Django is installed or specify the extra:
+
+.. code-block:: console
+
+    python -m pip install 'django-fsm[django]'
+
+
 
 Quick start
 -----------

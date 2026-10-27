@@ -6,7 +6,12 @@
 
 from enum import Enum
 from typing import Any, List, Set, Tuple
-from django.db.models import Choices
+
+try:
+    from django.db.models import Choices
+except ImportError:
+    Choices = None  # type: ignore[assignment,misc]
+
 from .utils import DEFAULT
 from .base import State, StateDescriptor, Transition
 from .typing import StateValue
@@ -19,7 +24,7 @@ def get_state_name(state_value: StateValue) -> str:
 
 
 def get_state_label(state_value: StateValue) -> Any:
-    if isinstance(state_value, Choices):
+    if Choices is not None and isinstance(state_value, Choices):
         return state_value.label
     elif isinstance(state_value, Enum):
         return str(state_value.value)

@@ -3,5 +3,7 @@ dist/
 build/
 django_fsm.egg-info/
 .tox/
+.venv/
 .antigravitycli/
+
 

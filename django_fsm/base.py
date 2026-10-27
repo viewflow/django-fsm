@@ -715,3 +715,20 @@ class State:
         def __repr__(self) -> str:
             name = getattr(self.func, "__name__", repr(self.func))
             return f"GET_STATE({name})"
+
+
+RETURN_VALUE = State.RETURN_VALUE
+GET_STATE = State.GET_STATE
+
+
+def can_proceed(
+    bound_method: TransitionBoundMethod, check_conditions: bool = True
+) -> bool:
+    """Check the source state and, optionally, the transition's conditions."""
+    return bound_method.can_proceed(check_conditions=check_conditions)
+
+
+def has_transition_perm(bound_method: TransitionBoundMethod, user: Any) -> bool:
+    """Check the source state, conditions and the user's permission."""
+    return bound_method.can_proceed() and bound_method.has_perm(user)
+

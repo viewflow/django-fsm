@@ -33,12 +33,20 @@ setuptools.setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.10",
-    install_requires=["Django>=5.2"],
+    install_requires=[],
     extras_require={
+        "django": ["Django>=5.2"],
         "graphviz": ["graphviz>=0.20"],
-        "rest": ["djangorestframework>=3.11", "drf-spectacular>=0.26.2"],
-        "test": ["django-guardian>=2.4", "graphviz>=0.20"],
-        "typing": ["mypy>=1.11", "pyright>=1.1.390", "django-stubs>=5.2"],
+        "rest": ["Django>=5.2", "djangorestframework>=3.11", "drf-spectacular>=0.26.2"],
+        "test": ["Django>=5.2", "django-guardian>=2.4", "graphviz>=0.20"],
+        "typing": ["Django>=5.2", "mypy>=1.11", "pyright>=1.1.390", "django-stubs>=5.2"],
+        "all": [
+            "Django>=5.2",
+            "django-guardian>=2.4",
+            "graphviz>=0.20",
+            "djangorestframework>=3.11",
+            "drf-spectacular>=0.26.2",
+        ],
     },
     packages=setuptools.find_packages(
         include=["django_fsm*"], exclude=["django_fsm.tests*"]
