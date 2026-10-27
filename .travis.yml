@@ -1,16 +1,9 @@
-dist: xenial
+# Legacy CI entry point. The supported matrix is maintained in tox.ini
+# and .github/workflows/tests.yml.
 language: python
-sudo: false
-cache: pip
-
 python:
-  - 2.7
-  - 3.6
-  - 3.7
-  - 3.8
-
+  - '3.12'
 install:
-    - pip install tox tox-travis
-
+  - pip install tox
 script:
-    - tox --skip-missing-interpreters
+  - tox -e py312-dj52

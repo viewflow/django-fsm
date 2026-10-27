@@ -1,62 +1,49 @@
-from setuptools import setup
+from pathlib import Path
 
-try:
-    long_description = open("README.rst").read()
-except IOError:
-    long_description = ""
+import setuptools
 
-setup(
+ROOT = Path(__file__).resolve().parent
+
+setuptools.setup(
     name="django-fsm",
-    version="3.0.1",
-    description="Django friendly finite state machine support.",
+    version="5.0.0",
+    description="State machines for Python objects and Django models.",
+    long_description=(ROOT / "README.rst").read_text(encoding="utf-8"),
+    long_description_content_type="text/x-rst",
     author="Mikhail Podgurskiy",
     author_email="kmmbvnr@gmail.com",
-    url="http://github.com/kmmbvnr/django-fsm",
-    keywords="django",
-    packages=["django_fsm", "django_fsm.management", "django_fsm.management.commands"],
-    include_package_data=True,
-    zip_safe=False,
-    license="MIT License",
-    platforms=["any"],
+    url="https://github.com/kmmbvnr/django-fsm",
+    license="AGPL-3.0-or-later WITH viewflow-library-exception",
+    license_files=["LICENSE", "LICENSE_EXCEPTION", "LICENSE_LEGACY"],
+    platforms=["Any"],
+    keywords=["django", "fsm", "state-machine", "workflow"],
     classifiers=[
-        "Development Status :: 7 - Inactive",
-        "Environment :: Web Environment",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Framework :: Django",
-        "Framework :: Django :: 1.6",
-        "Framework :: Django :: 1.8",
-        "Framework :: Django :: 1.9",
-        "Framework :: Django :: 1.10",
-        "Framework :: Django :: 1.11",
-        "Framework :: Django :: 2.0",
-        "Framework :: Django :: 2.1",
-        "Framework :: Django :: 2.2",
-        "Framework :: Django :: 3.0",
-        "Framework :: Django :: 3.1",
-        "Framework :: Django :: 3.2",
-        "Framework :: Django :: 4.0",
-        "Framework :: Django :: 4.1",
-        "Framework :: Django :: 4.2",
-        "Framework :: Django :: 5.0",
-        "Framework :: Django :: 5.1",
         "Framework :: Django :: 5.2",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
+        "Framework :: Django :: 6.0",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
-        "Framework :: Django",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    python_requires=">=3.10",
+    install_requires=["Django>=5.2"],
+    extras_require={
+        "graphviz": ["graphviz>=0.20"],
+        "rest": ["djangorestframework>=3.11", "drf-spectacular>=0.26.2"],
+        "test": ["django-guardian>=2.4", "graphviz>=0.20"],
+        "typing": ["mypy>=1.11", "pyright>=1.1.390", "django-stubs>=5.2"],
+    },
+    packages=setuptools.find_packages(
+        include=["django_fsm*"], exclude=["django_fsm.tests*"]
+    ),
+    include_package_data=False,
+    package_data={"django_fsm": ["py.typed"]},
+    zip_safe=False,
 )

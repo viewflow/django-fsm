@@ -3,16 +3,19 @@ import graphviz
 from optparse import make_option
 from itertools import chain
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+
 try:
     from django.utils.encoding import force_text
+
     _requires_system_checks = True
 except ImportError:  # Django >= 4.0
     from django.utils.encoding import force_str as force_text
     from django.core.management.base import ALL_CHECKS
+
     _requires_system_checks = ALL_CHECKS
 
-from django_fsm import FSMFieldMixin, GET_STATE, RETURN_VALUE
+from django_fsm import FSMFieldMixin
 
 try:
     from django.db.models import get_apps, get_app, get_models, get_model
@@ -30,56 +33,79 @@ HAS_ARGPARSE = VERSION >= (1, 10)
 
 def all_fsm_fields_data(model):
     if NEW_META_API:
-        return [(field, model) for field in model._meta.get_fields() if isinstance(field, FSMFieldMixin)]
+        return [
+            (field, model)
+            for field in model._meta.get_fields()
+            if isinstance(field, FSMFieldMixin)
+        ]
     else:
-        return [(field, model) for field in model._meta.fields if isinstance(field, FSMFieldMixin)]
+        return [
+            (field, model)
+            for field in model._meta.fields
+            if isinstance(field, FSMFieldMixin)
+        ]
 
 
 def node_name(field, state):
     opts = field.model._meta
-    return "%s.%s.%s.%s" % (opts.app_label, opts.verbose_name.replace(" ", "_"), field.name, state)
+    return "%s.%s.%s.%s" % (
+        opts.app_label,
+        opts.verbose_name.replace(" ", "_"),
+        field.name,
+        state,
+    )
 
 
 def node_label(field, state):
-    if type(state) == int or (type(state) == bool and hasattr(field, "choices")):
-        return force_text(dict(field.choices).get(state))
-    else:
-        return state
+    return force_text(dict(field.flatchoices).get(state, state))
 
 
 def generate_dot(fields_data):
     result = graphviz.Digraph()
 
     for field, model in fields_data:
-        sources, targets, edges, any_targets, any_except_targets = set(), set(), set(), set(), set()
+        sources, targets, edges, any_targets, any_except_targets = (
+            set(),
+            set(),
+            set(),
+            set(),
+            set(),
+        )
 
-        # dump nodes and edges
+        # Legacy helper metadata uses '*' and None; dynamic targets expose
+        # their declared targets through the shared transition interface.
         for transition in field.get_all_transitions(model):
-            if transition.source == "*":
-                any_targets.add((transition.target, transition.name))
-            elif transition.source == "+":
-                any_except_targets.add((transition.target, transition.name))
-            else:
-                _targets = (
-                    (state for state in transition.target.allowed_states)
-                    if isinstance(transition.target, (GET_STATE, RETURN_VALUE))
-                    else (transition.target,)
-                )
-                source_name_pair = (
-                    ((state, node_name(field, state)) for state in transition.source.allowed_states)
-                    if isinstance(transition.source, (GET_STATE, RETURN_VALUE))
-                    else ((transition.source, node_name(field, transition.source)),)
-                )
-                for source, source_name in source_name_pair:
-                    if transition.on_error:
+            if transition.target is None:
+                continue
+            for target in transition.declared_targets():
+                if transition.source == "*":
+                    any_targets.add((target, transition.name))
+                elif transition.source == "+":
+                    any_except_targets.add((target, transition.name))
+                else:
+                    source_name = node_name(field, transition.source)
+                    if transition.on_error is not None:
                         on_error_name = node_name(field, transition.on_error)
-                        targets.add((on_error_name, node_label(field, transition.on_error)))
+                        targets.add(
+                            (on_error_name, node_label(field, transition.on_error))
+                        )
                         edges.add((source_name, on_error_name, (("style", "dotted"),)))
-                    for target in _targets:
-                        add_transition(source, target, transition.name, source_name, field, sources, targets, edges)
+                    add_transition(
+                        transition.source,
+                        target,
+                        transition.name,
+                        source_name,
+                        field,
+                        sources,
+                        targets,
+                        edges,
+                    )
 
         targets.update(
-            set((node_name(field, target), node_label(field, target)) for target, _ in chain(any_targets, any_except_targets))
+            set(
+                (node_name(field, target), node_label(field, target))
+                for target, _ in chain(any_targets, any_except_targets)
+            )
         )
         for target, name in any_targets:
             target_name = node_name(field, target)
@@ -91,7 +117,7 @@ def generate_dot(fields_data):
         for target, name in any_except_targets:
             target_name = node_name(field, target)
             all_nodes = sources | targets
-            all_nodes.remove(((target_name, node_label(field, target))))
+            all_nodes.discard((target_name, node_label(field, target)))
             for source_name, label in all_nodes:
                 sources.add((source_name, label))
                 edges.add((source_name, target_name, (("label", name),)))
@@ -100,7 +126,9 @@ def generate_dot(fields_data):
         opts = field.model._meta
         subgraph = graphviz.Digraph(
             name="cluster_%s_%s_%s" % (opts.app_label, opts.object_name, field.name),
-            graph_attr={"label": "%s.%s.%s" % (opts.app_label, opts.object_name, field.name)},
+            graph_attr={
+                "label": "%s.%s.%s" % (opts.app_label, opts.object_name, field.name)
+            },
         )
 
         final_states = targets - sources
@@ -108,8 +136,8 @@ def generate_dot(fields_data):
             subgraph.node(name, label=str(label), shape="doublecircle")
         for name, label in (sources | targets) - final_states:
             subgraph.node(name, label=str(label), shape="circle")
-            if field.default:  # Adding initial state notation
-                if label == field.default:
+            if field.has_default() and not callable(field.default):
+                if name == node_name(field, field.default):
                     initial_name = node_name(field, "_initial")
                     subgraph.node(name=initial_name, label="", shape="point")
                     subgraph.edge(initial_name, name)
@@ -121,7 +149,16 @@ def generate_dot(fields_data):
     return result
 
 
-def add_transition(transition_source, transition_target, transition_name, source_name, field, sources, targets, edges):
+def add_transition(
+    transition_source,
+    transition_target,
+    transition_name,
+    source_name,
+    field,
+    sources,
+    targets,
+    edges,
+):
     target_name = node_name(field, transition_target)
     sources.add((source_name, node_label(field, transition_source)))
     targets.add((target_name, node_label(field, transition_target)))
@@ -148,7 +185,8 @@ class Command(BaseCommand):
                 action="store",
                 dest="outputfile",
                 help=(
-                    "Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."
+                    "Render output file. Type of output dependent on file extensions. "
+                    "Use png or jpg to render graph to image."
                 ),
             ),
             # NOQA
@@ -158,7 +196,10 @@ class Command(BaseCommand):
                 action="store",
                 dest="layout",
                 default="dot",
-                help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
+                help=(
+                    "Layout to be used by GraphViz for visualization. "
+                    "Layouts: %s." % " ".join(get_graphviz_layouts())
+                ),
             ),
         )
         args = "[appname[.model[.field]]]"
@@ -171,7 +212,8 @@ class Command(BaseCommand):
                 action="store",
                 dest="outputfile",
                 help=(
-                    "Render output file. Type of output dependent on file extensions. " "Use png or jpg to render graph to image."
+                    "Render output file. Type of output dependent on file extensions. "
+                    "Use png or jpg to render graph to image."
                 ),
             )
             parser.add_argument(
@@ -180,7 +222,10 @@ class Command(BaseCommand):
                 action="store",
                 dest="layout",
                 default="dot",
-                help=("Layout to be used by GraphViz for visualization. " "Layouts: %s." % " ".join(get_graphviz_layouts())),
+                help=(
+                    "Layout to be used by GraphViz for visualization. "
+                    "Layouts: %s." % " ".join(get_graphviz_layouts())
+                ),
             )
             parser.add_argument("args", nargs="*", help=("[appname[.model[.field]]]"))
 
@@ -201,8 +246,7 @@ class Command(BaseCommand):
 
                 if len(field_spec) == 1:
                     if NEW_META_API:
-                        app = apps.get_app(field_spec[0])
-                        models = apps.get_models(app)
+                        models = apps.get_app_config(field_spec[0]).get_models()
                     else:
                         app = get_app(field_spec[0])
                         models = get_models(app)
@@ -219,7 +263,16 @@ class Command(BaseCommand):
                         model = apps.get_model(field_spec[0], field_spec[1])
                     else:
                         model = get_model(field_spec[0], field_spec[1])
-                    fields_data += all_fsm_fields_data(model)
+                    selected = [
+                        data
+                        for data in all_fsm_fields_data(model)
+                        if data[0].name == field_spec[2]
+                    ]
+                    if not selected:
+                        raise CommandError(f"No FSM field {arg}")
+                    fields_data += selected
+                else:
+                    raise CommandError(f"Invalid model or field specification: {arg}")
         else:
             if NEW_META_API:
                 for model in apps.get_models():
@@ -234,4 +287,4 @@ class Command(BaseCommand):
         if options["outputfile"]:
             self.render_output(dotdata, **options)
         else:
-            print(dotdata)
+            self.stdout.write(str(dotdata))

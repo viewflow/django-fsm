@@ -1,0 +1,5 @@
+include LICENSE LICENSE_EXCEPTION LICENSE_LEGACY README.rst CHANGELOG.rst
+include pyproject.toml tox.ini requirements.txt
+include django_fsm/py.typed
+recursive-include tests *.py *.json *.ini
+recursive-include django_fsm/tests *.py

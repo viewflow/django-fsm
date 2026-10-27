@@ -1,0 +1,32 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.11', '3.12', '3.13']
+        django: ['5.2.*', '6.0.*', '6.1b1']
+        exclude:
+          - {python: '3.10', django: '6.0.*'}
+          - {python: '3.11', django: '6.0.*'}
+          - {python: '3.10', django: '6.1b1'}
+          - {python: '3.11', django: '6.1b1'}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '${{ matrix.python }}'
+      - run: python -m pip install -e '.[test]' 'Django==${{ matrix.django }}'
+      - run: python tests/manage.py test testapp django_fsm.tests --noinput
+  typing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[test,typing]' 'Django==6.1b1'
+      - run: python -m mypy
+      - run: pyright
+      - run: PYTHONPATH=.:tests python -m mypy --config-file tests/typing/mypy-plugin.ini tests/typing/usage.py

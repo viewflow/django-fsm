@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.mypy]
+files = ["django_fsm/base.py", "django_fsm/fields.py", "django_fsm/typing.py", "django_fsm/chart.py", "django_fsm/this_object.py", "django_fsm/utils.py", "django_fsm/signals.py", "tests/typing"]
+ignore_missing_imports = true
+
+[tool.pyright]
+include = ["django_fsm/base.py", "django_fsm/fields.py", "django_fsm/typing.py", "django_fsm/chart.py", "django_fsm/this_object.py", "django_fsm/utils.py", "django_fsm/signals.py", "tests/typing"]
+typeCheckingMode = "basic"
+pythonVersion = "3.10"

@@ -22,6 +22,7 @@ MIDDLEWARE_CLASSES = ()
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
     }
 }
 
@@ -46,3 +47,6 @@ else:
 ANONYMOUS_USER_ID = 0
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+DATABASES["secondary"] = {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}
+MIGRATION_MODULES.update({"django_fsm": None, "testapp": None})
